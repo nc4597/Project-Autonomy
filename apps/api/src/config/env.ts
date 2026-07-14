@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { z } from "zod";
 
 const envSchema = z.object({
@@ -20,11 +21,26 @@ const envSchema = z.object({
     .transform((v) => v === "true"),
 
   // Intentionally optional: absence puts HubSpot sync into NOT_CONFIGURED
-  // rather than failing startup. See services/hubspotService.ts.
+  // rather than failing startup. See services/hubspotService.ts and
+  // services/hubspotFormService.ts.
   HUBSPOT_ACCESS_TOKEN: z.string().optional(),
   HUBSPOT_PORTAL_ID: z.string().optional(),
+  // GUID of the target HubSpot Form (Marketing > Forms > this form's
+  // "Embed code" or URL contains it). Required for the native-form
+  // submission path in services/hubspotFormService.ts.
+  HUBSPOT_FORM_GUID: z.string().optional(),
 
   INTERNAL_SWEEP_SECRET: z.string().optional(),
+
+  // Admin notification email (stubbed until configured, same pattern as
+  // HubSpot above). See services/adminNotificationService.ts.
+  RESEND_API_KEY: z.string().optional(),
+  // Comma-separated list, e.g. "compliance@regimentsecurities.com,ops@regimentsecurities.com"
+  ADMIN_NOTIFICATION_EMAILS: z.string().optional(),
+  // Resend's shared sandbox sender works without verifying a domain —
+  // fine for testing, but swap for a verified address on your own domain
+  // before sending real notifications.
+  EMAIL_FROM_ADDRESS: z.string().default("onboarding@resend.dev"),
 });
 
 export type Env = z.infer<typeof envSchema>;

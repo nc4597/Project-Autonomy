@@ -1,10 +1,10 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma, Document } from "@prisma/client";
 import { env } from "../config/env.js";
 import { logger } from "../lib/logger.js";
 import { prisma } from "../lib/prisma.js";
 import { createPresignedDownloadUrl } from "../lib/s3Client.js";
 
-type SubmissionWithRelations = Prisma.VerificationSubmissionGetPayload<{
+export type SubmissionWithRelations = Prisma.VerificationSubmissionGetPayload<{
   include: {
     contactInfo: true;
     kycAmlInfo: true;
@@ -14,8 +14,84 @@ type SubmissionWithRelations = Prisma.VerificationSubmissionGetPayload<{
   };
 }>;
 
-const HUBSPOT_API_BASE = "https://api.hubapi.com";
-const MAX_SYNC_ATTEMPTS = 5;
+export const HUBSPOT_API_BASE = "https://api.hubapi.com";
+export const MAX_SYNC_ATTEMPTS = 5;
+
+// Each investor gets their own subfolder under this root — one place to
+// open and see everything they submitted, rather than every investor's
+// documents interleaved in one flat folder. Folder name is
+// "LastName_FirstName_<short id>": readable for browsing, and the short
+// slice of the submission ID keeps two investors who happen to share a
+// name (e.g. across different deals) from colliding or looking like the
+// same person.
+export const HUBSPOT_FILES_ROOT_FOLDER = "/kyc-verifications";
+
+export interface UploadedHubspotDocument {
+  category: string;
+  fileId: string;
+  url: string;
+}
+
+export function investorFolderName(submission: SubmissionWithRelations): string {
+  const sanitize = (value: string) => value.trim().replace(/[^a-zA-Z0-9]+/g, "-");
+  const { contactInfo } = submission;
+  const namePart = contactInfo
+    ? `${sanitize(contactInfo.lastName)}_${sanitize(contactInfo.firstName)}`
+    : "UnknownInvestor";
+  return `${namePart}_${submission.id.slice(0, 8)}`;
+}
+
+/**
+ * Uploads one document's bytes (fetched from our S3 store) to HubSpot's
+ * Files API, returning HubSpot's own permanent, portal-hosted URL for it.
+ * Shared by both the contact-record sync path and the native-form
+ * submission path below — a HubSpot "file upload" form field is really
+ * just a text property holding a URL, so both paths need this same
+ * upload-then-reference step; HubSpot's Forms API cannot accept raw file
+ * bytes directly. PRIVATE access means the URL only resolves for
+ * authenticated users of this HubSpot portal (i.e. your compliance
+ * team) — never publicly.
+ */
+export async function uploadDocumentToHubspotFiles(
+  submission: SubmissionWithRelations,
+  doc: Pick<Document, "s3Key" | "mimeType" | "originalFilename" | "category">
+): Promise<UploadedHubspotDocument> {
+  const downloadUrl = await createPresignedDownloadUrl(doc.s3Key);
+  const fileResponse = await fetch(downloadUrl);
+  const fileBuffer = await fileResponse.arrayBuffer();
+
+  // Filename doesn't need the investor's name repeated in it — the
+  // folder itself already scopes these documents to this one person.
+  const filename = `${doc.category}_${doc.originalFilename}`;
+  const folderPath = `${HUBSPOT_FILES_ROOT_FOLDER}/${investorFolderName(submission)}`;
+
+  const form = new FormData();
+  form.append("file", new Blob([fileBuffer], { type: doc.mimeType }), filename);
+  form.append("options", JSON.stringify({ access: "PRIVATE", overwrite: false }));
+  form.append("folderPath", folderPath);
+
+  const uploadResponse = await fetch(`${HUBSPOT_API_BASE}/files/v3/files`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.HUBSPOT_ACCESS_TOKEN}` },
+    body: form,
+  });
+  if (!uploadResponse.ok) {
+    throw new Error(`HubSpot file upload failed for ${doc.category}: ${uploadResponse.status}`);
+  }
+  const uploaded = (await uploadResponse.json()) as { id: string; url: string };
+  return { category: doc.category, fileId: uploaded.id, url: uploaded.url };
+}
+
+export async function uploadAllDocuments(
+  submission: SubmissionWithRelations
+): Promise<UploadedHubspotDocument[]> {
+  const uploaded = submission.documents.filter((doc) => doc.status === "UPLOADED");
+  const results: UploadedHubspotDocument[] = [];
+  for (const doc of uploaded) {
+    results.push(await uploadDocumentToHubspotFiles(submission, doc));
+  }
+  return results;
+}
 
 /**
  * NOTE on scopes needed once a real HubSpot private app exists:
@@ -110,35 +186,10 @@ async function upsertContact(submission: SubmissionWithRelations): Promise<strin
 }
 
 async function attachDocuments(submission: SubmissionWithRelations, contactId: string) {
-  const uploaded = submission.documents.filter((doc) => doc.status === "UPLOADED");
+  const uploaded = await uploadAllDocuments(submission);
   if (uploaded.length === 0) return;
 
-  const fileIds: string[] = [];
-  for (const doc of uploaded) {
-    const downloadUrl = await createPresignedDownloadUrl(doc.s3Key);
-    const fileResponse = await fetch(downloadUrl);
-    const fileBuffer = await fileResponse.arrayBuffer();
-
-    const form = new FormData();
-    form.append("file", new Blob([fileBuffer], { type: doc.mimeType }), doc.originalFilename);
-    form.append(
-      "options",
-      JSON.stringify({ access: "PRIVATE", overwrite: false })
-    );
-    form.append("folderPath", `/kyc-verifications/${submission.id}`);
-
-    const uploadResponse = await fetch(`${HUBSPOT_API_BASE}/files/v3/files`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${env.HUBSPOT_ACCESS_TOKEN}` },
-      body: form,
-    });
-    if (!uploadResponse.ok) {
-      throw new Error(`HubSpot file upload failed for ${doc.category}: ${uploadResponse.status}`);
-    }
-    const uploaded_ = (await uploadResponse.json()) as { id: string };
-    fileIds.push(uploaded_.id);
-  }
-
+  const fileIds = uploaded.map((d) => d.fileId);
   const noteBody = `KYC/AML verification submitted. Documents attached: ${uploaded
     .map((d) => d.category)
     .join(", ")}.`;
@@ -169,7 +220,13 @@ async function attachDocuments(submission: SubmissionWithRelations, contactId: s
 }
 
 /**
- * Entry point called right after a submission is marked SUBMITTED.
+ * Contact-record integration path: creates/updates a HubSpot Contact and
+ * attaches documents via a Note. Fully built and working, but not
+ * currently wired into the submit flow — see routes/verifications.ts,
+ * which currently calls submitToHubspotForm() (services/hubspotFormService.ts)
+ * instead, per current direction to launch with the native-form path
+ * first. Call both from the submit route when you want both to run.
+ *
  * Never blocks the investor's success response — Postgres is already
  * durable by the time this runs. If HUBSPOT_ACCESS_TOKEN isn't set, this
  * is a loud, logged, explicit "not configured" state rather than a silent

@@ -3,11 +3,32 @@
 import { useVerificationDraft } from "../../../lib/hooks/useVerificationDraft";
 import { useVerificationStore } from "../../../lib/state/verificationStore";
 import { WizardStepper } from "../../../components/verification/WizardStepper";
+import { SubmittedView } from "../../../components/verification/SubmittedView";
 import { Step1ContactInfo } from "../../../components/verification/steps/Step1ContactInfo";
 import { Step2KycAml } from "../../../components/verification/steps/Step2KycAml";
 import { Step3Accreditation } from "../../../components/verification/steps/Step3Accreditation";
 import { Step4Review } from "../../../components/verification/steps/Step4Review";
 import { Container } from "../../../components/ui/Container";
+
+function VerificationHero() {
+  return (
+    <div className="bg-navy-950 py-14 text-white">
+      <Container>
+        <div className="mb-4 flex items-center gap-2">
+          <span className="h-px w-8 bg-brand-red" />
+          <span className="text-xs font-semibold uppercase tracking-widest text-brand-red">
+            Investor Verification
+          </span>
+        </div>
+        <h1 className="font-serif text-4xl font-bold sm:text-5xl">Accredited Investor Verification</h1>
+        <p className="mt-4 max-w-2xl text-white/70">
+          Complete your verification to access Regiment Marketplace offerings. Documents are encrypted
+          and handled by our FINRA-compliant compliance team.
+        </p>
+      </Container>
+    </div>
+  );
+}
 
 export default function VerifyPage({ params }: { params: { dealId: string } }) {
   const { dealId } = params;
@@ -32,17 +53,7 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
   }
 
   if (draft.status === "SUBMITTED") {
-    return (
-      <Container className="py-16">
-        <div className="mx-auto max-w-xl border border-hairline bg-card p-10 text-center">
-          <h2 className="font-serif text-2xl font-bold text-ink">Verification Submitted</h2>
-          <p className="mt-3 text-sm text-ink-secondary">
-            Thank you. Our compliance team will review your submission and follow up by email once your
-            accredited investor status has been confirmed.
-          </p>
-        </div>
-      </Container>
-    );
+    return <SubmittedView firstName={draft.contactInfo?.firstName ?? "Investor"} />;
   }
 
   async function handleSaved() {
@@ -51,6 +62,7 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
 
   return (
     <div>
+      <VerificationHero />
       <WizardStepper currentStep={currentStep} />
       <Container className="py-10">
         {currentStep === 1 && (

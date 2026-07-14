@@ -7,6 +7,7 @@ import {
   SOURCE_OF_FUNDS_LABELS,
   ACCREDITATION_METHOD_DETAILS,
   DOCUMENT_LABELS,
+  SUPPORTING_DOC_REQUIREMENTS,
 } from "../../../lib/constants/verification";
 import { saveCertification, submitVerification, type VerificationDraft } from "../../../lib/api/verificationClient";
 import { SummaryRow } from "../SummaryRow";
@@ -14,6 +15,16 @@ import { WizardCard, WizardFooterNav } from "../WizardCard";
 import { ComplianceNotice } from "../../ui/ComplianceNotice";
 
 const TOS_VERSION = "2026-07-14";
+
+function formatDate(iso: string) {
+  const [year, month, day] = iso.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
 
 function SummarySection({
   title,
@@ -59,6 +70,17 @@ export function Step4Review({
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const uploadedDocs = draft.documents.filter((doc) => doc.status === "UPLOADED");
+  const idUploaded = uploadedDocs.some((d) => d.category === "ID_FRONT") && uploadedDocs.some((d) => d.category === "ID_BACK");
+  const proofOfAddressUploaded = uploadedDocs.some((d) => d.category === "PROOF_OF_ADDRESS");
+
+  // "Supporting Docs" should only list documents relevant to the chosen
+  // accreditation method (e.g. brokerage/bank statements for Net Worth) —
+  // not every document uploaded anywhere in the wizard, which would
+  // wrongly mix in the KYC/AML identity documents from step 2.
+  const accreditationDocCategories = draft.accreditation
+    ? SUPPORTING_DOC_REQUIREMENTS[draft.accreditation.method].map((r) => r.category)
+    : [];
+  const accreditationDocs = uploadedDocs.filter((d) => accreditationDocCategories.includes(d.category));
 
   async function handleSubmit() {
     setSubmitError(null);
@@ -86,12 +108,20 @@ export function Step4Review({
             <>
               <SummaryRow label="Name" value={`${draft.contactInfo.firstName} ${draft.contactInfo.lastName}`} />
               <SummaryRow label="Email" value={draft.contactInfo.email} />
+              <SummaryRow label="Phone" value={draft.contactInfo.phone} />
+              <SummaryRow
+                label="Address"
+                value={`${draft.contactInfo.streetAddress}, ${draft.contactInfo.city}, ${draft.contactInfo.state} ${draft.contactInfo.zipCode}`}
+              />
+              <SummaryRow label="Date of Birth" value={formatDate(draft.contactInfo.dateOfBirth)} />
               <SummaryRow label="Investor Type" value={INVESTOR_TYPE_LABELS[draft.contactInfo.investorType]} />
             </>
           )}
         </SummarySection>
 
         <SummarySection title="KYC / AML" onEdit={() => onEditStep(2)}>
+          <SummaryRow label="Government ID" value={idUploaded ? "Uploaded" : "Missing"} />
+          <SummaryRow label="Proof of Address" value={proofOfAddressUploaded ? "Uploaded" : "Missing"} />
           {draft.kycAmlInfo && (
             <>
               <SummaryRow label="Citizenship" value={draft.kycAmlInfo.countryOfCitizenship} />
@@ -109,8 +139,8 @@ export function Step4Review({
           <SummaryRow
             label="Supporting Docs"
             value={
-              uploadedDocs.length > 0
-                ? uploadedDocs.map((d) => DOCUMENT_LABELS[d.category].title).join(", ")
+              accreditationDocs.length > 0
+                ? accreditationDocs.map((d) => DOCUMENT_LABELS[d.category].title).join(", ")
                 : "None uploaded"
             }
           />

@@ -18,7 +18,7 @@ function CheckIcon() {
 export function WizardStepper({ currentStep }: { currentStep: number }) {
   return (
     <div className="border-b border-hairline bg-card">
-      <Container as="ol" className="flex flex-wrap items-center gap-x-2 gap-y-4 py-5">
+      <Container as="ol" className="flex flex-wrap items-center justify-center gap-x-2 gap-y-4 py-5">
         {WIZARD_STEPS.map((step, index) => {
           const isCompleted = step.step < currentStep;
           const isActive = step.step === currentStep;

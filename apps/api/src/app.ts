@@ -1,7 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
-import { serializerCompiler, validatorCompiler } from "@fastify/type-provider-zod";
 import { env } from "./config/env.js";
 import { logger } from "./lib/logger.js";
 import { healthRoutes } from "./routes/health.js";
@@ -11,9 +10,6 @@ import { internalRoutes } from "./routes/internal.js";
 
 export async function buildApp() {
   const app = Fastify({ loggerInstance: logger });
-
-  app.setValidatorCompiler(validatorCompiler);
-  app.setSerializerCompiler(serializerCompiler);
 
   await app.register(cors, {
     origin: env.FRONTEND_ORIGIN,

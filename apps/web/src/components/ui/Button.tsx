@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export type ButtonVariant = "primary" | "secondary";
+export type ButtonVariant = "primary" | "secondary" | "dark";
 
 const BASE_CLASSES =
   "inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-40";
@@ -8,6 +8,7 @@ const BASE_CLASSES =
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: "bg-brand-red text-white hover:bg-brand-red-dark",
   secondary: "border border-navy-950 bg-transparent text-navy-950 hover:bg-navy-950/5",
+  dark: "bg-navy-950 text-white hover:bg-navy-900",
 };
 
 type CommonProps = {

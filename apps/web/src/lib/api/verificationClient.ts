@@ -20,14 +20,27 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  // Only claim application/json when we're actually sending a body —
+  // confirm/delete/submit send none, and Fastify's body parser rejects
+  // an empty body when the header promises JSON that never arrives.
+  const headers = init?.body ? { "Content-Type": "application/json", ...init.headers } : init?.headers;
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
-    headers: { "Content-Type": "application/json", ...init?.headers },
+    headers,
   });
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new ApiError(body.error ?? `Request failed with status ${response.status}`, response.status, body.details);
+    // Our own route handlers send { error: "specific reason", details }.
+    // Fastify's built-in error responses (e.g. body-parse failures that
+    // never reach our handlers) instead send { error: "Bad Request",
+    // message: "specific reason" } — the generic HTTP phrase in `error`,
+    // the actually useful text in `message`. Prefer whichever is more
+    // specific so failures are diagnosable instead of just saying
+    // "Bad Request".
+    const reason = body.message ?? body.error ?? `Request failed with status ${response.status}`;
+    throw new ApiError(reason, response.status, body.details);
   }
 
   if (response.status === 204) return undefined as T;
