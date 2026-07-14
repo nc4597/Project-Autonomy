@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Container } from "../../components/ui/Container";
 
 // The deal-landing-page button links here with ?dealId=..., we redirect
 // into the canonical /verify/[dealId] route so the whole wizard lives at
 // one bookmarkable, shareable URL.
-export default function VerifyRedirectPage() {
+function VerifyRedirect() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -29,4 +29,12 @@ export default function VerifyRedirectPage() {
   }
 
   return null;
+}
+
+export default function VerifyRedirectPage() {
+  return (
+    <Suspense fallback={null}>
+      <VerifyRedirect />
+    </Suspense>
+  );
 }

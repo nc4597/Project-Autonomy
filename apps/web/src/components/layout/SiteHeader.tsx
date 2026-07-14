@@ -1,9 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Container } from "../ui/Container";
 import { Button } from "../ui/Button";
 
 const NAV_LINKS = [
-  { label: "Marketplace", href: "/marketplace" },
+  { label: "Marketplace", href: "/" },
   { label: "Deals", href: "/deals" },
   { label: "About", href: "/about" },
   { label: "FAQ", href: "/faq" },
@@ -14,8 +15,13 @@ export function SiteHeader() {
     <header className="bg-navy-950 text-white">
       <Container className="flex items-center justify-between py-4">
         <Link href="/" className="flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center bg-brand-red text-sm font-bold">
-            R
+          <span className="relative h-8 w-8 overflow-hidden">
+            <Image
+              src="/brand/regiment-securities-logo.png"
+              alt="Regiment Securities"
+              fill
+              className="object-cover object-left"
+            />
           </span>
           <span className="text-sm font-semibold tracking-wide">
             REGIMENT <span className="text-white/50">|</span> MARKETPLACE

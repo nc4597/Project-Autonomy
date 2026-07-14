@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Container } from "../ui/Container";
 
@@ -39,10 +40,13 @@ export function SiteFooter() {
       <Container className="grid gap-10 py-14 md:grid-cols-[2fr_1fr_1fr_1fr]">
         <div>
           <div className="mb-3 flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center bg-brand-red text-sm font-bold">
-              R
-            </span>
-            <span className="text-sm font-semibold tracking-wide">REGIMENT SECURITIES</span>
+            <Image
+              src="/brand/regiment-securities-logo.png"
+              alt="Regiment Securities"
+              width={240}
+              height={48}
+              className="h-8 w-auto"
+            />
           </div>
           <p className="max-w-xs text-sm text-white/60">
             Private investment marketplace for Reg D deals.
