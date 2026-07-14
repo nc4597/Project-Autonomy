@@ -1,8 +1,11 @@
 import { DealsExplorer } from "@/components/deals/DealsExplorer";
 import { DealsPageHeader } from "@/components/deals/DealsPageHeader";
-import { deals } from "@/lib/marketplace/data";
+import { toCardDeal } from "@/lib/marketplace/adapters";
+import { getDeals } from "@/lib/marketplace/adminClient";
 
-export default function DealsPage({
+export const dynamic = "force-dynamic";
+
+export default async function DealsPage({
   searchParams,
 }: {
   searchParams: { status?: string };
@@ -10,6 +13,8 @@ export default function DealsPage({
   const { status } = searchParams;
   const initialStatus =
     status === "live" || status === "closed" ? status : "all";
+
+  const deals = (await getDeals()).map(toCardDeal);
 
   return (
     <>

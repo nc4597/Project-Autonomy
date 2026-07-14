@@ -11,9 +11,19 @@ export function FeaturedDealCard({ deal }: { deal: Deal }) {
   return (
     <div className="grid grid-cols-1 border border-hairline bg-card md:grid-cols-2">
       <div className="relative h-64 md:h-auto">
-        <DealThumbnail seed={deal.slug} className="h-full w-full" />
-        <span className="absolute left-6 top-6 flex h-11 w-11 items-center justify-center bg-white text-sm font-semibold text-navy-950">
-          {deal.initials}
+        {deal.thumbnailUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={deal.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <DealThumbnail seed={deal.slug} className="h-full w-full" />
+        )}
+        <span className="absolute left-6 top-6 flex h-11 w-11 items-center justify-center overflow-hidden bg-white text-sm font-semibold text-navy-950">
+          {deal.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={deal.logoUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            deal.initials
+          )}
         </span>
         <div className="absolute bottom-6 left-6 flex gap-2">
           <Badge variant="live">Live</Badge>

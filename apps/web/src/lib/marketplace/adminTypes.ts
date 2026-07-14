@@ -1,0 +1,75 @@
+// Mirrors the shape apps/admin's /api/public/* routes return (see
+// apps/admin/src/lib/serialize.ts and prisma/schema.prisma) — the raw
+// content model, richer than the card-level `Deal` type in ./types.ts.
+
+export type AdminSector =
+  | "AI"
+  | "HEALTHCARE"
+  | "ENERGY"
+  | "CRYPTO"
+  | "FINTECH"
+  | "DEFENSE"
+  | "INFRASTRUCTURE"
+  | "REAL_ESTATE";
+
+export type AdminOfferingType = "REG_D_506C" | "REG_A" | "LP_PLACEMENT" | "VENTURE" | "FUND";
+
+export interface LabelValue {
+  id: string;
+  label: string;
+  value: string;
+}
+
+export interface WhyInvestBullet {
+  id: string;
+  text: string;
+}
+
+export interface LeadershipMember {
+  id: string;
+  name: string;
+  title: string;
+  bio: string;
+  photoUrl: string | null;
+}
+
+export interface DealFaq {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface AdminDeal {
+  id: string;
+  slug: string;
+  status: "LIVE" | "CLOSED";
+  name: string;
+  subheader: string;
+  sector: AdminSector;
+  offeringType: AdminOfferingType;
+  logoUrl: string | null;
+  thumbnailUrl: string | null;
+  bannerImageUrl: string | null;
+  raiseGoal: number;
+  raisedAmount: number;
+  minimumInvestment: number;
+  companyOverview: string;
+  closeDate: string | null;
+  investmentVehicle: string | null;
+  regulation: string | null;
+  marketOpportunityNarrative: string | null;
+  snapshotFields: LabelValue[];
+  whyInvestBullets: WhyInvestBullet[];
+  marketStats: LabelValue[];
+  leadership: LeadershipMember[];
+  faqs: DealFaq[];
+}
+
+export interface AdminSiteSettings {
+  capitalRaised: string;
+  completedTransactions: string;
+  activeDeals: string;
+  investorNetwork: string;
+  featuredDeal: AdminDeal | null;
+  featuredClosedDeals: AdminDeal[];
+}

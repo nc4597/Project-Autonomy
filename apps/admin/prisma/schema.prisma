@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum DealStatus {
+  LIVE
+  CLOSED
+}
+
+enum Sector {
+  AI
+  HEALTHCARE
+  ENERGY
+  CRYPTO
+  FINTECH
+  DEFENSE
+  INFRASTRUCTURE
+  REAL_ESTATE
+}
+
+enum OfferingType {
+  REG_D_506C
+  REG_A
+  LP_PLACEMENT
+  VENTURE
+  FUND
+}
+
+// One Deal record powers both the deal card (catalog grid, home page
+// featured/closed slots) and the deal landing page — they are two views
+// of the same underlying record, edited together in one admin form.
+model Deal {
+  id     String     @id @default(cuid())
+  slug   String     @unique
+  status DealStatus @default(LIVE)
+
+  // Shared by card + landing page
+  name              String
+  subheader         String
+  sector            Sector
+  offeringType      OfferingType
+  logoUrl           String?
+  thumbnailUrl      String?
+  raiseGoal         Decimal  @db.Decimal(14, 2)
+  raisedAmount      Decimal  @db.Decimal(14, 2)
+  minimumInvestment Decimal  @db.Decimal(14, 2)
+  companyOverview   String   @db.Text
+  closeDate         DateTime?
+
+  // Landing-page only
+  bannerImageUrl             String?
+  investmentVehicle          String?
+  regulation                 String?
+  marketOpportunityNarrative String? @db.Text
+
+  snapshotFields    SnapshotField[]
+  whyInvestBullets  WhyInvestBullet[]
+  marketStats       MarketStat[]
+  leadership        LeadershipMember[]
+  faqs              DealFaq[]
+
+  featuredOnHome       FeaturedDeal?
+  featuredClosedOnHome FeaturedClosedDeal?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Investment Snapshot: admin-defined label/value pairs, arbitrary count.
+model SnapshotField {
+  id        String @id @default(cuid())
+  dealId    String
+  deal      Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  label     String
+  value     String
+  sortOrder Int    @default(0)
+}
+
+// Why Invest: admin-defined bullet points, arbitrary count.
+model WhyInvestBullet {
+  id        String @id @default(cuid())
+  dealId    String
+  deal      Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  text      String
+  sortOrder Int    @default(0)
+}
+
+// Market Opportunity stat cards (e.g. TAM/SAM/CAGR): same label/value
+// pattern as SnapshotField, kept as a separate model since they render
+// in a different section with different styling.
+model MarketStat {
+  id        String @id @default(cuid())
+  dealId    String
+  deal      Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  label     String
+  value     String
+  sortOrder Int    @default(0)
+}
+
+model LeadershipMember {
+  id        String  @id @default(cuid())
+  dealId    String
+  deal      Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  name      String
+  title     String
+  bio       String  @db.Text
+  photoUrl  String?
+  sortOrder Int     @default(0)
+}
+
+model DealFaq {
+  id        String @id @default(cuid())
+  dealId    String
+  deal      Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String @db.Text
+  sortOrder Int    @default(0)
+}
+
+// Singleton row holding the home page's editable content.
+model SiteSettings {
+  id                       String @id @default("singleton")
+  capitalRaised            String @default("$0")
+  completedTransactions    String @default("0")
+  activeDeals              String @default("0")
+  investorNetwork          String @default("0")
+  updatedAt                DateTime @updatedAt
+}
+
+// Join row: which Deal is featured as the home page's "Current Offering".
+// A dedicated table (rather than a nullable FK on SiteSettings) so the
+// relation is enforced from the Deal side too and easy to query "is this
+// deal currently featured."
+model FeaturedDeal {
+  id     String @id @default("singleton")
+  dealId String @unique
+  deal   Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+}
+
+// Home page's "Recently Closed Transactions" picks, in display order.
+model FeaturedClosedDeal {
+  id        String @id @default(cuid())
+  dealId    String @unique
+  deal      Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  sortOrder Int    @default(0)
+}

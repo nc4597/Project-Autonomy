@@ -7,9 +7,11 @@
   "scripts": {
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:api": "npm run dev --workspace=apps/api",
+    "dev:admin": "npm run dev --workspace=apps/admin",
     "build:web": "npm run build --workspace=apps/web",
     "build:api": "npm run build --workspace=apps/api",
-    "db:up": "docker compose up -d postgres minio",
+    "build:admin": "npm run build --workspace=apps/admin",
+    "db:up": "docker compose up -d postgres postgres-admin minio",
     "db:down": "docker compose down"
   }
 }

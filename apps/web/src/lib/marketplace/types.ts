@@ -21,6 +21,8 @@ export interface Deal {
   slug: string;
   name: string;
   initials: string;
+  logoUrl?: string | null;
+  thumbnailUrl?: string | null;
   tagline: string;
   summary: string;
   sector: Sector;

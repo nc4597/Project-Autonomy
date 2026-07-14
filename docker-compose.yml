@@ -11,6 +11,22 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  # Separate database for apps/admin (deal/site-content CMS) — deliberately
+  # its own Postgres instance, not a second database on the `postgres`
+  # service above, since that one backs the KYC/AML test infra and is
+  # expected to be torn down independently of the marketplace-content data.
+  postgres-admin:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: regiment
+      POSTGRES_PASSWORD: regiment
+      POSTGRES_DB: regiment_admin
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-admin-data:/var/lib/postgresql/data
+
   minio:
     image: minio/minio
     restart: unless-stopped
@@ -26,4 +42,5 @@ services:
 
 volumes:
   postgres-data:
+  postgres-admin-data:
   minio-data:
