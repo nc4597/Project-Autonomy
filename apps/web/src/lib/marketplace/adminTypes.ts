@@ -55,9 +55,8 @@ export interface AdminDeal {
   minimumInvestment: number;
   companyOverview: string;
   closeDate: string | null;
-  investmentVehicle: string | null;
-  regulation: string | null;
   marketOpportunityNarrative: string | null;
+  sidebarFields: LabelValue[];
   snapshotFields: LabelValue[];
   whyInvestBullets: WhyInvestBullet[];
   marketStats: LabelValue[];

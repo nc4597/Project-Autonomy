@@ -1,6 +1,7 @@
-import type { Deal, SnapshotField, WhyInvestBullet, MarketStat, LeadershipMember, DealFaq } from "@prisma/client";
+import type { Deal, SidebarField, SnapshotField, WhyInvestBullet, MarketStat, LeadershipMember, DealFaq } from "@prisma/client";
 
 type DealWithRelations = Deal & {
+  sidebarFields: SidebarField[];
   snapshotFields: SnapshotField[];
   whyInvestBullets: WhyInvestBullet[];
   marketStats: MarketStat[];

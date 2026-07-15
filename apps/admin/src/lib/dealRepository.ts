@@ -2,6 +2,7 @@ import { prisma } from "./prisma";
 import type { DealInput, SiteSettingsInput } from "./dealSchema";
 
 const dealInclude = {
+  sidebarFields: { orderBy: { sortOrder: "asc" as const } },
   snapshotFields: { orderBy: { sortOrder: "asc" as const } },
   whyInvestBullets: { orderBy: { sortOrder: "asc" as const } },
   marketStats: { orderBy: { sortOrder: "asc" as const } },
@@ -33,6 +34,7 @@ export function createDeal(input: DealInput) {
   return prisma.deal.create({
     data: {
       ...scalarFields(input),
+      sidebarFields: { create: withSortOrder(input.sidebarFields) },
       snapshotFields: { create: withSortOrder(input.snapshotFields) },
       whyInvestBullets: { create: withSortOrder(input.whyInvestBullets) },
       marketStats: { create: withSortOrder(input.marketStats) },
@@ -45,6 +47,7 @@ export function createDeal(input: DealInput) {
 
 export async function updateDeal(id: string, input: DealInput) {
   return prisma.$transaction(async (tx) => {
+    await tx.sidebarField.deleteMany({ where: { dealId: id } });
     await tx.snapshotField.deleteMany({ where: { dealId: id } });
     await tx.whyInvestBullet.deleteMany({ where: { dealId: id } });
     await tx.marketStat.deleteMany({ where: { dealId: id } });
@@ -55,6 +58,7 @@ export async function updateDeal(id: string, input: DealInput) {
       where: { id },
       data: {
         ...scalarFields(input),
+        sidebarFields: { create: withSortOrder(input.sidebarFields) },
         snapshotFields: { create: withSortOrder(input.snapshotFields) },
         whyInvestBullets: { create: withSortOrder(input.whyInvestBullets) },
         marketStats: { create: withSortOrder(input.marketStats) },
@@ -86,8 +90,6 @@ function scalarFields(input: DealInput) {
     minimumInvestment: input.minimumInvestment,
     companyOverview: input.companyOverview,
     closeDate: input.closeDate ? new Date(input.closeDate) : null,
-    investmentVehicle: input.investmentVehicle ?? null,
-    regulation: input.regulation ?? null,
     marketOpportunityNarrative: input.marketOpportunityNarrative ?? null,
   };
 }

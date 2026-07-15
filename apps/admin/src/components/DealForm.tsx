@@ -9,6 +9,21 @@ import { LabelValueListField, type LabelValueItem } from "./LabelValueListField"
 import { LeadershipListField, type LeadershipItem } from "./LeadershipListField";
 import { OFFERING_TYPE_LABELS, SECTOR_LABELS } from "@/lib/labels";
 
+// The API returns either a plain string message or a Zod .flatten()
+// object ({ formErrors: string[], fieldErrors: Record<string, string[]> })
+// — this always resolves to a displayable string instead of risking
+// React trying to render the object directly.
+function extractErrorMessage(error: unknown): string {
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object") {
+    const flat = error as { formErrors?: string[]; fieldErrors?: Record<string, string[]> };
+    if (flat.formErrors?.[0]) return flat.formErrors[0];
+    const firstFieldError = Object.values(flat.fieldErrors ?? {}).find((msgs) => msgs?.[0]);
+    if (firstFieldError?.[0]) return firstFieldError[0];
+  }
+  return "Could not save deal";
+}
+
 export interface DealFormValues {
   slug: string;
   status: "LIVE" | "CLOSED";
@@ -24,9 +39,8 @@ export interface DealFormValues {
   minimumInvestment: string;
   companyOverview: string;
   closeDate: string;
-  investmentVehicle: string;
-  regulation: string;
   marketOpportunityNarrative: string;
+  sidebarFields: LabelValueItem[];
   snapshotFields: LabelValueItem[];
   whyInvestBullets: BulletItem[];
   marketStats: LabelValueItem[];
@@ -49,9 +63,8 @@ export const emptyDealForm: DealFormValues = {
   minimumInvestment: "",
   companyOverview: "",
   closeDate: "",
-  investmentVehicle: "",
-  regulation: "",
   marketOpportunityNarrative: "",
+  sidebarFields: [],
   snapshotFields: [],
   whyInvestBullets: [],
   marketStats: [],
@@ -148,8 +161,6 @@ export function DealForm({
       raisedAmount: Number(values.raisedAmount),
       minimumInvestment: Number(values.minimumInvestment),
       closeDate: values.closeDate || null,
-      investmentVehicle: values.investmentVehicle || null,
-      regulation: values.regulation || null,
       marketOpportunityNarrative: values.marketOpportunityNarrative || null,
     };
 
@@ -163,7 +174,7 @@ export function DealForm({
 
     if (!res.ok) {
       const body = await res.json().catch(() => null);
-      setError(body?.error?.formErrors?.[0] ?? body?.error ?? "Could not save deal");
+      setError(extractErrorMessage(body?.error));
       return;
     }
 
@@ -328,20 +339,15 @@ export function DealForm({
       </Section>
 
       <Section title="Landing Page Details">
-        <div className="grid grid-cols-2 gap-4">
-          <TextField
-            label="Investment Vehicle"
-            value={values.investmentVehicle}
-            onChange={(v) => set("investmentVehicle", v)}
-            placeholder="e.g. SPV / Direct"
-          />
-          <TextField
-            label="Regulation"
-            value={values.regulation}
-            onChange={(v) => set("regulation", v)}
-            placeholder="e.g. Reg D 506(c)"
-          />
-        </div>
+        <p className="mb-4 text-xs text-ink-secondary">
+          Shown in the sidebar, below Offering Type / Minimum Investment /
+          Sector / Issuer. Add whatever fields apply to this deal — e.g.
+          Investment Vehicle, Regulation, Hold Period.
+        </p>
+        <LabelValueListField
+          items={values.sidebarFields}
+          onChange={(items) => set("sidebarFields", items)}
+        />
       </Section>
 
       <Section title="Investment Snapshot">

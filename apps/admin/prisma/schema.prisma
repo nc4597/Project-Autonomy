@@ -54,10 +54,9 @@ model Deal {
 
   // Landing-page only
   bannerImageUrl             String?
-  investmentVehicle          String?
-  regulation                 String?
   marketOpportunityNarrative String? @db.Text
 
+  sidebarFields     SidebarField[]
   snapshotFields    SnapshotField[]
   whyInvestBullets  WhyInvestBullet[]
   marketStats       MarketStat[]
@@ -69,6 +68,19 @@ model Deal {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Sidebar details (Offering Type/Min Investment/Sector/Issuer are always
+// computed from other Deal fields and shown first; these rows are
+// appended after them) — admin-defined label/value pairs, arbitrary
+// count, e.g. Investment Vehicle, Regulation, Hold Period.
+model SidebarField {
+  id        String @id @default(cuid())
+  dealId    String
+  deal      Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  label     String
+  value     String
+  sortOrder Int    @default(0)
 }
 
 // Investment Snapshot: admin-defined label/value pairs, arbitrary count.

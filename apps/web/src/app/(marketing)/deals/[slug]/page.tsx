@@ -26,10 +26,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
     { label: "Minimum Investment", value: formatCompactCurrency(deal.minimumInvestment) },
     { label: "Sector", value: sectorLabel },
     { label: "Issuer", value: deal.name },
-    ...(deal.investmentVehicle
-      ? [{ label: "Investment Vehicle", value: deal.investmentVehicle }]
-      : []),
-    ...(deal.regulation ? [{ label: "Regulation", value: deal.regulation }] : []),
+    ...deal.sidebarFields.map((field) => ({ label: field.label, value: field.value })),
   ];
 
   return (
@@ -41,9 +38,9 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
             <img
               src={deal.bannerImageUrl}
               alt=""
-              className="absolute inset-0 h-full w-full object-cover opacity-40"
+              className="absolute inset-0 h-full w-full object-cover opacity-55"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/85 to-navy-950/60" />
+            <div className="absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/80 to-navy-950/50" />
           </>
         ) : (
           <>
