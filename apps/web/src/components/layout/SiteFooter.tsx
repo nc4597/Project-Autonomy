@@ -29,15 +29,6 @@ const FOOTER_COLUMNS: {
     ],
   },
   {
-    heading: "Company",
-    links: [
-      { label: "About Regiment", href: "/about" },
-      { label: "Investor Relations", href: "/investor-relations" },
-      { label: "Careers", href: "/careers" },
-      { label: "Contact", href: "/contact" },
-    ],
-  },
-  {
     heading: "Legal",
     links: [
       { label: "Terms of Service", href: "/terms" },
@@ -70,7 +61,7 @@ export function SiteFooter() {
 
   return (
     <footer className="bg-navy-950 text-white">
-      <Container className="grid gap-10 py-14 md:grid-cols-[2fr_1fr_1fr_1fr]">
+      <Container className="grid gap-10 py-14 md:grid-cols-[2fr_1fr_1fr]">
         <div>
           <div className="mb-3 flex items-center gap-3">
             <Image
