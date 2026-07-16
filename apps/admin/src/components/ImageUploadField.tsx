@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
+// Type-only import — erased at compile time, so this client component
+// never actually pulls in the server-only s3Client module.
+import type { ImageKind } from "@/lib/s3Client";
 
 export function ImageUploadField({
   label,
@@ -10,7 +13,7 @@ export function ImageUploadField({
   aspect = "square",
 }: {
   label: string;
-  kind: "logo" | "thumbnail" | "banner" | "leadership";
+  kind: ImageKind;
   value: string | null | undefined;
   onChange: (url: string | null) => void;
   aspect?: "square" | "wide";
