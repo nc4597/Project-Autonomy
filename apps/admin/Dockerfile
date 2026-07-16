@@ -4,6 +4,9 @@
 FROM node:20-slim AS build
 WORKDIR /app
 
+# Prisma's engines require OpenSSL, which node:*-slim doesn't ship.
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+
 COPY package.json ./
 COPY prisma ./prisma
 RUN npm install
@@ -16,6 +19,11 @@ RUN npm run build
 FROM node:20-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
+
+# Prisma's engines require OpenSSL, which node:*-slim doesn't ship —
+# without it `prisma migrate deploy` dies at container start with
+# "Schema engine error".
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 
 COPY package.json ./
 COPY prisma ./prisma
