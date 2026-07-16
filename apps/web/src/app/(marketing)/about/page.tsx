@@ -2,9 +2,23 @@ import { Container } from "@/components/ui/Container";
 import { TeamSection } from "@/components/about/TeamSection";
 import { Cta } from "@/components/home/Cta";
 import { getTeamMembers } from "@/lib/marketplace/adminClient";
+import type { AdminTeamMember } from "@/lib/marketplace/adminTypes";
+
+// Fetch at request time, never during `next build` — same convention as
+// the home/deals pages (a build must not depend on the admin service
+// being up).
+export const dynamic = "force-dynamic";
 
 export default async function AboutPage() {
-  const teamMembers = await getTeamMembers();
+  // Unlike the deals pages (where CMS data IS the page), the team grid
+  // is an optional section — if the admin service is unreachable, render
+  // the page without it rather than erroring.
+  let teamMembers: AdminTeamMember[] = [];
+  try {
+    teamMembers = await getTeamMembers();
+  } catch {
+    // TeamSection renders nothing for an empty list.
+  }
 
   return (
     <>
