@@ -16,7 +16,10 @@ const SOCIAL_LINKS = [
   },
 ];
 
-const FOOTER_COLUMNS = [
+const FOOTER_COLUMNS: {
+  heading: string;
+  links: { label: string; href: string; external?: boolean }[];
+}[] = [
   {
     heading: "Marketplace",
     links: [
@@ -38,7 +41,16 @@ const FOOTER_COLUMNS = [
     heading: "Legal",
     links: [
       { label: "Terms of Service", href: "/terms" },
-      { label: "Privacy Policy", href: "/privacy" },
+      {
+        label: "Privacy Policy",
+        href: "https://static1.squarespace.com/static/60fefef5d70f2e277f6b5fa6/t/6793b6d2fef2f66d1e0a1e1b/1737733842951/Privacy+Policy+01.2025.pdf",
+        external: true,
+      },
+      {
+        label: "Client Disclosures",
+        href: "https://static1.squarespace.com/static/60fefef5d70f2e277f6b5fa6/t/6a30051d6d2376604c666510/1781531933359/Client+Disclosure+Packet+20260115.pdf",
+        external: true,
+      },
       { label: "Risk Disclosures", href: "/risk-disclosures" },
       { label: "Form ADV", href: "/form-adv" },
     ],
@@ -104,9 +116,20 @@ export function SiteFooter() {
             <ul className="space-y-2">
               {column.links.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-white/80 hover:text-white">
-                    {link.label}
-                  </Link>
+                  {link.external ? (
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-white/80 hover:text-white"
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link href={link.href} className="text-sm text-white/80 hover:text-white">
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
