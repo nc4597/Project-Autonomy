@@ -21,9 +21,8 @@ const FOOTER_COLUMNS = [
     heading: "Marketplace",
     links: [
       { label: "Browse Deals", href: "/deals" },
-      { label: "Active Offerings", href: "/deals?status=active" },
+      { label: "Active Offerings", href: "/deals?status=live" },
       { label: "Closed Transactions", href: "/deals?status=closed" },
-      { label: "Track Record", href: "/track-record" },
     ],
   },
   {
