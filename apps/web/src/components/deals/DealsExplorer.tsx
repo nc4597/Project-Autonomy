@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Container } from "@/components/ui/Container";
 import { DealCard } from "@/components/deals/DealCard";
 import { TombstoneCard } from "@/components/deals/TombstoneCard";
@@ -20,6 +20,14 @@ export function DealsExplorer({
   const [status, setStatus] = useState<StatusFilter>(initialStatus);
   const [sector, setSector] = useState<Sector | "all">("all");
   const [dealType, setDealType] = useState<DealType | "all">("all");
+
+  // Follow ?status= when it changes after mount — e.g. clicking the
+  // footer's Active Offerings / Closed Transactions links while already
+  // on the deals page. Without this the URL updates but the filter
+  // doesn't, since useState only reads initialStatus once.
+  useEffect(() => {
+    setStatus(initialStatus);
+  }, [initialStatus]);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
