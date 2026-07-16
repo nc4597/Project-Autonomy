@@ -15,7 +15,7 @@ export function DealCard({ deal }: { deal: Deal }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={deal.thumbnailUrl} alt="" className="h-full w-full object-cover" />
         ) : (
-          <DealThumbnail seed={deal.slug} className="h-full w-full" />
+          <DealThumbnail seed={deal.slug} className="relative h-full w-full" />
         )}
         <span className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center overflow-hidden bg-white text-xs font-semibold text-navy-950">
           {deal.logoUrl ? (

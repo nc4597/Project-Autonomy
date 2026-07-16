@@ -9,10 +9,12 @@ function seedFromString(value: string): number {
 /**
  * Abstract, brand-toned placeholder graphic for deal cards, standing in
  * for real company photography/art until real assets are supplied.
+ * Callers must include a position class (relative/absolute) in
+ * className — the inner svg anchors to it.
  */
 export function DealThumbnail({
   seed,
-  className = "",
+  className = "relative",
 }: {
   seed: string;
   className?: string;
@@ -26,7 +28,7 @@ export function DealThumbnail({
 
   return (
     <div
-      className={`relative overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 ${className}`}
+      className={`overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 ${className}`}
     >
       <svg
         className="absolute inset-0 h-full w-full opacity-40"

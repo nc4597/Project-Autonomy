@@ -10,12 +10,18 @@ export function FeaturedDealCard({ deal }: { deal: Deal }) {
 
   return (
     <div className="grid grid-cols-1 border border-hairline bg-card md:grid-cols-2">
+      {/* Image fills the column absolutely so a large upload can never
+          stretch the card taller than its text content. */}
       <div className="relative h-64 md:h-auto">
         {deal.thumbnailUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={deal.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+          <img
+            src={deal.thumbnailUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
         ) : (
-          <DealThumbnail seed={deal.slug} className="h-full w-full" />
+          <DealThumbnail seed={deal.slug} className="absolute inset-0 h-full w-full" />
         )}
         <span className="absolute left-6 top-6 flex h-11 w-11 items-center justify-center overflow-hidden bg-white text-sm font-semibold text-navy-950">
           {deal.logoUrl ? (
@@ -37,7 +43,7 @@ export function FeaturedDealCard({ deal }: { deal: Deal }) {
         <p className="mb-5 text-sm font-semibold uppercase tracking-[0.08em] text-ink-secondary">
           {deal.tagline}
         </p>
-        <p className="mb-8 text-base leading-relaxed text-ink-secondary">
+        <p className="mb-8 line-clamp-5 text-base leading-relaxed text-ink-secondary">
           {deal.summary}
         </p>
 

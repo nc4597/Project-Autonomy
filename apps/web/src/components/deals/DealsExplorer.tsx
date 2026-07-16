@@ -61,7 +61,7 @@ export function DealsExplorer({
                 Active Offerings ({liveDeals.length})
               </h2>
             </div>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {liveDeals.map((deal) => (
                 <DealCard key={deal.slug} deal={deal} />
               ))}
