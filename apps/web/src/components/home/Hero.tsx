@@ -32,9 +32,6 @@ export function Hero() {
           <Button href="/deals" variant="primary" arrow className="px-[26px] py-3.5">
             View Marketplace
           </Button>
-          <Button href="/verify" variant="secondary-light" className="px-[26px] py-3.5">
-            Become an Investor
-          </Button>
         </div>
       </Container>
     </section>

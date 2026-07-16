@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "../ui/Container";
-import { Button } from "../ui/Button";
 
 const NAV_LINKS = [
   { label: "Marketplace", href: "/" },
@@ -34,18 +33,6 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-
-        <div className="flex items-center gap-6">
-          <Link
-            href="/login"
-            className="hidden text-xs font-medium uppercase tracking-wide text-white/80 hover:text-white sm:block"
-          >
-            Login
-          </Link>
-          <Button href="/verify" variant="primary">
-            Become an Investor
-          </Button>
-        </div>
       </Container>
     </header>
   );
