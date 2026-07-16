@@ -16,3 +16,16 @@ export function percentFunded(raised: number, goal: number): number {
   if (goal <= 0) return 0;
   return Math.round((raised / goal) * 100);
 }
+
+// Deal close dates are only ever entered to month/year precision (see the
+// admin form), so render them as "March 2026" rather than the full ISO
+// timestamp the API returns.
+export function formatCloseDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}

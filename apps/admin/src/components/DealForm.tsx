@@ -270,7 +270,7 @@ export function DealForm({
           {values.status === "CLOSED" && (
             <TextField
               label="Close Date"
-              type="date"
+              type="month"
               value={values.closeDate}
               onChange={(v) => set("closeDate", v)}
             />

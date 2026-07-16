@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/Badge";
-import { formatCompactCurrency } from "@/lib/marketplace/format";
+import { formatCloseDate, formatCompactCurrency } from "@/lib/marketplace/format";
 import type { Deal } from "@/lib/marketplace/types";
 
 export function TombstoneCard({ deal }: { deal: Deal }) {
@@ -33,7 +33,9 @@ export function TombstoneCard({ deal }: { deal: Deal }) {
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
             Closed
           </p>
-          <p className="text-sm font-semibold text-ink">{deal.closeDate}</p>
+          <p className="text-sm font-semibold text-ink">
+            {deal.closeDate ? formatCloseDate(deal.closeDate) : "—"}
+          </p>
         </div>
         <div>
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">

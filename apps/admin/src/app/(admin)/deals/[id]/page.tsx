@@ -22,7 +22,7 @@ export default async function EditDealPage({ params }: { params: { id: string } 
     raisedAmount: String(deal.raisedAmount),
     minimumInvestment: String(deal.minimumInvestment),
     companyOverview: deal.companyOverview,
-    closeDate: deal.closeDate ? deal.closeDate.toISOString().slice(0, 10) : "",
+    closeDate: deal.closeDate ? deal.closeDate.toISOString().slice(0, 7) : "",
     marketOpportunityNarrative: deal.marketOpportunityNarrative ?? "",
     sidebarFields: deal.sidebarFields.map((f) => ({ id: f.id, label: f.label, value: f.value })),
     snapshotFields: deal.snapshotFields.map((f) => ({ id: f.id, label: f.label, value: f.value })),
