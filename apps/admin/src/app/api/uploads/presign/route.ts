@@ -3,7 +3,7 @@ import { z } from "zod";
 import { buildImageKey, createPresignedUploadUrl, publicUrlForKey } from "@/lib/s3Client";
 
 const bodySchema = z.object({
-  kind: z.enum(["logo", "thumbnail", "banner", "leadership"]),
+  kind: z.enum(["logo", "thumbnail", "banner", "leadership", "team"]),
   filename: z.string().min(1),
   contentType: z.string().min(1),
 });

@@ -1,4 +1,4 @@
-// Mirrors apps/api/src/schemas/verificationSchemas.ts. Kept as a plain,
+// Mirrors apps/admin/src/lib/kyc/schemas.ts. Kept as a plain,
 // dependency-free constants file (not imported across the package
 // boundary) since the frontend and backend are deployed as separate
 // services/repos-in-spirit; if this drifts from the backend, the
@@ -129,7 +129,7 @@ export const KYC_REQUIRED_DOCUMENT_CATEGORIES: DocumentCategory[] = [
 // Adding/adjusting a qualification method's requirements is a data
 // change here, not a new component. The backend enforces the same
 // mapping independently at submit time (see
-// apps/api/src/schemas/verificationSchemas.ts).
+// apps/admin/src/lib/kyc/schemas.ts).
 export const SUPPORTING_DOC_REQUIREMENTS: Record<
   AccreditationMethod,
   { category: DocumentCategory; required: boolean }[]

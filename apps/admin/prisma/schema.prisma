@@ -161,3 +161,17 @@ model FeaturedClosedDeal {
   deal      Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
   sortOrder Int    @default(0)
 }
+
+// Standalone (not deal-scoped) entries for the About page's "Meet the
+// Team" section — a top-level entity managed the same way Deals are,
+// unlike the deal-scoped LeadershipMember above.
+model TeamMember {
+  id        String   @id @default(cuid())
+  name      String
+  title     String
+  bio       String   @db.Text
+  photoUrl  String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

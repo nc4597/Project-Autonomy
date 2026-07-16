@@ -32,6 +32,15 @@ const envSchema = z.object({
 
   INTERNAL_SWEEP_SECRET: z.string().optional(),
 
+  // Shared secret required (via the x-admin-secret header) to call the
+  // read-only /api/admin/* routes below. Those routes are how apps/admin
+  // (the internal CMS, on its own separate database) displays KYC
+  // submissions for compliance review — apps/admin never touches this
+  // service's Postgres database directly, it calls these endpoints
+  // server-side. Not the same secret as INTERNAL_SWEEP_SECRET so the two
+  // can be rotated independently.
+  ADMIN_API_SECRET: z.string().optional(),
+
   // Admin notification email (stubbed until configured, same pattern as
   // HubSpot above). See services/adminNotificationService.ts.
   RESEND_API_KEY: z.string().optional(),

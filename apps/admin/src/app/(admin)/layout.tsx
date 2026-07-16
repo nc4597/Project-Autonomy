@@ -13,6 +13,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/" className="hover:text-white">
               Deals
             </Link>
+            <Link href="/team" className="hover:text-white">
+              Team
+            </Link>
+            <Link href="/kyc" className="hover:text-white">
+              KYC Review
+            </Link>
             <Link href="/settings" className="hover:text-white">
               Home Settings
             </Link>

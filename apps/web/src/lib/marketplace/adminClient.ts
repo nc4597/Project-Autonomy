@@ -1,4 +1,4 @@
-import type { AdminDeal, AdminSiteSettings } from "./adminTypes";
+import type { AdminDeal, AdminSiteSettings, AdminTeamMember } from "./adminTypes";
 
 const ADMIN_API_BASE_URL = process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL ?? "http://localhost:3100";
 
@@ -37,4 +37,9 @@ export async function getDealBySlug(slug: string): Promise<AdminDeal | null> {
 
 export async function getSiteSettings(): Promise<AdminSiteSettings> {
   return request<AdminSiteSettings>("/api/public/site-settings");
+}
+
+export async function getTeamMembers(): Promise<AdminTeamMember[]> {
+  const { teamMembers } = await request<{ teamMembers: AdminTeamMember[] }>("/api/public/team");
+  return teamMembers;
 }

@@ -10,14 +10,16 @@ const envSchema = z.object({
   ADMIN_PASSWORD: z.string().min(1, "ADMIN_PASSWORD is required"),
   ADMIN_SESSION_SECRET: z.string().min(1, "ADMIN_SESSION_SECRET is required"),
 
-  // Origin(s) allowed to call the public read endpoints (apps/web).
+  // Origin allowed to call the public read endpoints (apps/web) — both
+  // the CMS content routes and the KYC investor-facing routes below,
+  // since apps/web's wizard calls those directly from the browser.
   FRONTEND_ORIGIN: z.string().url(),
 
   S3_ENDPOINT: z.string().optional(),
   S3_REGION: z.string().default("us-east-1"),
-  // Distinct from apps/api's KYC documents bucket: these assets (deal
-  // logos, thumbnails, banners, leadership photos) are public-read
-  // marketing images, not compliance-gated documents.
+  // Marketing assets (deal logos, thumbnails, banners, leadership
+  // photos) — public-read images, not compliance-gated documents. See
+  // the separate KYC_S3_* bucket below for those.
   S3_BUCKET: z.string().min(1, "S3_BUCKET is required"),
   S3_ACCESS_KEY_ID: z.string().min(1, "S3_ACCESS_KEY_ID is required"),
   S3_SECRET_ACCESS_KEY: z.string().min(1, "S3_SECRET_ACCESS_KEY is required"),
@@ -28,6 +30,50 @@ const envSchema = z.object({
   // Public base URL images are served from once uploaded, e.g. the
   // MinIO console's public endpoint or a CDN in front of the bucket.
   S3_PUBLIC_URL: z.string().min(1, "S3_PUBLIC_URL is required"),
+
+  // ---- KYC/AML verification flow (merged in from the former apps/api) ----
+  // Own database, kept deliberately separate from this app's own CMS
+  // data above. See prisma/kyc/schema.prisma and lib/kyc/prisma.ts.
+  KYC_DATABASE_URL: z.string().min(1, "KYC_DATABASE_URL is required"),
+
+  // Own S3-compatible bucket for uploaded KYC documents — private,
+  // compliance-gated, distinct from the public marketing S3_* above.
+  KYC_S3_ENDPOINT: z.string().optional(),
+  KYC_S3_REGION: z.string().default("us-east-1"),
+  KYC_S3_BUCKET: z.string().min(1, "KYC_S3_BUCKET is required"),
+  KYC_S3_ACCESS_KEY_ID: z.string().min(1, "KYC_S3_ACCESS_KEY_ID is required"),
+  KYC_S3_SECRET_ACCESS_KEY: z.string().min(1, "KYC_S3_SECRET_ACCESS_KEY is required"),
+  KYC_S3_FORCE_PATH_STYLE: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
+
+  // HubSpot integration (stubbed until real credentials exist — same
+  // NOT_CONFIGURED-safe pattern as before). See lib/kyc/hubspotService.ts.
+  HUBSPOT_ACCESS_TOKEN: z.string().optional(),
+  HUBSPOT_PORTAL_ID: z.string().optional(),
+  HUBSPOT_FORM_GUID: z.string().optional(),
+  // Numeric folder ID (from HubSpot's file manager URL, e.g.
+  // ?folderId=123) of the root /kyc-verifications folder — used to link
+  // straight to it in the admin notification email. Every investor's
+  // subfolder lives inside this one; the email names which subfolder to
+  // open.
+  HUBSPOT_KYC_ROOT_FOLDER_ID: z.string().optional(),
+
+  // Admin notification email on every KYC submission. We POST a JSON
+  // payload to a Zapier "Catch Hook" webhook; the Zap sends the actual
+  // email via a connected real mailbox (e.g. Gmail/Outlook), so no
+  // sending-domain/DNS setup is needed on our end.
+  ZAPIER_KYC_NOTIFICATION_WEBHOOK_URL: z.string().optional(),
+  ADMIN_NOTIFICATION_EMAILS: z.string().optional(),
+  // Static link to the accredited-investor certification document Rob
+  // signs after reviewing a submission. Not a real PandaDoc API
+  // integration yet — same link goes in every notification email.
+  PANDADOC_CERTIFICATION_TEMPLATE_URL: z.string().optional(),
+
+  // Shared secret required (x-internal-secret header) to call the
+  // HubSpot retry-sweep route — see app/api/public/kyc/internal/*.
+  INTERNAL_SWEEP_SECRET: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

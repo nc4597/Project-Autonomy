@@ -7,6 +7,7 @@ import { healthRoutes } from "./routes/health.js";
 import { verificationRoutes } from "./routes/verifications.js";
 import { documentRoutes } from "./routes/documents.js";
 import { internalRoutes } from "./routes/internal.js";
+import { adminRoutes } from "./routes/admin.js";
 
 export async function buildApp() {
   const app = Fastify({ loggerInstance: logger });
@@ -25,6 +26,7 @@ export async function buildApp() {
   await app.register(verificationRoutes);
   await app.register(documentRoutes);
   await app.register(internalRoutes);
+  await app.register(adminRoutes);
 
   return app;
 }

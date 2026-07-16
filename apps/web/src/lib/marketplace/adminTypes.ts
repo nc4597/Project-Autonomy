@@ -39,6 +39,17 @@ export interface DealFaq {
   answer: string;
 }
 
+// Standalone (not deal-scoped) — powers the About page's "Meet the
+// Team" section. See apps/admin/prisma/schema.prisma's TeamMember model.
+export interface AdminTeamMember {
+  id: string;
+  name: string;
+  title: string;
+  bio: string;
+  photoUrl: string | null;
+  sortOrder: number;
+}
+
 export interface AdminDeal {
   id: string;
   slug: string;

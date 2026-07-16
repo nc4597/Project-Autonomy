@@ -7,14 +7,18 @@ const FOOTER_COLUMNS = [
     heading: "Marketplace",
     links: [
       { label: "Browse Deals", href: "/deals" },
-      { label: "Deal Directory", href: "/marketplace" },
+      { label: "Active Offerings", href: "/deals?status=active" },
+      { label: "Closed Transactions", href: "/deals?status=closed" },
+      { label: "Track Record", href: "/track-record" },
     ],
   },
   {
     heading: "Company",
     links: [
       { label: "About Regiment", href: "/about" },
-      { label: "FAQ", href: "/faq" },
+      { label: "Investor Relations", href: "/investor-relations" },
+      { label: "Careers", href: "/careers" },
+      { label: "Contact", href: "/contact" },
     ],
   },
   {
@@ -22,6 +26,8 @@ const FOOTER_COLUMNS = [
     links: [
       { label: "Terms of Service", href: "/terms" },
       { label: "Privacy Policy", href: "/privacy" },
+      { label: "Risk Disclosures", href: "/risk-disclosures" },
+      { label: "Form ADV", href: "/form-adv" },
     ],
   },
 ];
@@ -35,6 +41,8 @@ export function ComplianceStrip() {
 }
 
 export function SiteFooter() {
+  const year = new Date().getFullYear();
+
   return (
     <footer className="bg-navy-950 text-white">
       <Container className="grid gap-10 py-14 md:grid-cols-[2fr_1fr_1fr_1fr]">
@@ -49,8 +57,16 @@ export function SiteFooter() {
             />
           </div>
           <p className="max-w-xs text-sm text-white/60">
-            Private investment marketplace for Reg D deals.
+            Private investment marketplace for accredited investors. A Regiment Securities LLC offering.
           </p>
+          <div className="mt-4 flex gap-2">
+            <span className="border border-white/25 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
+              FINRA Member
+            </span>
+            <span className="border border-white/25 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
+              SIPC Member
+            </span>
+          </div>
         </div>
 
         {FOOTER_COLUMNS.map((column) => (
@@ -70,6 +86,18 @@ export function SiteFooter() {
           </div>
         ))}
       </Container>
+
+      <div className="border-t border-white/10">
+        <Container className="flex flex-col gap-3 py-6 text-xs text-white/40 md:flex-row md:items-center md:justify-between">
+          <p className="max-w-3xl leading-relaxed">
+            Regiment Securities LLC is a registered broker-dealer, Member FINRA/SIPC. Investing in
+            private securities involves substantial risk, including possible total loss of investment.
+            Past performance is not indicative of future results. This communication does not
+            constitute an offer to buy or sell any security.
+          </p>
+          <p className="shrink-0">&copy; {year} Regiment Securities LLC</p>
+        </Container>
+      </div>
     </footer>
   );
 }

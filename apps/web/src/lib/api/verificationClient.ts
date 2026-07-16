@@ -5,7 +5,13 @@ import type {
   SourceOfFunds,
 } from "../constants/verification";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+// The KYC/AML backend now lives inside apps/admin (merged in from the
+// former standalone apps/api) — every path below is under its
+// /api/public/kyc prefix, which apps/admin's auth middleware treats as
+// unauthenticated (investors filling out this wizard are never logged
+// into the admin CMS).
+const ADMIN_BASE_URL = process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL ?? "http://localhost:3100";
+const KYC_API_PREFIX = "/api/public/kyc";
 
 export class ApiError extends Error {
   status: number;
@@ -21,11 +27,12 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   // Only claim application/json when we're actually sending a body —
-  // confirm/delete/submit send none, and Fastify's body parser rejects
-  // an empty body when the header promises JSON that never arrives.
+  // confirm/delete/submit send none, and a strict JSON body parser
+  // rejects an empty body when the header promises JSON that never
+  // arrives.
   const headers = init?.body ? { "Content-Type": "application/json", ...init.headers } : init?.headers;
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${ADMIN_BASE_URL}${KYC_API_PREFIX}${path}`, {
     ...init,
     headers,
   });
@@ -33,12 +40,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
     // Our own route handlers send { error: "specific reason", details }.
-    // Fastify's built-in error responses (e.g. body-parse failures that
-    // never reach our handlers) instead send { error: "Bad Request",
-    // message: "specific reason" } — the generic HTTP phrase in `error`,
-    // the actually useful text in `message`. Prefer whichever is more
-    // specific so failures are diagnosable instead of just saying
-    // "Bad Request".
+    // Next.js/framework-level error responses instead send a generic
+    // { error: "..." } too, but just in case something upstream ever
+    // sends { message } instead, prefer whichever is more specific.
     const reason = body.message ?? body.error ?? `Request failed with status ${response.status}`;
     throw new ApiError(reason, response.status, body.details);
   }
@@ -93,32 +97,32 @@ export interface VerificationDraft {
 }
 
 export function createVerificationDraft(dealId: string) {
-  return request<{ id: string }>("/api/verifications", {
+  return request<{ id: string }>("/verifications", {
     method: "POST",
     body: JSON.stringify({ dealId }),
   });
 }
 
 export function getVerificationDraft(id: string) {
-  return request<VerificationDraft>(`/api/verifications/${id}`);
+  return request<VerificationDraft>(`/verifications/${id}`);
 }
 
 export function saveContactInfo(id: string, data: ContactInfoRecord) {
-  return request<{ ok: true }>(`/api/verifications/${id}/contact-info`, {
+  return request<{ ok: true }>(`/verifications/${id}/contact-info`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
 export function saveKycAmlInfo(id: string, data: KycAmlInfoRecord) {
-  return request<{ ok: true }>(`/api/verifications/${id}/kyc-aml`, {
+  return request<{ ok: true }>(`/verifications/${id}/kyc-aml`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
 export function saveAccreditation(id: string, data: AccreditationInfoRecord) {
-  return request<{ ok: true }>(`/api/verifications/${id}/accreditation`, {
+  return request<{ ok: true }>(`/verifications/${id}/accreditation`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
@@ -129,7 +133,7 @@ export function presignDocument(
   data: { category: DocumentCategory; filename: string; mimeType: string; sizeBytes: number }
 ) {
   return request<{ documentId: string; uploadUrl: string; s3Key: string }>(
-    `/api/verifications/${id}/documents/presign`,
+    `/verifications/${id}/documents/presign`,
     { method: "POST", body: JSON.stringify(data) }
   );
 }
@@ -146,26 +150,26 @@ export async function uploadToPresignedUrl(uploadUrl: string, file: File) {
 }
 
 export function confirmDocument(id: string, docId: string) {
-  return request<{ ok: true; status: string }>(`/api/verifications/${id}/documents/${docId}/confirm`, {
+  return request<{ ok: true; status: string }>(`/verifications/${id}/documents/${docId}/confirm`, {
     method: "POST",
   });
 }
 
 export function deleteDocument(id: string, docId: string) {
-  return request<{ ok: true }>(`/api/verifications/${id}/documents/${docId}`, {
+  return request<{ ok: true }>(`/verifications/${id}/documents/${docId}`, {
     method: "DELETE",
   });
 }
 
 export function saveCertification(id: string, tosVersion: string) {
-  return request<{ ok: true }>(`/api/verifications/${id}/certification`, {
+  return request<{ ok: true }>(`/verifications/${id}/certification`, {
     method: "POST",
     body: JSON.stringify({ accepted: true, tosVersion }),
   });
 }
 
 export function submitVerification(id: string) {
-  return request<{ ok: true; submittedAt: string }>(`/api/verifications/${id}/submit`, {
+  return request<{ ok: true; submittedAt: string }>(`/verifications/${id}/submit`, {
     method: "POST",
   });
 }

@@ -5,6 +5,8 @@
     "apps/*"
   ],
   "scripts": {
+    "postinstall": "npm run --workspace=apps/api prisma:generate && npm run --workspace=apps/admin prisma:generate && npm run --workspace=apps/admin prisma:kyc:generate",
+    "dev": "npm run db:up && concurrently -n web,admin -c blue,magenta \"npm:dev:web\" \"npm:dev:admin\"",
     "dev:web": "npm run dev --workspace=apps/web",
     "dev:api": "npm run dev --workspace=apps/api",
     "dev:admin": "npm run dev --workspace=apps/admin",
@@ -13,5 +15,8 @@
     "build:admin": "npm run build --workspace=apps/admin",
     "db:up": "docker compose up -d postgres postgres-admin minio",
     "db:down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
   }
 }

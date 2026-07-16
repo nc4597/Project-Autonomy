@@ -1,0 +1,165 @@
+// Second, independent Prisma schema/client inside apps/admin — the KYC
+// data deliberately stays in its own database (regiment_kyc), separate
+// from this app's own CMS database (regiment_admin). Two schemas, two
+// generated clients, one Next.js app. See src/lib/kyc/prisma.ts for the
+// client that imports from the custom output path below.
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/.prisma/kyc-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("KYC_DATABASE_URL")
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+}
+
+enum InvestorType {
+  INDIVIDUAL
+  JOINT
+  ENTITY_TRUST
+}
+
+enum SourceOfFunds {
+  EMPLOYMENT_SALARY
+  BUSINESS_INCOME
+  INHERITANCE
+  INVESTMENTS
+  SALE_OF_ASSETS
+  OTHER
+}
+
+enum AccreditationMethod {
+  ANNUAL_INCOME
+  NET_WORTH
+  PROFESSIONAL_CERTIFICATION
+  ENTITY_QUALIFICATION
+  KNOWLEDGEABLE_EMPLOYEE
+}
+
+enum DocumentCategory {
+  ID_FRONT
+  ID_BACK
+  PROOF_OF_ADDRESS
+  ENTITY_FORMATION_DOC
+  INCOME_TAX_RETURN
+  BROKERAGE_STATEMENT
+  BANK_STATEMENT
+  CPA_NET_WORTH_LETTER
+  FINRA_CRD_OR_LICENSE
+  ENTITY_FINANCIALS_OR_TAX_RETURNS
+  CAP_TABLE
+  EMPLOYMENT_VERIFICATION_OR_FUND_CERT
+}
+
+enum DocumentStatus {
+  PENDING
+  UPLOADED
+  REJECTED
+}
+
+enum HubspotSyncStatus {
+  NOT_CONFIGURED
+  PENDING
+  SYNCED
+  FAILED
+}
+
+model VerificationSubmission {
+  id          String           @id @default(uuid())
+  dealId      String
+  status      SubmissionStatus @default(DRAFT)
+  currentStep Int              @default(1)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  submittedAt DateTime?
+
+  contactInfo   ContactInfo?
+  kycAmlInfo    KycAmlInfo?
+  accreditation AccreditationInfo?
+  certification CertificationAcceptance?
+  documents     Document[]
+  hubspotSync   HubspotSync?
+
+  @@index([dealId])
+}
+
+model ContactInfo {
+  id             String   @id @default(uuid())
+  submissionId   String   @unique
+  submission     VerificationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  firstName      String
+  lastName       String
+  email          String
+  phone          String
+  dateOfBirth    DateTime @db.Date
+  ssnLast4       String
+  streetAddress  String
+  city           String
+  state          String
+  zipCode        String
+  investorType   InvestorType
+  updatedAt      DateTime @updatedAt
+}
+
+model KycAmlInfo {
+  id                   String   @id @default(uuid())
+  submissionId         String   @unique
+  submission           VerificationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  countryOfCitizenship String
+  taxResidence         String
+  sourceOfFunds        SourceOfFunds
+  updatedAt            DateTime @updatedAt
+}
+
+model AccreditationInfo {
+  id           String   @id @default(uuid())
+  submissionId String   @unique
+  submission   VerificationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  method       AccreditationMethod
+  updatedAt    DateTime @updatedAt
+}
+
+model Document {
+  id               String           @id @default(uuid())
+  submissionId     String
+  submission       VerificationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  category         DocumentCategory
+  s3Key            String
+  originalFilename String
+  mimeType         String
+  sizeBytes        Int?
+  status           DocumentStatus   @default(PENDING)
+  rejectionReason  String?
+  createdAt        DateTime         @default(now())
+  confirmedAt      DateTime?
+
+  @@index([submissionId])
+  @@index([submissionId, category])
+}
+
+model CertificationAcceptance {
+  id           String   @id @default(uuid())
+  submissionId String   @unique
+  submission   VerificationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  acceptedAt   DateTime
+  tosVersion   String
+  ipAddress    String
+  userAgent    String
+}
+
+model HubspotSync {
+  id               String            @id @default(uuid())
+  submissionId     String            @unique
+  submission       VerificationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  status           HubspotSyncStatus @default(NOT_CONFIGURED)
+  hubspotContactId String?
+  attempts         Int               @default(0)
+  lastAttemptAt    DateTime?
+  lastError        String?
+  syncedAt         DateTime?
+}

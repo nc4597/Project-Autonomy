@@ -10,19 +10,26 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "prisma:kyc:generate": "prisma generate --schema=prisma/kyc/schema.prisma",
+    "prisma:kyc:migrate": "prisma migrate dev --schema=prisma/kyc/schema.prisma",
+    "prisma:kyc:deploy": "prisma migrate deploy --schema=prisma/kyc/schema.prisma",
+    "prisma:kyc:studio": "prisma studio --schema=prisma/kyc/schema.prisma"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.600.0",
     "@aws-sdk/s3-request-presigner": "^3.600.0",
     "@prisma/client": "^5.16.0",
     "next": "^14.2.5",
+    "pdfkit": "^0.19.1",
+    "pino": "^9.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.14.9",
+    "@types/pdfkit": "^0.17.6",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",

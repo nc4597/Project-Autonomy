@@ -5,7 +5,7 @@ import type { FaqItem } from "@/lib/marketplace/types";
 
 export function FaqSection({ items }: { items: FaqItem[] }) {
   return (
-    <section className="bg-page py-24">
+    <section id="faq" className="scroll-mt-20 bg-page py-24">
       <Container>
         <div className="mb-10">
           <SectionLabel>Questions</SectionLabel>
