@@ -109,7 +109,9 @@ export async function uploadBufferToHubspotFiles(
   const folderPath = `${HUBSPOT_FILES_ROOT_FOLDER}/${investorFolderName(submission)}`;
 
   const form = new FormData();
-  form.append("file", new Blob([buffer], { type: contentType }), filename);
+  // Copy into a plain Uint8Array — TS won't accept Buffer as a BlobPart
+  // since a Buffer's backing store could be a SharedArrayBuffer.
+  form.append("file", new Blob([new Uint8Array(buffer)], { type: contentType }), filename);
   form.append("options", JSON.stringify({ access: "PRIVATE", overwrite: true }));
   form.append("folderPath", folderPath);
 
