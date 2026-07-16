@@ -7,6 +7,8 @@ export const SECTOR_LABELS: Record<string, string> = {
   DEFENSE: "Defense",
   INFRASTRUCTURE: "Infrastructure",
   REAL_ESTATE: "Real Estate",
+  EDTECH: "EdTech",
+  PRIVATE_EQUITY: "Private Equity",
 };
 
 export const OFFERING_TYPE_LABELS: Record<string, string> = {

@@ -21,6 +21,8 @@ enum Sector {
   DEFENSE
   INFRASTRUCTURE
   REAL_ESTATE
+  EDTECH
+  PRIVATE_EQUITY
 }
 
 enum OfferingType {

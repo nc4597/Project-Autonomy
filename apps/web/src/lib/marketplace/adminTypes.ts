@@ -10,7 +10,9 @@ export type AdminSector =
   | "FINTECH"
   | "DEFENSE"
   | "INFRASTRUCTURE"
-  | "REAL_ESTATE";
+  | "REAL_ESTATE"
+  | "EDTECH"
+  | "PRIVATE_EQUITY";
 
 export type AdminOfferingType = "REG_D_506C" | "REG_A" | "LP_PLACEMENT" | "VENTURE" | "FUND";
 

@@ -9,6 +9,8 @@ export const SECTORS = [
   "DEFENSE",
   "INFRASTRUCTURE",
   "REAL_ESTATE",
+  "EDTECH",
+  "PRIVATE_EQUITY",
 ] as const;
 
 export const OFFERING_TYPES = [

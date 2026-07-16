@@ -10,6 +10,8 @@ export const SECTOR_LABELS: Record<AdminSector, Sector> = {
   DEFENSE: "Defense",
   INFRASTRUCTURE: "Infrastructure",
   REAL_ESTATE: "Real Estate",
+  EDTECH: "EdTech",
+  PRIVATE_EQUITY: "Private Equity",
 };
 
 export const OFFERING_TYPE_LABELS: Record<AdminOfferingType, DealType> = {

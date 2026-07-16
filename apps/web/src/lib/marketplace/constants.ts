@@ -9,6 +9,8 @@ export const SECTORS: Sector[] = [
   "Defense",
   "Infrastructure",
   "Real Estate",
+  "EdTech",
+  "Private Equity",
 ];
 
 export const DEAL_TYPES: DealType[] = [

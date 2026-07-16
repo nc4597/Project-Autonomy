@@ -6,7 +6,9 @@ export type Sector =
   | "FinTech"
   | "Defense"
   | "Infrastructure"
-  | "Real Estate";
+  | "Real Estate"
+  | "EdTech"
+  | "Private Equity";
 
 export type DealType =
   | "Reg D 506(c)"
