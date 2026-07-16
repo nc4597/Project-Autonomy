@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useVerificationStore } from "../state/verificationStore";
-import { createVerificationDraft, getVerificationDraft } from "../api/verificationClient";
+import { ApiError, createVerificationDraft, getVerificationDraft } from "../api/verificationClient";
 
 function storageKey(dealId: string) {
   return `verification:${dealId}`;
@@ -13,6 +13,11 @@ function storageKey(dealId: string) {
  * saved step data; localStorage only remembers *which* draft belongs to
  * this browser for this deal, so a refresh (or closed tab) never loses
  * anything already PATCHed to the backend.
+ *
+ * Only in-progress drafts are resumed. A draft that was already
+ * SUBMITTED (or one the server no longer knows about) is discarded on
+ * load so the visitor starts a fresh verification instead of being
+ * stuck on the thank-you screen forever.
  */
 export function useVerificationDraft(dealId: string) {
   const { submissionId, draft, isLoading, setSubmissionId, setDraft, setLoading } = useVerificationStore();
@@ -35,11 +40,21 @@ export function useVerificationDraft(dealId: string) {
         const existingId = window.localStorage.getItem(storageKey(dealId));
 
         if (existingId) {
-          const existingDraft = await getVerificationDraft(existingId);
+          let existingDraft = null;
+          try {
+            existingDraft = await getVerificationDraft(existingId);
+          } catch (err) {
+            if (!(err instanceof ApiError && err.status === 404)) throw err;
+          }
           if (cancelled) return;
-          setSubmissionId(existingId, dealId);
-          setDraft(existingDraft);
-          return;
+
+          if (existingDraft && existingDraft.status === "DRAFT") {
+            setSubmissionId(existingId, dealId);
+            setDraft(existingDraft);
+            return;
+          }
+
+          window.localStorage.removeItem(storageKey(dealId));
         }
 
         const created = await createVerificationDraft(dealId);
