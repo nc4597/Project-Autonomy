@@ -8,7 +8,7 @@ export function Badge({
   variant?: "live" | "success" | "navy" | "neutral";
 }) {
   const variantClasses = {
-    live: "bg-brand-red text-white",
+    live: "bg-success text-white",
     success: "bg-success text-white",
     navy: "bg-navy-900 text-white",
     neutral: "border border-hairline bg-card text-ink-secondary",

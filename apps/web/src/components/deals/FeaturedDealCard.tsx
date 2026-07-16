@@ -39,7 +39,7 @@ export function FeaturedDealCard({ deal }: { deal: Deal }) {
       </div>
 
       <div className="flex flex-col justify-center p-8 md:p-12">
-        <h3 className="mb-1 font-serif text-3xl text-ink">{deal.name}</h3>
+        <h3 className="mb-1 font-serif text-3xl font-semibold text-ink">{deal.name}</h3>
         <p className="mb-5 text-sm font-semibold uppercase tracking-[0.08em] text-ink-secondary">
           {deal.tagline}
         </p>
@@ -66,7 +66,7 @@ export function FeaturedDealCard({ deal }: { deal: Deal }) {
             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
               Min. Investment
             </p>
-            <p className="font-serif text-2xl text-ink">
+            <p className="font-serif text-2xl font-medium text-ink">
               {formatCompactCurrency(deal.minInvestment)}
             </p>
           </div>

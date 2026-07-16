@@ -51,7 +51,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
             <div className="absolute inset-0 bg-gradient-to-r from-navy-950 via-navy-950/90 to-transparent" />
           </>
         )}
-        <Container wide className="relative">
+        <Container className="relative">
           <div className="mb-5 flex items-center gap-2">
             <Badge variant={deal.status === "LIVE" ? "live" : "success"}>
               {deal.status === "LIVE" ? "Live" : "100% Funded"}
@@ -79,7 +79,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
       </section>
 
       <div className="border-b border-hairline bg-card py-4">
-        <Container wide>
+        <Container>
           <nav className="flex items-center gap-2 text-sm text-ink-secondary">
             <Link href="/" className="hover:text-ink">
               Marketplace
@@ -95,7 +95,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
       </div>
 
       <div className="border-b border-hairline bg-warning-bg py-4">
-        <Container wide className="flex items-start gap-3">
+        <Container className="flex items-start gap-3">
           <AlertCircle
             className="mt-0.5 h-5 w-5 shrink-0 text-warning-text"
             strokeWidth={1.5}
@@ -109,7 +109,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
         </Container>
       </div>
 
-      <Container wide className="grid grid-cols-1 gap-8 py-14 lg:grid-cols-[1fr_360px]">
+      <Container className="grid grid-cols-1 gap-8 py-14 lg:grid-cols-[1fr_360px]">
         <div className="space-y-8">
           <section className="border border-hairline bg-card p-8">
             <h2 className="mb-5 font-serif text-2xl text-ink">Company Overview</h2>

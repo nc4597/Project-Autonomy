@@ -34,8 +34,7 @@ const config: Config = {
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
       },
       maxWidth: {
-        content: "1080px",
-        "content-wide": "1280px",
+        content: "1280px",
       },
     },
   },

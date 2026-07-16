@@ -11,7 +11,7 @@ export function FeaturedDealSection({ deal }: { deal: Deal }) {
         <div className="mb-10 flex items-end justify-between">
           <div>
             <SectionLabel>Featured Investment</SectionLabel>
-            <h2 className="font-serif text-4xl text-ink">Current Offering</h2>
+            <h2 className="font-serif text-4xl font-semibold text-ink">Current Offering</h2>
           </div>
           <Link
             href="/deals"

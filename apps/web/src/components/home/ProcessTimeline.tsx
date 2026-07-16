@@ -33,24 +33,25 @@ export function ProcessTimeline() {
   return (
     <section className="bg-navy-950 py-24">
       <Container>
-        <div className="mb-16 text-center">
-          <div className="mb-4 flex items-center justify-center gap-3">
-            <span className="h-px w-8 bg-brand-red" aria-hidden="true" />
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-red">
-              How It Works
-            </span>
-            <span className="h-px w-8 bg-brand-red" aria-hidden="true" />
-          </div>
-          <h2 className="font-serif text-4xl text-white">
-            The Investment Process
-          </h2>
+        <div className="mb-3 flex items-center gap-3">
+          <span className="h-0.5 w-8 bg-brand-red" aria-hidden="true" />
+          <span className="text-xs font-bold uppercase tracking-[0.18em] text-brand-red">
+            How It Works
+          </span>
         </div>
+        <h2 className="mb-[72px] text-center font-serif text-4xl font-semibold text-white">
+          The Investment Process
+        </h2>
 
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-5 md:gap-4">
+        <div className="relative grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-5 md:gap-6">
+          <div
+            className="absolute left-[10%] right-[10%] top-[26px] hidden h-px bg-brand-red/40 md:block"
+            aria-hidden="true"
+          />
           {steps.map((step) => (
             <div key={step.number} className="text-center">
-              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center border border-brand-red/50">
-                <span className="font-serif text-xl text-brand-red">
+              <div className="relative mx-auto mb-6 flex h-[52px] w-[52px] items-center justify-center border border-brand-red/60 bg-navy-950">
+                <span className="font-mono text-[13px] text-brand-red">
                   {step.number}
                 </span>
               </div>

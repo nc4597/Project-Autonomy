@@ -11,12 +11,12 @@ export function KpiStrip({ kpis }: { kpis: Kpi[] }) {
         {kpis.map((kpi, i) => {
           const Icon = icons[i % icons.length];
           return (
-            <div key={kpi.label} className="px-6 py-10 text-center md:text-left">
+            <div key={kpi.label} className="px-6 py-10 text-center md:px-8 md:text-left md:first:pl-0">
               <Icon
                 className="mx-auto mb-4 h-5 w-5 text-brand-red md:mx-0"
                 strokeWidth={1.5}
               />
-              <p className="mb-1 font-serif text-3xl text-ink md:text-4xl">
+              <p className="mb-1 font-serif text-3xl font-medium text-ink md:text-4xl">
                 {kpi.value}
               </p>
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-ink-secondary">
