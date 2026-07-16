@@ -1,5 +1,4 @@
 import pino from "pino";
-import { env } from "../env";
 
 // These paths are redacted regardless of nesting depth so that SSN
 // fragments and dates of birth can never end up in logs, even if a
@@ -12,6 +11,9 @@ const PII_REDACT_PATHS = [
 ];
 
 export const kycLogger = pino({
-  level: env.NODE_ENV === "production" ? "info" : "debug",
+  // process.env directly (not the validated env object): this runs at
+  // module load, which happens during `next build` where the full env
+  // schema can't validate yet.
+  level: process.env.NODE_ENV === "production" ? "info" : "debug",
   redact: { paths: PII_REDACT_PATHS, censor: "[REDACTED]" },
 });

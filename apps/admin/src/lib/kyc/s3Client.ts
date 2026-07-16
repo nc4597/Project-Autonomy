@@ -12,15 +12,21 @@ import { env } from "../env";
 // Deliberately a separate S3Client/bucket from lib/s3Client.ts (the
 // public marketing-asset one) — KYC documents are private and
 // compliance-gated, never served through the public asset bucket.
-export const kycS3 = new S3Client({
-  region: env.KYC_S3_REGION,
-  endpoint: env.KYC_S3_ENDPOINT,
-  forcePathStyle: env.KYC_S3_FORCE_PATH_STYLE,
-  credentials: {
-    accessKeyId: env.KYC_S3_ACCESS_KEY_ID,
-    secretAccessKey: env.KYC_S3_SECRET_ACCESS_KEY,
-  },
-});
+// Lazy singleton: constructing at module load would read env during
+// `next build`, where no env vars exist in the Docker build.
+let _kycS3: S3Client | null = null;
+function kycS3(): S3Client {
+  _kycS3 ??= new S3Client({
+    region: env.KYC_S3_REGION,
+    endpoint: env.KYC_S3_ENDPOINT,
+    forcePathStyle: env.KYC_S3_FORCE_PATH_STYLE,
+    credentials: {
+      accessKeyId: env.KYC_S3_ACCESS_KEY_ID,
+      secretAccessKey: env.KYC_S3_SECRET_ACCESS_KEY,
+    },
+  });
+  return _kycS3;
+}
 
 const PRESIGN_TTL_SECONDS = 15 * 60;
 
@@ -41,18 +47,18 @@ export async function createPresignedUploadUrl(params: { key: string; contentTyp
     Key: params.key,
     ContentType: params.contentType,
   });
-  return getSignedUrl(kycS3, command, { expiresIn: PRESIGN_TTL_SECONDS });
+  return getSignedUrl(kycS3(), command, { expiresIn: PRESIGN_TTL_SECONDS });
 }
 
 export async function headObject(key: string) {
-  return kycS3.send(new HeadObjectCommand({ Bucket: env.KYC_S3_BUCKET, Key: key }));
+  return kycS3().send(new HeadObjectCommand({ Bucket: env.KYC_S3_BUCKET, Key: key }));
 }
 
 export async function deleteObject(key: string) {
-  await kycS3.send(new DeleteObjectCommand({ Bucket: env.KYC_S3_BUCKET, Key: key }));
+  await kycS3().send(new DeleteObjectCommand({ Bucket: env.KYC_S3_BUCKET, Key: key }));
 }
 
 export async function createPresignedDownloadUrl(key: string) {
   const command = new GetObjectCommand({ Bucket: env.KYC_S3_BUCKET, Key: key });
-  return getSignedUrl(kycS3, command, { expiresIn: 5 * 60 });
+  return getSignedUrl(kycS3(), command, { expiresIn: 5 * 60 });
 }

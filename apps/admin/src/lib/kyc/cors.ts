@@ -7,14 +7,19 @@ import { env } from "../env";
 // request here comes straight from the investor's browser, a different
 // origin than this app. Every response needs these headers, and
 // preflight OPTIONS requests need to be answered directly.
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": env.FRONTEND_ORIGIN,
-  "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
+// Built per call, not as a module-level const — env is validated
+// lazily, and this module gets imported during `next build` where no
+// env vars exist yet.
+function corsHeaders(): Record<string, string> {
+  return {
+    "Access-Control-Allow-Origin": env.FRONTEND_ORIGIN,
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+}
 
 export function withCors(response: NextResponse): NextResponse {
-  for (const [key, value] of Object.entries(CORS_HEADERS)) {
+  for (const [key, value] of Object.entries(corsHeaders())) {
     response.headers.set(key, value);
   }
   return response;

@@ -88,4 +88,16 @@ function loadEnv(): Env {
   return parsed.data;
 }
 
-export const env = loadEnv();
+// Validated lazily on first property access, NOT at import time. During
+// `next build` (in Docker, where no runtime env vars exist yet) Next
+// imports every route module to collect page data — eager validation
+// here would kill the build. At runtime the first access still fails
+// fast with the same error if configuration is genuinely missing.
+let cached: Env | null = null;
+
+export const env: Env = new Proxy({} as Env, {
+  get(_target, prop) {
+    cached ??= loadEnv();
+    return cached[prop as keyof Env];
+  },
+});

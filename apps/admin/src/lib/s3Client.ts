@@ -3,15 +3,21 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "node:crypto";
 import { env } from "./env";
 
-export const s3 = new S3Client({
-  region: env.S3_REGION,
-  endpoint: env.S3_ENDPOINT,
-  forcePathStyle: env.S3_FORCE_PATH_STYLE,
-  credentials: {
-    accessKeyId: env.S3_ACCESS_KEY_ID,
-    secretAccessKey: env.S3_SECRET_ACCESS_KEY,
-  },
-});
+// Lazy singleton — constructing this at module load would read env
+// during `next build` (where no env vars exist in the Docker build).
+let _s3: S3Client | null = null;
+function s3(): S3Client {
+  _s3 ??= new S3Client({
+    region: env.S3_REGION,
+    endpoint: env.S3_ENDPOINT,
+    forcePathStyle: env.S3_FORCE_PATH_STYLE,
+    credentials: {
+      accessKeyId: env.S3_ACCESS_KEY_ID,
+      secretAccessKey: env.S3_SECRET_ACCESS_KEY,
+    },
+  });
+  return _s3;
+}
 
 const PRESIGN_TTL_SECONDS = 15 * 60;
 
@@ -37,7 +43,7 @@ export async function createPresignedUploadUrl(params: { key: string; contentTyp
     Key: params.key,
     ContentType: params.contentType,
   });
-  return getSignedUrl(s3, command, { expiresIn: PRESIGN_TTL_SECONDS });
+  return getSignedUrl(s3(), command, { expiresIn: PRESIGN_TTL_SECONDS });
 }
 
 export function publicUrlForKey(key: string) {
@@ -45,5 +51,5 @@ export function publicUrlForKey(key: string) {
 }
 
 export async function deleteObject(key: string) {
-  await s3.send(new DeleteObjectCommand({ Bucket: env.S3_BUCKET, Key: key }));
+  await s3().send(new DeleteObjectCommand({ Bucket: env.S3_BUCKET, Key: key }));
 }
