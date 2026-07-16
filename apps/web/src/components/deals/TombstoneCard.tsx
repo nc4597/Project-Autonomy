@@ -6,7 +6,7 @@ export function TombstoneCard({ deal }: { deal: Deal }) {
   return (
     <div className="border border-hairline bg-card p-7">
       <div className="mb-6 flex items-start justify-between">
-        <span className="flex h-10 w-10 items-center justify-center overflow-hidden bg-navy-800 text-xs font-semibold text-white">
+        <span className="flex h-12 w-12 items-center justify-center overflow-hidden bg-navy-800 text-sm font-semibold text-white">
           {deal.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={deal.logoUrl} alt="" className="h-full w-full object-cover" />

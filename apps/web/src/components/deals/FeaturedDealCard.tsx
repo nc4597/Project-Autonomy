@@ -23,7 +23,7 @@ export function FeaturedDealCard({ deal }: { deal: Deal }) {
         ) : (
           <DealThumbnail seed={deal.slug} className="absolute inset-0 h-full w-full" />
         )}
-        <span className="absolute left-6 top-6 flex h-11 w-11 items-center justify-center overflow-hidden bg-white text-sm font-semibold text-navy-950">
+        <span className="absolute left-6 top-6 flex h-[60px] w-[60px] items-center justify-center overflow-hidden bg-white text-base font-semibold text-navy-950">
           {deal.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={deal.logoUrl} alt="" className="h-full w-full object-cover" />
