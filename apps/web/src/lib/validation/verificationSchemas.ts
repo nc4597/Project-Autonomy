@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { INVESTOR_TYPES, SOURCE_OF_FUNDS } from "../constants/verification";
+import { INVESTOR_TYPES } from "../constants/verification";
 
 export const step1Schema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
@@ -32,7 +32,7 @@ export type Step1FormValues = z.infer<typeof step1Schema>;
 export const step2Schema = z.object({
   countryOfCitizenship: z.string().trim().min(1, "Select a country of citizenship"),
   taxResidence: z.string().trim().min(1, "Select a tax residence"),
-  sourceOfFunds: z.enum(SOURCE_OF_FUNDS, { required_error: "Select a source of funds" }),
+  sourceOfFunds: z.string().trim().min(1, "Select a source of funds").max(120),
 });
 export type Step2FormValues = z.infer<typeof step2Schema>;
 

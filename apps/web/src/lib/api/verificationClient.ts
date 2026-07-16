@@ -2,8 +2,8 @@ import type {
   AccreditationMethod,
   DocumentCategory,
   InvestorType,
-  SourceOfFunds,
 } from "../constants/verification";
+import type { VerificationFormConfig } from "../verification/formConfig";
 
 // The KYC/AML backend now lives inside apps/admin (merged in from the
 // former standalone apps/api) — every path below is under its
@@ -76,7 +76,14 @@ export interface ContactInfoRecord {
 export interface KycAmlInfoRecord {
   countryOfCitizenship: string;
   taxResidence: string;
-  sourceOfFunds: SourceOfFunds;
+  // Stores the selected option's display label — the option list is
+  // admin-configurable (see lib/verification/formConfig.ts).
+  sourceOfFunds: string;
+}
+
+export interface CustomAnswerRecord {
+  fieldKey: string;
+  value: string;
 }
 
 export interface AccreditationInfoRecord {
@@ -93,7 +100,12 @@ export interface VerificationDraft {
   accreditation: AccreditationInfoRecord | null;
   certification: { acceptedAt: string; tosVersion: string } | null;
   documents: DocumentRecord[];
+  customAnswers?: CustomAnswerRecord[];
   hubspotSyncStatus: string;
+}
+
+export function getFormConfig() {
+  return request<VerificationFormConfig>("/form-config");
 }
 
 export function createVerificationDraft(dealId: string) {
@@ -107,24 +119,36 @@ export function getVerificationDraft(id: string) {
   return request<VerificationDraft>(`/verifications/${id}`);
 }
 
-export function saveContactInfo(id: string, data: ContactInfoRecord) {
+export function saveContactInfo(
+  id: string,
+  data: ContactInfoRecord,
+  customAnswers?: Record<string, string>
+) {
   return request<{ ok: true }>(`/verifications/${id}/contact-info`, {
     method: "PATCH",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, customAnswers }),
   });
 }
 
-export function saveKycAmlInfo(id: string, data: KycAmlInfoRecord) {
+export function saveKycAmlInfo(
+  id: string,
+  data: KycAmlInfoRecord,
+  customAnswers?: Record<string, string>
+) {
   return request<{ ok: true }>(`/verifications/${id}/kyc-aml`, {
     method: "PATCH",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, customAnswers }),
   });
 }
 
-export function saveAccreditation(id: string, data: AccreditationInfoRecord) {
+export function saveAccreditation(
+  id: string,
+  data: AccreditationInfoRecord,
+  customAnswers?: Record<string, string>
+) {
   return request<{ ok: true }>(`/verifications/${id}/accreditation`, {
     method: "PATCH",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, customAnswers }),
   });
 }
 

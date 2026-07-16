@@ -82,6 +82,11 @@ export async function getKycSubmissionDetail(id: string) {
       createdAt: doc.createdAt.toISOString(),
       confirmedAt: doc.confirmedAt?.toISOString() ?? null,
     })),
+    customAnswers: submission.customAnswers.map((answer) => ({
+      fieldKey: answer.fieldKey,
+      label: answer.label,
+      value: answer.value,
+    })),
     hubspotSync: submission.hubspotSync
       ? {
           ...submission.hubspotSync,

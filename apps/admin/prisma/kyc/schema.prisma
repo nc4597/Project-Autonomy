@@ -24,14 +24,9 @@ enum InvestorType {
   ENTITY_TRUST
 }
 
-enum SourceOfFunds {
-  EMPLOYMENT_SALARY
-  BUSINESS_INCOME
-  INHERITANCE
-  INVESTMENTS
-  SALE_OF_ASSETS
-  OTHER
-}
+// SourceOfFunds is intentionally NOT an enum: its options are editable
+// from the admin Verification Form editor (VerificationFormConfig), so
+// KycAmlInfo.sourceOfFunds stores the option's display label as text.
 
 enum AccreditationMethod {
   ANNUAL_INCOME
@@ -84,8 +79,36 @@ model VerificationSubmission {
   certification CertificationAcceptance?
   documents     Document[]
   hubspotSync   HubspotSync?
+  customAnswers CustomAnswer[]
 
   @@index([dealId])
+}
+
+// Answers to admin-defined custom fields (see VerificationFormConfig).
+// The answer stores the display value the investor picked/typed, keyed
+// by the config field's stable key.
+model CustomAnswer {
+  id           String   @id @default(uuid())
+  submissionId String
+  submission   VerificationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  fieldKey     String
+  label        String
+  value        String
+  updatedAt    DateTime @updatedAt
+
+  @@unique([submissionId, fieldKey])
+}
+
+// Singleton row holding the investor verification form's configuration
+// as JSON (see src/lib/kyc/formConfig.ts for the shape + validation).
+// `draft` is what the admin editor works on; `published` is what the
+// public wizard renders. Publishing copies draft -> published.
+model VerificationFormConfig {
+  id          String    @id @default(uuid())
+  draft       Json
+  published   Json
+  publishedAt DateTime?
+  updatedAt   DateTime  @updatedAt
 }
 
 model ContactInfo {
@@ -112,7 +135,7 @@ model KycAmlInfo {
   submission           VerificationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
   countryOfCitizenship String
   taxResidence         String
-  sourceOfFunds        SourceOfFunds
+  sourceOfFunds        String
   updatedAt            DateTime @updatedAt
 }
 

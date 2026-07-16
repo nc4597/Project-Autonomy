@@ -154,6 +154,7 @@ export async function submitToHubspotForm(submissionId: string): Promise<void> {
         documents: true,
         hubspotSync: true,
         certification: true,
+        customAnswers: true,
       },
     });
 

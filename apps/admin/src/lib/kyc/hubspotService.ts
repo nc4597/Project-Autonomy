@@ -12,6 +12,7 @@ export type SubmissionWithRelations = Prisma.VerificationSubmissionGetPayload<{
     documents: true;
     hubspotSync: true;
     certification: true;
+    customAnswers: true;
   };
 }>;
 
@@ -290,6 +291,7 @@ export async function syncSubmissionToHubspot(submissionId: string): Promise<voi
         documents: true,
         hubspotSync: true,
         certification: true,
+        customAnswers: true,
       },
     });
 

@@ -107,9 +107,16 @@ export type ContactInfoInput = z.infer<typeof contactInfoSchema>;
 export const kycAmlInfoSchema = z.object({
   countryOfCitizenship: z.string().trim().min(1).max(100),
   taxResidence: z.string().trim().min(1).max(100),
-  sourceOfFunds: z.enum(SOURCE_OF_FUNDS),
+  // Free text (the selected option's display label): the option list is
+  // admin-configurable via the Verification Form editor.
+  sourceOfFunds: z.string().trim().min(1).max(120),
 });
 export type KycAmlInfoInput = z.infer<typeof kycAmlInfoSchema>;
+
+// Answers to admin-defined custom form fields, sent alongside each
+// step's PATCH as { fieldKey: displayValue }. Keys are validated against
+// the published form config at write time (see upsertCustomAnswers).
+export const customAnswersSchema = z.record(z.string().max(500)).optional();
 
 export const accreditationInfoSchema = z.object({
   method: z.enum(ACCREDITATION_METHODS),

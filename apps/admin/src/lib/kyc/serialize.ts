@@ -7,6 +7,7 @@ export const SUBMISSION_INCLUDE = {
   certification: true,
   documents: true,
   hubspotSync: true,
+  customAnswers: true,
 } as const;
 
 export type SubmissionWithRelations = Prisma.VerificationSubmissionGetPayload<{
@@ -35,6 +36,11 @@ export function serializeSubmission(submission: SubmissionWithRelations) {
       originalFilename: doc.originalFilename,
       status: doc.status,
       createdAt: doc.createdAt,
+    })),
+    customAnswers: submission.customAnswers.map((answer) => ({
+      fieldKey: answer.fieldKey,
+      label: answer.label,
+      value: answer.value,
     })),
     hubspotSyncStatus: submission.hubspotSync?.status ?? "NOT_CONFIGURED",
   };

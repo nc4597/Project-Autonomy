@@ -19,6 +19,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/kyc" className="hover:text-white">
               KYC Review
             </Link>
+            <Link href="/verification-form" className="hover:text-white">
+              Verification Form
+            </Link>
             <Link href="/settings" className="hover:text-white">
               Home Settings
             </Link>

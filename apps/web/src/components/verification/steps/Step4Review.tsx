@@ -10,6 +10,8 @@ import {
   SUPPORTING_DOC_REQUIREMENTS,
 } from "../../../lib/constants/verification";
 import { saveCertification, submitVerification, type VerificationDraft } from "../../../lib/api/verificationClient";
+import { useFormConfig } from "../../../lib/hooks/useFormConfig";
+import { customFieldsForStep } from "../../../lib/verification/formConfig";
 import { SummaryRow } from "../SummaryRow";
 import { WizardCard, WizardFooterNav } from "../WizardCard";
 import { ComplianceNotice } from "../../ui/ComplianceNotice";
@@ -65,9 +67,18 @@ export function Step4Review({
   onEditStep: (step: number) => void;
   onSubmitted: () => void;
 }) {
+  const config = useFormConfig();
   const [certified, setCertified] = useState(Boolean(draft.certification));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const answersByKey = Object.fromEntries(
+    (draft.customAnswers ?? []).map((a) => [a.fieldKey, a.value])
+  );
+  const customRowsForStep = (step: 1 | 2 | 3) =>
+    customFieldsForStep(config, step)
+      .map((field) => ({ label: field.label, value: answersByKey[field.key] }))
+      .filter((row) => row.value);
 
   const uploadedDocs = draft.documents.filter((doc) => doc.status === "UPLOADED");
   const idUploaded = uploadedDocs.some((d) => d.category === "ID_FRONT") && uploadedDocs.some((d) => d.category === "ID_BACK");
@@ -117,6 +128,9 @@ export function Step4Review({
               <SummaryRow label="Investor Type" value={INVESTOR_TYPE_LABELS[draft.contactInfo.investorType]} />
             </>
           )}
+          {customRowsForStep(1).map((row) => (
+            <SummaryRow key={row.label} label={row.label} value={row.value} />
+          ))}
         </SummarySection>
 
         <SummarySection title="KYC / AML" onEdit={() => onEditStep(2)}>
@@ -126,9 +140,18 @@ export function Step4Review({
             <>
               <SummaryRow label="Citizenship" value={draft.kycAmlInfo.countryOfCitizenship} />
               <SummaryRow label="Tax Residence" value={draft.kycAmlInfo.taxResidence} />
-              <SummaryRow label="Source of Funds" value={SOURCE_OF_FUNDS_LABELS[draft.kycAmlInfo.sourceOfFunds]} />
+              <SummaryRow
+                label="Source of Funds"
+                value={
+                  (SOURCE_OF_FUNDS_LABELS as Record<string, string>)[draft.kycAmlInfo.sourceOfFunds] ??
+                  draft.kycAmlInfo.sourceOfFunds
+                }
+              />
             </>
           )}
+          {customRowsForStep(2).map((row) => (
+            <SummaryRow key={row.label} label={row.label} value={row.value} />
+          ))}
         </SummarySection>
 
         <SummarySection title="Accredited Investor" onEdit={() => onEditStep(3)}>
@@ -144,6 +167,9 @@ export function Step4Review({
                 : "None uploaded"
             }
           />
+          {customRowsForStep(3).map((row) => (
+            <SummaryRow key={row.label} label={row.label} value={row.value} />
+          ))}
         </SummarySection>
 
         <ComplianceNotice>
@@ -155,9 +181,7 @@ export function Step4Review({
               className="mt-1 h-4 w-4 shrink-0"
             />
             <span>
-              I certify that all information provided is accurate and complete to the best of my knowledge.
-              I understand that providing false or misleading information in connection with a securities
-              offering may constitute a federal crime. I have read and agree to Regiment Securities&rsquo;{" "}
+              {config.certificationText} I have read and agree to Regiment Securities&rsquo;{" "}
               <Link href="/terms" className="underline">
                 Terms of Service
               </Link>{" "}

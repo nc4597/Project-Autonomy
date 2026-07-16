@@ -1,14 +1,17 @@
 import { kycPrisma } from "@/lib/kyc/prisma";
-import { contactInfoSchema } from "@/lib/kyc/schemas";
+import { contactInfoSchema, customAnswersSchema } from "@/lib/kyc/schemas";
+import { upsertCustomAnswers } from "@/lib/kyc/formConfig";
 import { parseJsonBody } from "@/lib/kyc/validate";
 import { jsonWithCors, corsPreflight } from "@/lib/kyc/cors";
+
+const bodySchema = contactInfoSchema.extend({ customAnswers: customAnswersSchema });
 
 export async function OPTIONS() {
   return corsPreflight();
 }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  const parsed = await parseJsonBody(request, contactInfoSchema);
+  const parsed = await parseJsonBody(request, bodySchema);
   if (!parsed.ok) return parsed.response;
   const body = parsed.data;
 
@@ -41,6 +44,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     create: { submissionId: submission.id, ...data },
     update: data,
   });
+
+  await upsertCustomAnswers(submission.id, body.customAnswers);
 
   await kycPrisma.verificationSubmission.update({
     where: { id: submission.id },

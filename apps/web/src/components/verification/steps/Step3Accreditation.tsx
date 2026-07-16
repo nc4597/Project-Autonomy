@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import {
-  ACCREDITATION_METHODS,
   ACCREDITATION_METHOD_DETAILS,
   SUPPORTING_DOC_REQUIREMENTS,
   DOCUMENT_LABELS,
   type AccreditationMethod,
 } from "../../../lib/constants/verification";
 import { saveAccreditation, type VerificationDraft } from "../../../lib/api/verificationClient";
+import { useFormConfig } from "../../../lib/hooks/useFormConfig";
+import { useCustomAnswers } from "../../../lib/hooks/useCustomAnswers";
+import { fieldFor, visibleOptions } from "../../../lib/verification/formConfig";
 import { QualificationMethodCard } from "../QualificationMethodCard";
 import { FileDropzone } from "../FileDropzone";
+import { CustomFields } from "../CustomFields";
 import { WizardCard, WizardFooterNav } from "../WizardCard";
 import { useVerificationStore } from "../../../lib/state/verificationStore";
 
@@ -25,10 +28,13 @@ export function Step3Accreditation({
   onSaved: () => void;
   onBack: () => void;
 }) {
+  const config = useFormConfig();
+  const custom = useCustomAnswers(config, 3, draft);
   const [method, setMethod] = useState<AccreditationMethod | null>(draft.accreditation?.method ?? null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const documents = useVerificationStore((s) => s.draft?.documents ?? []);
+  const methodOptions = visibleOptions(fieldFor(config, "accreditation.method"));
 
   const requirements = method ? SUPPORTING_DOC_REQUIREMENTS[method] : [];
   const missingRequired = requirements.filter(
@@ -46,9 +52,14 @@ export function Step3Accreditation({
       setSubmitError("Please upload all required supporting documentation before continuing.");
       return;
     }
+    const missingCustom = custom.missingRequiredLabels();
+    if (missingCustom.length > 0) {
+      setSubmitError(`Please fill in: ${missingCustom.join(", ")}`);
+      return;
+    }
     setIsSubmitting(true);
     try {
-      await saveAccreditation(submissionId, { method });
+      await saveAccreditation(submissionId, { method }, custom.payload());
       onSaved();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Failed to save. Please try again.");
@@ -64,13 +75,15 @@ export function Step3Accreditation({
         description="Select the basis on which you qualify as an accredited investor under SEC Rule 501."
       >
         <div className="space-y-3">
-          {ACCREDITATION_METHODS.map((m) => (
+          {methodOptions.map((option) => (
             <QualificationMethodCard
-              key={m}
-              title={ACCREDITATION_METHOD_DETAILS[m].title}
-              description={ACCREDITATION_METHOD_DETAILS[m].description}
-              selected={method === m}
-              onSelect={() => setMethod(m)}
+              key={option.value}
+              title={option.label}
+              description={
+                ACCREDITATION_METHOD_DETAILS[option.value as AccreditationMethod]?.description ?? ""
+              }
+              selected={method === option.value}
+              onSelect={() => setMethod(option.value as AccreditationMethod)}
             />
           ))}
         </div>
@@ -93,6 +106,8 @@ export function Step3Accreditation({
             </div>
           </div>
         )}
+
+        <CustomFields fields={custom.fields} values={custom.values} onChange={custom.setValue} />
 
         {submitError && <p className="text-sm text-brand-red">{submitError}</p>}
       </WizardCard>

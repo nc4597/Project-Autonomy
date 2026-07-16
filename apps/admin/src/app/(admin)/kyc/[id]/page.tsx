@@ -114,12 +114,23 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
             <>
               <Field label="Country of Citizenship" value={kycAmlInfo.countryOfCitizenship} />
               <Field label="Tax Residence" value={kycAmlInfo.taxResidence} />
-              <Field label="Source of Funds" value={KYC_SOURCE_OF_FUNDS_LABELS[kycAmlInfo.sourceOfFunds]} />
+              <Field
+                label="Source of Funds"
+                value={KYC_SOURCE_OF_FUNDS_LABELS[kycAmlInfo.sourceOfFunds] ?? kycAmlInfo.sourceOfFunds}
+              />
             </>
           ) : (
             <p className="py-4 text-sm text-ink-secondary">Not completed yet.</p>
           )}
         </Section>
+
+        {submission.customAnswers.length > 0 && (
+          <Section title="Additional Questions">
+            {submission.customAnswers.map((answer) => (
+              <Field key={answer.fieldKey} label={answer.label} value={answer.value} />
+            ))}
+          </Section>
+        )}
 
         <Section title="Accredited Investor">
           <Field label="Qualification" value={accreditation ? KYC_ACCREDITATION_METHOD_LABELS[accreditation.method] : "—"} />

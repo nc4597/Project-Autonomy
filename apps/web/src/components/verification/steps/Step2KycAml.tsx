@@ -5,14 +5,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { step2Schema, type Step2FormValues } from "../../../lib/validation/verificationSchemas";
 import {
-  SOURCE_OF_FUNDS,
-  SOURCE_OF_FUNDS_LABELS,
-  COUNTRY_OPTIONS,
   DOCUMENT_LABELS,
   KYC_REQUIRED_DOCUMENT_CATEGORIES,
 } from "../../../lib/constants/verification";
 import { saveKycAmlInfo, type VerificationDraft } from "../../../lib/api/verificationClient";
+import { useFormConfig } from "../../../lib/hooks/useFormConfig";
+import { useCustomAnswers } from "../../../lib/hooks/useCustomAnswers";
+import { fieldFor, helpFor, labelFor, visibleOptions } from "../../../lib/verification/formConfig";
 import { FileDropzone } from "../FileDropzone";
+import { CustomFields } from "../CustomFields";
 import { WizardCard, WizardFooterNav } from "../WizardCard";
 import { useVerificationStore } from "../../../lib/state/verificationStore";
 import { Field, Select } from "../../ui/Field";
@@ -29,6 +30,8 @@ export function Step2KycAml({
   onSaved: () => void;
   onBack: () => void;
 }) {
+  const config = useFormConfig();
+  const custom = useCustomAnswers(config, 2, draft);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const documents = useVerificationStore((s) => s.draft?.documents ?? []);
   const {
@@ -50,8 +53,13 @@ export function Step2KycAml({
       setSubmitError("Please upload all required documents before continuing.");
       return;
     }
+    const missing = custom.missingRequiredLabels();
+    if (missing.length > 0) {
+      setSubmitError(`Please fill in: ${missing.join(", ")}`);
+      return;
+    }
     try {
-      await saveKycAmlInfo(submissionId, values);
+      await saveKycAmlInfo(submissionId, values, custom.payload());
       onSaved();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Failed to save. Please try again.");
@@ -98,35 +106,45 @@ export function Step2KycAml({
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
-          <Field label="Country of Citizenship">
+          <Field label={labelFor(config, "kyc.countryOfCitizenship", "Country of Citizenship")}>
             <Select {...register("countryOfCitizenship")}>
-              {COUNTRY_OPTIONS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {visibleOptions(fieldFor(config, "kyc.countryOfCitizenship")).map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label="Tax Residence">
+          <Field label={labelFor(config, "kyc.taxResidence", "Tax Residence")}>
             <Select {...register("taxResidence")}>
-              {COUNTRY_OPTIONS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {visibleOptions(fieldFor(config, "kyc.taxResidence")).map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </Select>
           </Field>
         </div>
 
-        <Field label="Source of Funds" error={errors.sourceOfFunds?.message}>
-          <Select {...register("sourceOfFunds")}>
-            {SOURCE_OF_FUNDS.map((s) => (
-              <option key={s} value={s}>
-                {SOURCE_OF_FUNDS_LABELS[s]}
-              </option>
-            ))}
-          </Select>
-        </Field>
+        <div>
+          <Field
+            label={labelFor(config, "kyc.sourceOfFunds", "Source of Funds")}
+            error={errors.sourceOfFunds?.message}
+          >
+            <Select {...register("sourceOfFunds")}>
+              {visibleOptions(fieldFor(config, "kyc.sourceOfFunds")).map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          {helpFor(config, "kyc.sourceOfFunds") && (
+            <p className="mt-1 text-xs text-ink-muted">{helpFor(config, "kyc.sourceOfFunds")}</p>
+          )}
+        </div>
+
+        <CustomFields fields={custom.fields} values={custom.values} onChange={custom.setValue} />
 
         <div>
           <span className="mb-3 block text-xs font-semibold uppercase tracking-wide text-ink-secondary">

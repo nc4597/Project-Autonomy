@@ -69,12 +69,20 @@ export async function generateSubmissionSummaryPdf(submission: SubmissionWithRel
       section("KYC / AML", [
         ["Country of Citizenship", kycAmlInfo.countryOfCitizenship],
         ["Tax Residence", kycAmlInfo.taxResidence],
-        ["Source of Funds", humanize(kycAmlInfo.sourceOfFunds)],
+        // Already a display label — the option list is admin-configurable.
+        ["Source of Funds", kycAmlInfo.sourceOfFunds],
       ]);
     }
 
     if (accreditation) {
       section("Accreditation", [["Method", humanize(accreditation.method)]]);
+    }
+
+    if (submission.customAnswers.length > 0) {
+      section(
+        "Additional Questions",
+        submission.customAnswers.map((a): [string, string] => [a.label, a.value])
+      );
     }
 
     if (certification) {
