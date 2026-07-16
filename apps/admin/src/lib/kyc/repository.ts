@@ -67,7 +67,12 @@ export async function getKycSubmissionDetail(id: string) {
       : null,
     kycAmlInfo: submission.kycAmlInfo,
     accreditation: submission.accreditation,
-    certification: submission.certification,
+    // Date fields become ISO strings, preserving the wire shape the
+    // review pages were built against (back when this data arrived
+    // JSON-serialized over HTTP from apps/api).
+    certification: submission.certification
+      ? { ...submission.certification, acceptedAt: submission.certification.acceptedAt.toISOString() }
+      : null,
     documents: submission.documents.map((doc) => ({
       id: doc.id,
       category: doc.category,
@@ -77,7 +82,13 @@ export async function getKycSubmissionDetail(id: string) {
       createdAt: doc.createdAt.toISOString(),
       confirmedAt: doc.confirmedAt?.toISOString() ?? null,
     })),
-    hubspotSync: submission.hubspotSync,
+    hubspotSync: submission.hubspotSync
+      ? {
+          ...submission.hubspotSync,
+          lastAttemptAt: submission.hubspotSync.lastAttemptAt?.toISOString() ?? null,
+          syncedAt: submission.hubspotSync.syncedAt?.toISOString() ?? null,
+        }
+      : null,
   };
 }
 

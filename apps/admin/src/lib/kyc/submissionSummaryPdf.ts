@@ -89,7 +89,7 @@ export async function generateSubmissionSummaryPdf(submission: SubmissionWithRel
     if (documents.length > 0) {
       section(
         "Documents Submitted",
-        documents.map((d) => [humanize(d.category), `${d.originalFilename} (${d.status})`])
+        documents.map((d): [string, string] => [humanize(d.category), `${d.originalFilename} (${d.status})`])
       );
     }
 

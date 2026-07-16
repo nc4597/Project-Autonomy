@@ -2,6 +2,7 @@ import { env } from "../env";
 import { kycLogger } from "./logger";
 import { kycPrisma } from "./prisma";
 import { HUBSPOT_FILES_ROOT_FOLDER, investorFolderName } from "./hubspotService";
+import { SUBMISSION_INCLUDE } from "./serialize";
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -46,7 +47,9 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
   try {
     const submission = await kycPrisma.verificationSubmission.findUniqueOrThrow({
       where: { id: submissionId },
-      include: { contactInfo: true, kycAmlInfo: true, accreditation: true, documents: true },
+      // Full include (not just the fields this email uses) so the result
+      // satisfies SubmissionWithRelations for investorFolderName().
+      include: SUBMISSION_INCLUDE,
     });
 
     const { contactInfo, accreditation, documents } = submission;
