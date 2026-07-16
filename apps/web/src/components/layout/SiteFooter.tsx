@@ -1,6 +1,20 @@
+import { Linkedin, Twitter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "../ui/Container";
+
+const SOCIAL_LINKS = [
+  {
+    label: "Regiment Securities on LinkedIn",
+    href: "https://www.linkedin.com/company/regimentsecuritiesllc/",
+    Icon: Linkedin,
+  },
+  {
+    label: "Regiment Securities on X (Twitter)",
+    href: "https://x.com/RegimentSecSoc",
+    Icon: Twitter,
+  },
+];
 
 const FOOTER_COLUMNS = [
   {
@@ -66,6 +80,20 @@ export function SiteFooter() {
             <span className="border border-white/25 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">
               SIPC Member
             </span>
+          </div>
+          <div className="mt-6 flex gap-3">
+            {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+              <a
+                key={href}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="flex h-11 w-11 items-center justify-center rounded-lg border-2 border-white/80 text-white transition-colors hover:bg-white hover:text-navy-950"
+              >
+                <Icon className="h-5 w-5" strokeWidth={1.75} />
+              </a>
+            ))}
           </div>
         </div>
 

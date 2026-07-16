@@ -1,31 +1,27 @@
+import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950">
-      <svg
-        className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.08]"
-        viewBox="0 0 400 300"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        {Array.from({ length: 14 }).map((_, i) => (
-          <line
-            key={i}
-            x1={i * 30}
-            y1="0"
-            x2={i * 30 - 60}
-            y2="300"
-            stroke="#ffffff"
-            strokeWidth="1"
-          />
-        ))}
-      </svg>
+    <section className="relative overflow-hidden bg-navy-950">
+      <Image
+        src="/home/hero-skyline.jpg"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-navy-950/95 via-navy-950/75 to-navy-950/40" />
 
       <Container className="relative py-28 md:py-36">
-        <h1 className="mb-6 max-w-2xl font-serif text-5xl leading-[1.1] text-white md:text-6xl">
-          Off-Market Deals. VIP Access.
+        <div className="mb-8 flex items-center gap-3.5 text-xs font-semibold uppercase tracking-[0.22em] text-white/75">
+          <span className="h-4 w-[3px] bg-brand-red" aria-hidden="true" />
+          Regiment Securities &mdash; Private Marketplace
+        </div>
+        <h1 className="mb-8 max-w-2xl font-serif text-5xl leading-[1.08] text-white md:text-7xl">
+          Off-Market Deals. <em className="italic text-ink-muted">VIP Access.</em>
         </h1>
         <p className="mb-10 max-w-xl text-lg leading-relaxed text-white/70">
           Exclusive access to institutional-quality private investments,
