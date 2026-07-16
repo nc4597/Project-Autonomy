@@ -1,6 +1,5 @@
 import { Cta } from "@/components/home/Cta";
 import { ClosedTransactionsSection } from "@/components/home/ClosedTransactionsSection";
-import { FaqSection } from "@/components/home/FaqSection";
 import { FeaturedDealSection } from "@/components/home/FeaturedDealSection";
 import { Hero } from "@/components/home/Hero";
 import { KpiStrip } from "@/components/home/KpiStrip";
@@ -8,7 +7,6 @@ import { ProcessTimeline } from "@/components/home/ProcessTimeline";
 import { WhyRegiment } from "@/components/home/WhyRegiment";
 import { toCardDeal } from "@/lib/marketplace/adapters";
 import { getSiteSettings } from "@/lib/marketplace/adminClient";
-import { homeFaqs } from "@/lib/marketplace/data";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +32,6 @@ export default async function Home() {
       {closedDeals.length > 0 && <ClosedTransactionsSection deals={closedDeals} />}
       <ProcessTimeline />
       <Cta />
-      <FaqSection items={homeFaqs} />
     </>
   );
 }

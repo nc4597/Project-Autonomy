@@ -7,7 +7,6 @@ const NAV_LINKS = [
   { label: "Marketplace", href: "/" },
   { label: "Deals", href: "/deals" },
   { label: "About", href: "/about" },
-  { label: "FAQ", href: "/#faq" },
 ];
 
 export function SiteHeader() {
