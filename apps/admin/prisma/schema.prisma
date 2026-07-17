@@ -156,7 +156,7 @@ model SiteSettings {
   // About page's team section copy. {count} in the subtitle renders as
   // the live number of team members.
   teamSectionTitle         String @default("Meet the Investment Relations Team")
-  teamSectionSubtitle      String @default("There are {count} professionals on the Regiment Securities team.")
+  teamSectionSubtitle      String @default("Meet the rest of the Regiment Securities team at [regimentsecurities.com/who-we-are](https://www.regimentsecurities.com/who-we-are).")
   updatedAt                DateTime @updatedAt
 }
 

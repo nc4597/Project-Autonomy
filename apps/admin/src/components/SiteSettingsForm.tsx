@@ -112,8 +112,8 @@ export function SiteSettingsForm({
               className="w-full border border-hairline bg-page px-3 py-2 text-sm text-ink focus:border-navy-800 focus:outline-none"
             />
             <p className="mt-1 text-xs text-ink-muted">
-              Shown under the title. Write {"{count}"} anywhere and it renders as the live number
-              of team members. Leave empty to show no subtitle.
+              Shown under the title. Write {"{count}"} anywhere for the live number of team
+              members, and {"[label](https://url)"} for a link. Leave empty to show no subtitle.
             </p>
           </div>
         </div>
