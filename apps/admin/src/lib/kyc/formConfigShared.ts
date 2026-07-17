@@ -224,8 +224,13 @@ export type WizardEntry =
   | { number: number; kind: "page"; page: CustomPage }
   | { number: number; kind: "review" };
 
+type WizardEntryDraft =
+  | { kind: "core"; coreStep: 1 | 2 | 3 }
+  | { kind: "page"; page: CustomPage }
+  | { kind: "review" };
+
 export function buildWizardSequence(config: VerificationFormConfig): WizardEntry[] {
-  const entries: (Omit<WizardEntry, "number"> & { number?: number })[] = [];
+  const entries: WizardEntryDraft[] = [];
   for (const coreStep of [1, 2, 3] as const) {
     entries.push({ kind: "core", coreStep });
     for (const page of config.customPages.filter((p) => (p.afterStep ?? 3) === coreStep)) {
@@ -233,7 +238,7 @@ export function buildWizardSequence(config: VerificationFormConfig): WizardEntry
     }
   }
   entries.push({ kind: "review" });
-  return entries.map((entry, index) => ({ ...entry, number: index + 1 }) as WizardEntry);
+  return entries.map((entry, index) => ({ ...entry, number: index + 1 }));
 }
 
 /** The step number a core step's save should advance the draft to. */
