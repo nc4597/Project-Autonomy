@@ -3,14 +3,29 @@ import { contactInfoSchema, customAnswersSchema } from "@/lib/kyc/schemas";
 import { upsertCustomAnswers } from "@/lib/kyc/formConfig";
 import { parseJsonBody } from "@/lib/kyc/validate";
 import { jsonWithCors, corsPreflight } from "@/lib/kyc/cors";
+import { rateLimit, clientIp } from "@/lib/kyc/rateLimit";
 
 const bodySchema = contactInfoSchema.extend({ customAnswers: customAnswersSchema });
+
+// This is the one public endpoint that receives SSN last-4 and DOB, so
+// it gets a per-IP rate limit. Generous for a human revising their own
+// contact step, tight for scripted abuse.
+const RATE_LIMIT = 20;
+const RATE_WINDOW_MS = 15 * 60_000;
 
 export async function OPTIONS() {
   return corsPreflight();
 }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  const limited = rateLimit(`contact-info:${clientIp(request)}`, RATE_LIMIT, RATE_WINDOW_MS);
+  if (!limited.allowed) {
+    return jsonWithCors(
+      { error: "Too many attempts. Please wait a few minutes and try again." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSeconds) } }
+    );
+  }
+
   const parsed = await parseJsonBody(request, bodySchema);
   if (!parsed.ok) return parsed.response;
   const body = parsed.data;
