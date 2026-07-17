@@ -60,6 +60,9 @@ export async function getKycSubmissionDetail(id: string) {
     status: submission.status,
     createdAt: submission.createdAt.toISOString(),
     submittedAt: submission.submittedAt?.toISOString() ?? null,
+    hubspotContactId: submission.hubspotContactId,
+    hubspotSyncedAt: submission.hubspotSyncedAt?.toISOString() ?? null,
+    hubspotSyncError: submission.hubspotSyncError,
     contactInfo: submission.contactInfo
       ? { ...submission.contactInfo, dateOfBirth: submission.contactInfo.dateOfBirth.toISOString().slice(0, 10) }
       : null,

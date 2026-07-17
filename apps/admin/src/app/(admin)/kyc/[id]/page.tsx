@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getKycSubmissionDetail } from "@/lib/kyc/repository";
 import { KycDocumentRow } from "@/components/KycDocumentRow";
+import { env } from "@/lib/env";
 import {
   KYC_ACCREDITATION_METHOD_LABELS,
   KYC_DOCUMENT_CATEGORY_LABELS,
@@ -105,6 +106,22 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
           >
             Download Summary PDF
           </a>
+          {submission.hubspotContactId && env.HUBSPOT_PORTAL_ID && (
+            <a
+              href={`https://app.hubspot.com/contacts/${env.HUBSPOT_PORTAL_ID}/record/0-1/${submission.hubspotContactId}`}
+              target="_blank"
+              rel="noreferrer"
+              title={submission.hubspotSyncedAt ? `Synced ${formatDateTime(submission.hubspotSyncedAt)}` : undefined}
+              className="border border-navy-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-navy-950 hover:bg-navy-950 hover:text-white"
+            >
+              View in HubSpot ↗
+            </a>
+          )}
+          {submission.hubspotSyncError && !submission.hubspotContactId && (
+            <span className="text-xs font-semibold uppercase text-brand-red" title={submission.hubspotSyncError}>
+              HubSpot sync failed
+            </span>
+          )}
         </div>
       </div>
 

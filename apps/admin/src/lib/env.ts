@@ -53,6 +53,9 @@ const envSchema = z.object({
   // crm.objects.contacts.read + crm.objects.contacts.write scopes.
   // Unset = sync skipped loudly, submissions unaffected.
   HUBSPOT_ACCESS_TOKEN: z.string().optional(),
+  // Numeric portal ID — only used to build the "View in HubSpot" link
+  // to a synced contact card on the admin KYC detail page.
+  HUBSPOT_PORTAL_ID: z.string().optional(),
 
   // Admin notification email on every KYC submission. We POST a JSON
   // payload to a Zapier "Catch Hook" webhook; the Zap sends the actual
