@@ -22,32 +22,32 @@ export function TombstoneCard({ deal }: { deal: Deal }) {
 
       <div className="grid grid-cols-2 gap-y-4 border-t border-hairline pt-5">
         <div>
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
             Raised
           </p>
-          <p className="text-sm font-semibold text-ink">
+          <p className="text-sm text-ink-secondary">
             {deal.raisedUndisclosed ? "Undisclosed Amount" : formatCompactCurrency(deal.raised)}
           </p>
         </div>
         <div>
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
             Closed
           </p>
-          <p className="text-sm font-semibold text-ink">
+          <p className="text-sm text-ink-secondary">
             {deal.closeDate ? formatCloseDate(deal.closeDate) : "—"}
           </p>
         </div>
         <div>
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
             Type
           </p>
-          <p className="text-sm font-semibold text-ink">{deal.dealType}</p>
+          <p className="text-sm text-ink-secondary">{deal.dealType}</p>
         </div>
         <div>
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
             Sector
           </p>
-          <p className="text-sm font-semibold text-ink">{deal.sector}</p>
+          <p className="text-sm text-ink-secondary">{deal.sector}</p>
         </div>
       </div>
     </div>

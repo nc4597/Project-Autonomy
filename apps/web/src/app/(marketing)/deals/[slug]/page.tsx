@@ -122,10 +122,10 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
               <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-3">
                 {deal.snapshotFields.map((item) => (
                   <div key={item.id}>
-                    <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-muted">
+                    <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
                       {item.label}
                     </p>
-                    <p className="text-sm font-semibold text-ink">{item.value}</p>
+                    <p className="text-sm text-ink-secondary">{item.value}</p>
                   </div>
                 ))}
               </div>
@@ -219,7 +219,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
           <section className="flex items-start gap-3 border border-hairline bg-page p-8">
             <Shield className="mt-0.5 h-5 w-5 shrink-0 text-ink-secondary" strokeWidth={1.5} />
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-ink-secondary">
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-ink">
                 Compliance Notice
               </p>
               <p className="text-sm leading-relaxed text-ink-secondary">
@@ -242,8 +242,8 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
             <div className="mb-6 space-y-4">
               {sidebarDetails.map((item) => (
                 <div key={item.label} className="grid grid-cols-2 items-baseline gap-4">
-                  <span className="text-sm text-ink-secondary">{item.label}</span>
-                  <span className="text-right text-sm font-semibold text-ink">
+                  <span className="text-sm font-semibold text-ink">{item.label}</span>
+                  <span className="text-right text-sm text-ink-secondary">
                     {item.value}
                   </span>
                 </div>
@@ -271,7 +271,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
           </div>
 
           <div className="border border-hairline bg-card p-6">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-ink-muted">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.08em] text-ink">
               Have Questions?
             </p>
             <div className="flex items-start gap-3">
