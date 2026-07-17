@@ -96,11 +96,11 @@ export function Step1ContactInfo({
             error={errors.phone?.message ?? errors.phoneCountryCode?.message}
           >
             <div className="flex gap-2">
-              <Select
-                {...register("phoneCountryCode")}
-                aria-label="Country calling code"
-                className="w-[7.5rem] flex-none"
-              >
+              {/* Fixed-width wrapper: the Select's own w-full would
+                  otherwise fight (and beat) a width utility passed via
+                  className, swallowing the whole row. */}
+              <div className="w-32 flex-none">
+                <Select {...register("phoneCountryCode")} aria-label="Country calling code">
                 {orderedCallingCodes().flatMap((entry, index) => [
                   // Divider between the pinned countries and the full list.
                   ...(index === PINNED_ISOS.length
@@ -114,7 +114,8 @@ export function Step1ContactInfo({
                     {flagFor(entry.iso)} {entry.code}
                   </option>,
                 ])}
-              </Select>
+                </Select>
+              </div>
               <TextInput {...register("phone")} type="tel" placeholder="(555) 000-0000" />
             </div>
           </Field>
