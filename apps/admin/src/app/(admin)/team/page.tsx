@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { listTeamMembers } from "@/lib/teamRepository";
+import { prisma } from "@/lib/prisma";
 import { DeleteTeamMemberButton } from "@/components/DeleteTeamMemberButton";
+import { TeamSectionCopyForm } from "@/components/TeamSectionCopyForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function TeamListPage() {
-  const teamMembers = await listTeamMembers();
+  const [teamMembers, settings] = await Promise.all([
+    listTeamMembers(),
+    prisma.siteSettings.upsert({ where: { id: "singleton" }, update: {}, create: { id: "singleton" } }),
+  ]);
 
   return (
     <div>
@@ -18,6 +23,11 @@ export default async function TeamListPage() {
           + Add Team Member
         </Link>
       </div>
+
+      <TeamSectionCopyForm
+        initialTitle={settings.teamSectionTitle}
+        initialSubtitle={settings.teamSectionSubtitle}
+      />
 
       <div className="border border-hairline bg-card">
         <table className="w-full text-left text-sm">

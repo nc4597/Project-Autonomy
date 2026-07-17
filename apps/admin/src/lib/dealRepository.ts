@@ -132,8 +132,6 @@ export async function updateSiteSettings(input: SiteSettingsInput) {
         completedTransactions: input.completedTransactions,
         activeDeals: input.activeDeals,
         investorNetwork: input.investorNetwork,
-        teamSectionTitle: input.teamSectionTitle,
-        teamSectionSubtitle: input.teamSectionSubtitle,
       },
       create: {
         id: "singleton",

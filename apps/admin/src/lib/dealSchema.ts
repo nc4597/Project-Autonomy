@@ -85,13 +85,14 @@ export const dealInputSchema = z.object({
 
 export type DealInput = z.infer<typeof dealInputSchema>;
 
+// Team-section copy is deliberately NOT here — it's edited on the Team
+// page and saved through /api/team-settings, so a Home Settings save
+// can never reset it.
 export const siteSettingsInputSchema = z.object({
   capitalRaised: z.string().default("$0"),
   completedTransactions: z.string().default("0"),
   activeDeals: z.string().default("0"),
   investorNetwork: z.string().default("0"),
-  teamSectionTitle: z.string().trim().min(1).max(160).default("Meet the Investment Relations Team"),
-  teamSectionSubtitle: z.string().trim().max(300).default(""),
   featuredDealId: z.string().optional().nullable(),
   featuredClosedDealIds: z.array(z.string()).default([]),
 });
