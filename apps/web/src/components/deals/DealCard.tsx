@@ -1,13 +1,9 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DealThumbnail } from "@/components/ui/DealThumbnail";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { formatCompactCurrency, percentFunded } from "@/lib/marketplace/format";
 import type { Deal } from "@/lib/marketplace/types";
 
 export function DealCard({ deal }: { deal: Deal }) {
-  const percent = percentFunded(deal.raised, deal.goal);
-
   return (
     <div className="flex flex-col border border-hairline bg-card">
       <div className="relative h-44 w-full">
@@ -41,17 +37,6 @@ export function DealCard({ deal }: { deal: Deal }) {
         </p>
 
         <div className="mt-auto">
-          <div className="mb-2 flex items-baseline justify-between">
-            <span className="text-sm font-semibold text-ink">
-              {formatCompactCurrency(deal.raised)} raised
-            </span>
-            <span className="text-sm text-ink-secondary">{percent}%</span>
-          </div>
-          <ProgressBar percent={percent} />
-          <div className="mb-6 mt-2 flex items-center justify-between text-xs text-ink-muted">
-            <span>Goal: {formatCompactCurrency(deal.goal)}</span>
-            <span>Min: {formatCompactCurrency(deal.minInvestment)}</span>
-          </div>
           <Button
             href={`/deals/${deal.slug}`}
             variant="primary"

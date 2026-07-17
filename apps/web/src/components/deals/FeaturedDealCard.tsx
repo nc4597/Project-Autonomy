@@ -1,13 +1,10 @@
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DealThumbnail } from "@/components/ui/DealThumbnail";
-import { ProgressBar } from "@/components/ui/ProgressBar";
-import { formatCompactCurrency, percentFunded } from "@/lib/marketplace/format";
+import { formatCompactCurrency } from "@/lib/marketplace/format";
 import type { Deal } from "@/lib/marketplace/types";
 
 export function FeaturedDealCard({ deal }: { deal: Deal }) {
-  const percent = percentFunded(deal.raised, deal.goal);
-
   return (
     <div className="grid grid-cols-1 border border-hairline bg-card md:grid-cols-2">
       {/* Image fills the column absolutely so a large upload can never
@@ -46,20 +43,6 @@ export function FeaturedDealCard({ deal }: { deal: Deal }) {
         <p className="mb-8 line-clamp-5 text-base leading-relaxed text-ink-secondary">
           {deal.summary}
         </p>
-
-        <div className="mb-6">
-          <div className="mb-2 flex items-baseline justify-between">
-            <span className="text-lg font-semibold text-ink">
-              {formatCompactCurrency(deal.raised)}
-            </span>
-            <span className="text-sm text-ink-secondary">{percent}%</span>
-          </div>
-          <ProgressBar percent={percent} />
-          <div className="mt-2 flex items-center justify-between text-xs text-ink-muted">
-            <span>Goal: {formatCompactCurrency(deal.goal)}</span>
-            <span>Min: {formatCompactCurrency(deal.minInvestment)}</span>
-          </div>
-        </div>
 
         <div className="flex items-center justify-between gap-6">
           <div>
