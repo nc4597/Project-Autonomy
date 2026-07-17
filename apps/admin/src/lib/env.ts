@@ -68,10 +68,6 @@ const envSchema = z.object({
   // sending-domain/DNS setup is needed on our end.
   ZAPIER_KYC_NOTIFICATION_WEBHOOK_URL: z.string().optional(),
   ADMIN_NOTIFICATION_EMAILS: z.string().optional(),
-  // Static link to the accredited-investor certification document Rob
-  // signs after reviewing a submission. Not a real PandaDoc API
-  // integration yet — same link goes in every notification email.
-  PANDADOC_CERTIFICATION_TEMPLATE_URL: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

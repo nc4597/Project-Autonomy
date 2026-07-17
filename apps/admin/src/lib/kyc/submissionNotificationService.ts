@@ -61,7 +61,6 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
     const adminReviewUrl = env.ADMIN_APP_ORIGIN
       ? `${env.ADMIN_APP_ORIGIN.replace(/\/$/, "")}/kyc/${submission.id}`
       : null;
-    const pandaDocUrl = env.PANDADOC_CERTIFICATION_TEMPLATE_URL ?? null;
 
     const html = `
       <p>Dear Rob,</p>
@@ -77,11 +76,6 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
           ? `<a href="${adminReviewUrl}">${escapeHtml(adminReviewUrl)}</a>`
           : "(Admin panel link not yet configured — open KYC Review in the admin CMS and select the investor.)"
       }</p>
-      <p>Following your review, please complete and sign the related PandaDoc certification here:</p>
-      <p>${
-        pandaDocUrl ? `<a href="${pandaDocUrl}">${escapeHtml(pandaDocUrl)}</a>` : "(PandaDoc link not yet configured)"
-      }</p>
-      <p>Please note any missing, expired, inconsistent, or insufficient documentation before signing.</p>
       <p>Thank you,<br>The Regiment Marketplace Team</p>
     `;
 
@@ -105,7 +99,6 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
         documentsUploaded: uploadedCount,
         submittedAt: submission.submittedAt?.toISOString() ?? null,
         adminReviewUrl,
-        pandaDocUrl,
       }),
     });
 
