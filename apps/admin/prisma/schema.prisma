@@ -55,6 +55,11 @@ model Deal {
   thumbnailUrl      String?
   raiseGoal         Decimal  @db.Decimal(14, 2)
   raisedAmount      Decimal  @db.Decimal(14, 2)
+  // When true, the public site shows "Undisclosed Amount" instead of
+  // raisedAmount/percent-funded/progress bar — for closed deals where the
+  // actual raise total shouldn't be public. raisedAmount is still stored
+  // (so it stays available for internal reference) but isn't rendered.
+  raisedAmountUndisclosed Boolean @default(false)
   minimumInvestment Decimal  @db.Decimal(14, 2)
   companyOverview   String   @db.Text
   closeDate         DateTime?

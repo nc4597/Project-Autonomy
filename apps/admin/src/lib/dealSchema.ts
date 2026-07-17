@@ -70,6 +70,7 @@ export const dealInputSchema = z.object({
   bannerImageUrl: z.string().optional().nullable(),
   raiseGoal: z.coerce.number().nonnegative().default(0),
   raisedAmount: z.coerce.number().nonnegative().default(0),
+  raisedAmountUndisclosed: z.boolean().default(false),
   minimumInvestment: z.coerce.number().nonnegative().default(0),
   companyOverview: z.string().default(""),
   closeDate: z.string().optional().nullable(),

@@ -36,6 +36,7 @@ export interface Deal {
   dealType: DealType;
   status: DealStatus;
   raised: number;
+  raisedUndisclosed: boolean;
   goal: number;
   minInvestment: number;
   closeDate?: string;

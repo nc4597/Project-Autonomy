@@ -26,7 +26,7 @@ export function TombstoneCard({ deal }: { deal: Deal }) {
             Raised
           </p>
           <p className="text-sm font-semibold text-ink">
-            {formatCompactCurrency(deal.raised)}
+            {deal.raisedUndisclosed ? "Undisclosed Amount" : formatCompactCurrency(deal.raised)}
           </p>
         </div>
         <div>

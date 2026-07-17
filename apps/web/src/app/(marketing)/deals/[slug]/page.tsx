@@ -241,16 +241,22 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
 
         <aside className="h-fit lg:sticky lg:top-[100px]">
           <div className="mb-6 border border-hairline bg-card p-6">
-            <div className="mb-2 flex items-baseline justify-between">
-              <span className="font-serif text-2xl text-ink">
-                {formatCompactCurrency(deal.raisedAmount)}
-              </span>
-              <span className="text-sm text-ink-secondary">{percent}% funded</span>
-            </div>
-            <ProgressBar percent={percent} />
-            <p className="mb-6 mt-2 text-xs text-ink-muted">
-              of {formatCompactCurrency(deal.raiseGoal)} goal
-            </p>
+            {deal.raisedAmountUndisclosed ? (
+              <p className="mb-6 font-serif text-2xl text-ink">Undisclosed Amount</p>
+            ) : (
+              <>
+                <div className="mb-2 flex items-baseline justify-between">
+                  <span className="font-serif text-2xl text-ink">
+                    {formatCompactCurrency(deal.raisedAmount)}
+                  </span>
+                  <span className="text-sm text-ink-secondary">{percent}% funded</span>
+                </div>
+                <ProgressBar percent={percent} />
+                <p className="mb-6 mt-2 text-xs text-ink-muted">
+                  of {formatCompactCurrency(deal.raiseGoal)} goal
+                </p>
+              </>
+            )}
 
             <div className="mb-6 space-y-4 border-t border-hairline pt-6">
               {sidebarDetails.map((item) => (

@@ -87,6 +87,7 @@ function scalarFields(input: DealInput) {
     bannerImageUrl: input.bannerImageUrl ?? null,
     raiseGoal: input.raiseGoal,
     raisedAmount: input.raisedAmount,
+    raisedAmountUndisclosed: input.raisedAmountUndisclosed,
     minimumInvestment: input.minimumInvestment,
     companyOverview: input.companyOverview,
     closeDate: input.closeDate ? new Date(input.closeDate) : null,

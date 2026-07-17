@@ -52,6 +52,7 @@ export function toCardDeal(deal: AdminDeal): Deal {
     dealType: OFFERING_TYPE_LABELS[deal.offeringType],
     status: deal.status === "LIVE" ? "live" : "closed",
     raised: deal.raisedAmount,
+    raisedUndisclosed: deal.raisedAmountUndisclosed,
     goal: deal.raiseGoal,
     minInvestment: deal.minimumInvestment,
     closeDate: deal.closeDate ?? undefined,

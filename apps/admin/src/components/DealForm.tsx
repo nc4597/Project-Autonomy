@@ -36,6 +36,7 @@ export interface DealFormValues {
   bannerImageUrl: string | null;
   raiseGoal: string;
   raisedAmount: string;
+  raisedAmountUndisclosed: boolean;
   minimumInvestment: string;
   companyOverview: string;
   closeDate: string;
@@ -60,6 +61,7 @@ export const emptyDealForm: DealFormValues = {
   bannerImageUrl: null,
   raiseGoal: "",
   raisedAmount: "",
+  raisedAmountUndisclosed: false,
   minimumInvestment: "",
   companyOverview: "",
   closeDate: "",
@@ -325,6 +327,17 @@ export function DealForm({
             onChange={(v) => set("minimumInvestment", v)}
           />
         </div>
+        {values.status === "CLOSED" && (
+          <label className="mt-4 flex items-center gap-2 text-sm text-ink">
+            <input
+              type="checkbox"
+              checked={values.raisedAmountUndisclosed}
+              onChange={(e) => set("raisedAmountUndisclosed", e.target.checked)}
+            />
+            Undisclosed Amount — hide the raised amount on the public site and
+            show &ldquo;Undisclosed Amount&rdquo; instead
+          </label>
+        )}
       </Section>
 
       <Section title="Company Overview">

@@ -20,6 +20,7 @@ export default async function EditDealPage({ params }: { params: { id: string } 
     bannerImageUrl: deal.bannerImageUrl,
     raiseGoal: String(deal.raiseGoal),
     raisedAmount: String(deal.raisedAmount),
+    raisedAmountUndisclosed: deal.raisedAmountUndisclosed,
     minimumInvestment: String(deal.minimumInvestment),
     companyOverview: deal.companyOverview,
     closeDate: deal.closeDate ? deal.closeDate.toISOString().slice(0, 7) : "",

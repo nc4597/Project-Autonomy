@@ -75,6 +75,7 @@ export interface AdminDeal {
   bannerImageUrl: string | null;
   raiseGoal: number;
   raisedAmount: number;
+  raisedAmountUndisclosed: boolean;
   minimumInvestment: number;
   companyOverview: string;
   closeDate: string | null;
