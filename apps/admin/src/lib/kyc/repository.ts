@@ -38,7 +38,11 @@ export async function listKycSubmissions(status?: "DRAFT" | "SUBMITTED"): Promis
   const submissions = await kycPrisma.verificationSubmission.findMany({
     where: status ? { status } : undefined,
     include: SUBMISSION_INCLUDE,
-    orderBy: [{ submittedAt: "desc" }, { createdAt: "desc" }],
+    // Postgres sorts NULLs first under DESC, which floated never-
+    // submitted drafts (submittedAt = null) above real submissions —
+    // nulls last keeps the newest submitted verification on top and
+    // drafts at the end (newest draft first among themselves).
+    orderBy: [{ submittedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
     take: 200,
   });
   return submissions.map(summarize);
