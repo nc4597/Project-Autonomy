@@ -276,7 +276,13 @@ export function FormConfigEditor() {
                   : "Certification";
             return (
               <button
-                key={entry.kind === "page" ? entry.page.key : entry.kind}
+                key={
+                  entry.kind === "page"
+                    ? `page-${entry.page.key}`
+                    : entry.kind === "core"
+                      ? `core-${entry.coreStep}`
+                      : "review"
+                }
                 type="button"
                 onClick={() => tab !== null && openTab(tab)}
                 className={`border border-b-0 px-4 py-2.5 text-xs font-semibold ${
