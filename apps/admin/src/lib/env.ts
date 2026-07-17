@@ -72,6 +72,11 @@ const envSchema = z.object({
   // email via a connected real mailbox (e.g. Gmail/Outlook), so no
   // sending-domain/DNS setup is needed on our end.
   ZAPIER_KYC_NOTIFICATION_WEBHOOK_URL: z.string().optional(),
+  // Separate Zap for investor rejection emails, so its recipient,
+  // sending mailbox, and template are configured independently of the
+  // admin notification Zap above. Unset = rejection emails skip loudly
+  // (the review UI tells the reviewer the email didn't go out).
+  ZAPIER_KYC_REJECTION_WEBHOOK_URL: z.string().optional(),
   ADMIN_NOTIFICATION_EMAILS: z.string().optional(),
 });
 

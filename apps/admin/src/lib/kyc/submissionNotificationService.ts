@@ -119,16 +119,18 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
 /**
  * Emails the investor when their submission is rejected: the reviewer's
  * notes verbatim plus a link back to the reopened wizard. Sent through
- * the same Zapier webhook as the admin notification — the Zap's email
- * action must map the recipient from the payload's `to` field, since
- * this one goes to the investor rather than the admin list. Returns
- * whether the webhook accepted the send.
+ * its own dedicated Zap (ZAPIER_KYC_REJECTION_WEBHOOK_URL) whose email
+ * action should map the recipient from the payload's `to` field — the
+ * investor's address. Returns whether the webhook accepted the send.
  */
 export async function notifyInvestorOfRejection(submissionId: string, notes: string): Promise<boolean> {
-  const webhookUrl = env.ZAPIER_KYC_NOTIFICATION_WEBHOOK_URL;
+  // Deliberately its own webhook (not the admin-notification one): the
+  // two Zaps address different audiences, so each can hardcode its own
+  // recipient handling and sender mailbox without filters.
+  const webhookUrl = env.ZAPIER_KYC_REJECTION_WEBHOOK_URL;
   if (!webhookUrl) {
     kycLogger.warn(
-      { submissionId, reason: "ZAPIER_KYC_NOTIFICATION_WEBHOOK_URL not set" },
+      { submissionId, reason: "ZAPIER_KYC_REJECTION_WEBHOOK_URL not set" },
       "rejection email skipped: integration not configured"
     );
     return false;
