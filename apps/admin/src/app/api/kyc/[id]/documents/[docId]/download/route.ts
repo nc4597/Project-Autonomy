@@ -6,7 +6,7 @@ import { createPresignedDownloadUrl } from "@/lib/kyc/s3Client";
 // /api/public/*, and /api/health are public) — reaching this route at
 // all requires a valid admin session.
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: { id: string; docId: string } }
 ) {
   const document = await kycPrisma.document.findUnique({ where: { id: params.docId } });
@@ -15,7 +15,13 @@ export async function GET(
   }
 
   try {
-    const url = await createPresignedDownloadUrl(document.s3Key);
+    // ?download=1 forces an attachment download; without it the file
+    // opens in the browser's viewer (used by the inline preview iframe).
+    const wantsDownload = new URL(request.url).searchParams.get("download") === "1";
+    const url = await createPresignedDownloadUrl(
+      document.s3Key,
+      wantsDownload ? `${document.category}_${document.originalFilename}` : undefined
+    );
     return NextResponse.redirect(url);
   } catch (err) {
     return NextResponse.json(

@@ -5,11 +5,17 @@ export const step1Schema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
   lastName: z.string().trim().min(1, "Last name is required"),
   email: z.string().trim().email("Enter a valid email address"),
+  // The calling code lives in its own dropdown (ISO country value, see
+  // callingCodes.ts); the two are combined into one stored string —
+  // "+44 7911 123456" — at save time. National part max 15 keeps the
+  // combined value inside the server's 20-char phone limit.
+  phoneCountryCode: z.string().regex(/^[A-Z]{2}$/, "Select a calling code"),
   phone: z
     .string()
     .trim()
-    .min(7, "Enter a valid phone number")
-    .regex(/^[0-9+()\-.\s]+$/, "Phone number contains invalid characters"),
+    .min(5, "Enter a valid phone number")
+    .max(15, "Enter the number without the country code")
+    .regex(/^[0-9()\-.\s]+$/, "Enter the number without the country code"),
   dateOfBirth: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date")

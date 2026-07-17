@@ -12,7 +12,14 @@ import { fieldFor, labelFor, visibleOptions } from "../../../lib/verification/fo
 import { InvestorTypeCard } from "../InvestorTypeCard";
 import { CustomFields } from "../CustomFields";
 import { WizardCard, WizardFooterNav } from "../WizardCard";
-import { Field, TextInput } from "../../ui/Field";
+import { Field, Select, TextInput } from "../../ui/Field";
+import {
+  codeForIso,
+  flagFor,
+  orderedCallingCodes,
+  splitStoredPhone,
+  PINNED_ISOS,
+} from "../../../lib/constants/callingCodes";
 
 export function Step1ContactInfo({
   submissionId,
@@ -28,6 +35,9 @@ export function Step1ContactInfo({
   const config = useFormConfig();
   const custom = useCustomAnswers(config, 1, draft);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // Saved drafts hold one combined phone string ("+44 7911 123456");
+  // split it back into the calling-code dropdown + national number.
+  const storedPhone = splitStoredPhone(draft.contactInfo?.phone);
   const {
     register,
     handleSubmit,
@@ -36,7 +46,9 @@ export function Step1ContactInfo({
     formState: { errors, isSubmitting },
   } = useForm<Step1FormValues>({
     resolver: zodResolver(step1Schema),
-    defaultValues: draft.contactInfo ?? { investorType: "INDIVIDUAL" },
+    defaultValues: draft.contactInfo
+      ? { ...draft.contactInfo, phoneCountryCode: storedPhone.iso, phone: storedPhone.national }
+      : { investorType: "INDIVIDUAL", phoneCountryCode: "US" },
   });
 
   const investorType = watch("investorType");
@@ -51,7 +63,12 @@ export function Step1ContactInfo({
       return;
     }
     try {
-      await saveContactInfo(submissionId, values, custom.payload());
+      const { phoneCountryCode, ...contact } = values;
+      await saveContactInfo(
+        submissionId,
+        { ...contact, phone: `${codeForIso(phoneCountryCode)} ${values.phone.trim()}` },
+        custom.payload()
+      );
       onSaved();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Failed to save. Please try again.");
@@ -74,8 +91,32 @@ export function Step1ContactInfo({
           <Field label={L("contact.email", "Email Address")} error={errors.email?.message}>
             <TextInput {...register("email")} type="email" placeholder="james@example.com" />
           </Field>
-          <Field label={L("contact.phone", "Phone Number")} error={errors.phone?.message}>
-            <TextInput {...register("phone")} type="tel" placeholder="+1 (555) 000-0000" />
+          <Field
+            label={L("contact.phone", "Phone Number")}
+            error={errors.phone?.message ?? errors.phoneCountryCode?.message}
+          >
+            <div className="flex gap-2">
+              <Select
+                {...register("phoneCountryCode")}
+                aria-label="Country calling code"
+                className="w-[7.5rem] flex-none"
+              >
+                {orderedCallingCodes().flatMap((entry, index) => [
+                  // Divider between the pinned countries and the full list.
+                  ...(index === PINNED_ISOS.length
+                    ? [
+                        <option key="divider" value="" disabled>
+                          ──────
+                        </option>,
+                      ]
+                    : []),
+                  <option key={entry.iso} value={entry.iso} title={entry.name}>
+                    {flagFor(entry.iso)} {entry.code}
+                  </option>,
+                ])}
+              </Select>
+              <TextInput {...register("phone")} type="tel" placeholder="(555) 000-0000" />
+            </div>
           </Field>
           <Field label={L("contact.dateOfBirth", "Date of Birth")} error={errors.dateOfBirth?.message}>
             <TextInput {...register("dateOfBirth")} type="date" />

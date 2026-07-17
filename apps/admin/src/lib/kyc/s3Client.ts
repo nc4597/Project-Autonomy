@@ -58,7 +58,17 @@ export async function deleteObject(key: string) {
   await kycS3().send(new DeleteObjectCommand({ Bucket: env.KYC_S3_BUCKET, Key: key }));
 }
 
-export async function createPresignedDownloadUrl(key: string) {
-  const command = new GetObjectCommand({ Bucket: env.KYC_S3_BUCKET, Key: key });
+export async function createPresignedDownloadUrl(key: string, downloadFilename?: string) {
+  const command = new GetObjectCommand({
+    Bucket: env.KYC_S3_BUCKET,
+    Key: key,
+    // Forces a save-as instead of the browser's inline viewer, under a
+    // readable name rather than the UUID-prefixed storage key.
+    ...(downloadFilename
+      ? {
+          ResponseContentDisposition: `attachment; filename="${downloadFilename.replace(/[^\w.\- ]/g, "_")}"`,
+        }
+      : {}),
+  });
   return getSignedUrl(kycS3(), command, { expiresIn: 5 * 60 });
 }
