@@ -11,6 +11,9 @@ export const SECTORS: Sector[] = [
   "Real Estate",
   "EdTech",
   "Private Equity",
+  "Financial Services/Asset Management",
+  "Telecommunications",
+  "Other",
 ];
 
 export const DEAL_TYPES: DealType[] = [
@@ -19,4 +22,6 @@ export const DEAL_TYPES: DealType[] = [
   "LP Placement",
   "Venture",
   "Fund",
+  "Direct Investment",
+  "Direct Placement",
 ];

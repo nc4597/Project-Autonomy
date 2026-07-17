@@ -11,6 +11,9 @@ export const SECTORS = [
   "REAL_ESTATE",
   "EDTECH",
   "PRIVATE_EQUITY",
+  "FINANCIAL_SERVICES_ASSET_MANAGEMENT",
+  "TELECOMMUNICATIONS",
+  "OTHER",
 ] as const;
 
 export const OFFERING_TYPES = [
@@ -19,6 +22,8 @@ export const OFFERING_TYPES = [
   "LP_PLACEMENT",
   "VENTURE",
   "FUND",
+  "DIRECT_INVESTMENT",
+  "DIRECT_PLACEMENT",
 ] as const;
 
 // Nothing below is required for now — the admin form is still being

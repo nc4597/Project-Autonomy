@@ -9,6 +9,9 @@ export const SECTOR_LABELS: Record<string, string> = {
   REAL_ESTATE: "Real Estate",
   EDTECH: "EdTech",
   PRIVATE_EQUITY: "Private Equity",
+  FINANCIAL_SERVICES_ASSET_MANAGEMENT: "Financial Services/Asset Management",
+  TELECOMMUNICATIONS: "Telecommunications",
+  OTHER: "Other",
 };
 
 export const OFFERING_TYPE_LABELS: Record<string, string> = {
@@ -17,6 +20,8 @@ export const OFFERING_TYPE_LABELS: Record<string, string> = {
   LP_PLACEMENT: "LP Placement",
   VENTURE: "Venture",
   FUND: "Fund",
+  DIRECT_INVESTMENT: "Direct Investment",
+  DIRECT_PLACEMENT: "Direct Placement",
 };
 
 // KYC/AML labels — these enum values come from the KYC Prisma schema

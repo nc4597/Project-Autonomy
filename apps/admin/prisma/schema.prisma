@@ -23,6 +23,9 @@ enum Sector {
   REAL_ESTATE
   EDTECH
   PRIVATE_EQUITY
+  FINANCIAL_SERVICES_ASSET_MANAGEMENT
+  TELECOMMUNICATIONS
+  OTHER
 }
 
 enum OfferingType {
@@ -31,6 +34,8 @@ enum OfferingType {
   LP_PLACEMENT
   VENTURE
   FUND
+  DIRECT_INVESTMENT
+  DIRECT_PLACEMENT
 }
 
 // One Deal record powers both the deal card (catalog grid, home page

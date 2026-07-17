@@ -12,9 +12,19 @@ export type AdminSector =
   | "INFRASTRUCTURE"
   | "REAL_ESTATE"
   | "EDTECH"
-  | "PRIVATE_EQUITY";
+  | "PRIVATE_EQUITY"
+  | "FINANCIAL_SERVICES_ASSET_MANAGEMENT"
+  | "TELECOMMUNICATIONS"
+  | "OTHER";
 
-export type AdminOfferingType = "REG_D_506C" | "REG_A" | "LP_PLACEMENT" | "VENTURE" | "FUND";
+export type AdminOfferingType =
+  | "REG_D_506C"
+  | "REG_A"
+  | "LP_PLACEMENT"
+  | "VENTURE"
+  | "FUND"
+  | "DIRECT_INVESTMENT"
+  | "DIRECT_PLACEMENT";
 
 export interface LabelValue {
   id: string;

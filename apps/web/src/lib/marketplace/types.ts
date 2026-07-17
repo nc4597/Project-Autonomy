@@ -8,14 +8,19 @@ export type Sector =
   | "Infrastructure"
   | "Real Estate"
   | "EdTech"
-  | "Private Equity";
+  | "Private Equity"
+  | "Financial Services/Asset Management"
+  | "Telecommunications"
+  | "Other";
 
 export type DealType =
   | "Reg D 506(c)"
   | "Reg A"
   | "LP Placement"
   | "Venture"
-  | "Fund";
+  | "Fund"
+  | "Direct Investment"
+  | "Direct Placement";
 
 export type DealStatus = "live" | "closed";
 
