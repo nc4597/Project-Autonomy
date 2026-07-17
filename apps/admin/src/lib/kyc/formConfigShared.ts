@@ -27,15 +27,16 @@ const formOptionSchema = z.object({
 });
 
 // Admin-defined wizard pages. afterStep says which core step the page
-// follows (1 = after Contact Info, 2 = after KYC/AML, 3 = after
-// Accreditation — the default, and what pages created before this
-// field existed mean); array order is the order within that slot. A
-// field whose `step` is a page's key lives on that page.
+// follows (0 = before Contact Info — i.e. the wizard's first page,
+// 1 = after Contact Info, 2 = after KYC/AML, 3 = after Accreditation —
+// the default, and what pages created before this field existed mean);
+// array order is the order within that slot. A field whose `step` is a
+// page's key lives on that page.
 const customPageSchema = z.object({
   key: z.string().trim().min(1).max(80),
   title: z.string().trim().min(1).max(120),
   description: z.string().trim().max(300).optional(),
-  afterStep: z.union([z.literal(1), z.literal(2), z.literal(3)]).default(3),
+  afterStep: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).default(3),
 });
 
 const formFieldSchema = z.object({
@@ -231,11 +232,12 @@ type WizardEntryDraft =
 
 export function buildWizardSequence(config: VerificationFormConfig): WizardEntry[] {
   const entries: WizardEntryDraft[] = [];
+  const pagesInSlot = (slot: 0 | 1 | 2 | 3) =>
+    config.customPages.filter((p) => (p.afterStep ?? 3) === slot);
+  for (const page of pagesInSlot(0)) entries.push({ kind: "page", page });
   for (const coreStep of [1, 2, 3] as const) {
     entries.push({ kind: "core", coreStep });
-    for (const page of config.customPages.filter((p) => (p.afterStep ?? 3) === coreStep)) {
-      entries.push({ kind: "page", page });
-    }
+    for (const page of pagesInSlot(coreStep)) entries.push({ kind: "page", page });
   }
   entries.push({ kind: "review" });
   return entries.map((entry, index) => ({ ...entry, number: index + 1 }));
@@ -269,7 +271,7 @@ export function movePageInConfig(
   pageKey: string,
   direction: -1 | 1
 ): VerificationFormConfig {
-  const ordered = ([1, 2, 3] as const).flatMap((slot) =>
+  const ordered = ([0, 1, 2, 3] as const).flatMap((slot) =>
     config.customPages.filter((p) => (p.afterStep ?? 3) === slot).map((p) => ({ ...p, afterStep: slot }))
   );
   const index = ordered.findIndex((p) => p.key === pageKey);
@@ -279,13 +281,13 @@ export function movePageInConfig(
 
   if (neighbor && neighbor.afterStep === page.afterStep) {
     [ordered[index], ordered[index + direction]] = [ordered[index + direction], ordered[index]];
-  } else if (direction === -1 && page.afterStep > 1) {
-    page.afterStep = (page.afterStep - 1) as 1 | 2 | 3;
+  } else if (direction === -1 && page.afterStep > 0) {
+    page.afterStep = (page.afterStep - 1) as 0 | 1 | 2 | 3;
     // Re-sort puts it at the end of the earlier slot, i.e. directly
     // before the core step it used to follow.
     ordered.sort((a, b) => a.afterStep - b.afterStep || 0);
   } else if (direction === 1 && page.afterStep < 3) {
-    page.afterStep = (page.afterStep + 1) as 1 | 2 | 3;
+    page.afterStep = (page.afterStep + 1) as 0 | 1 | 2 | 3;
     // Moving later should land it at the START of the next slot; pull
     // it out and reinsert before that slot's existing pages.
     const without = ordered.filter((p) => p.key !== pageKey);

@@ -310,6 +310,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
               listing.
             </p>
           </div>
+          <div aria-hidden className="h-6" />
         </aside>
       </Container>
     </>

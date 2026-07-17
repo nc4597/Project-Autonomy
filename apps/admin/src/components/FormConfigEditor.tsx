@@ -366,8 +366,8 @@ export function FormConfigEditor() {
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <span className="text-xs text-ink-muted">
-              Shown to investors as Step {previewStepNumber} of {totalSteps} — move it anywhere
-              between Contact Info and Certification.
+              Shown to investors as Step {previewStepNumber} of {totalSteps} — move it anywhere,
+              including before Contact Info as the very first page.
             </span>
             <span className="flex gap-2">
               <button

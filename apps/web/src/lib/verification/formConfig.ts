@@ -36,14 +36,15 @@ export interface FormField {
 
 /**
  * Admin-defined wizard page. afterStep says which core step it follows
- * (1 = after Contact Info, 2 = after KYC/AML, 3 = after Accreditation —
- * also the meaning when absent, for pages saved before it existed).
+ * (0 = before Contact Info as the wizard's first page, 1 = after
+ * Contact Info, 2 = after KYC/AML, 3 = after Accreditation — also the
+ * meaning when absent, for pages saved before it existed).
  */
 export interface CustomPage {
   key: string;
   title: string;
   description?: string;
-  afterStep?: 1 | 2 | 3;
+  afterStep?: 0 | 1 | 2 | 3;
 }
 
 export interface VerificationFormConfig {
@@ -171,11 +172,12 @@ type WizardEntryDraft =
 
 export function buildWizardSequence(config: VerificationFormConfig): WizardEntry[] {
   const entries: WizardEntryDraft[] = [];
+  const pagesInSlot = (slot: 0 | 1 | 2 | 3) =>
+    config.customPages.filter((p) => (p.afterStep ?? 3) === slot);
+  for (const page of pagesInSlot(0)) entries.push({ kind: "page", page });
   for (const coreStep of [1, 2, 3] as const) {
     entries.push({ kind: "core", coreStep });
-    for (const page of config.customPages.filter((p) => (p.afterStep ?? 3) === coreStep)) {
-      entries.push({ kind: "page", page });
-    }
+    for (const page of pagesInSlot(coreStep)) entries.push({ kind: "page", page });
   }
   entries.push({ kind: "review" });
   return entries.map((entry, index) => ({ ...entry, number: index + 1 }));
