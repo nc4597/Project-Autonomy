@@ -278,7 +278,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
                 I&apos;m Interested
               </Button>
               <Button variant="secondary" className="w-full">
-                Contact Investor Relations
+                Contact Investment Relations
               </Button>
             </div>
           </div>
