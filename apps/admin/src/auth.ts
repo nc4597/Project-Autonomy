@@ -35,10 +35,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/login",
   },
   callbacks: {
-    async signIn({ user }) {
-      if (!user.email) return false;
-      const allowed = await prisma.adminUser.findUnique({
-        where: { email: user.email.toLowerCase() },
+    async signIn({ user, profile }) {
+      // Microsoft doesn't always populate the `email` claim (it depends on
+      // tenant/account configuration) — preferred_username is the UPN,
+      // which is usually the same address and a more reliable fallback.
+      const email = user.email ?? (profile as { preferred_username?: string } | undefined)?.preferred_username;
+      if (!email) return false;
+
+      // Case-insensitive at the database level, not just via .toLowerCase()
+      // in JS — belt and suspenders against however the email ends up
+      // cased on either side.
+      const allowed = await prisma.adminUser.findFirst({
+        where: { email: { equals: email, mode: "insensitive" } },
       });
       return Boolean(allowed);
     },
