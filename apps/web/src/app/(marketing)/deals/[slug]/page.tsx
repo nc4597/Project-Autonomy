@@ -254,9 +254,11 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
 
             <div className="mb-6 space-y-4 border-t border-hairline pt-6">
               {sidebarDetails.map((item) => (
-                <div key={item.label} className="flex items-center justify-between">
+                <div key={item.label} className="grid grid-cols-2 items-baseline gap-4">
                   <span className="text-sm text-ink-secondary">{item.label}</span>
-                  <span className="text-sm font-semibold text-ink">{item.value}</span>
+                  <span className="text-right text-sm font-semibold text-ink">
+                    {item.value}
+                  </span>
                 </div>
               ))}
             </div>
