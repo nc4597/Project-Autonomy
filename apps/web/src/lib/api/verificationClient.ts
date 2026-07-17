@@ -191,8 +191,9 @@ export function saveCertification(id: string, tosVersion: string) {
   });
 }
 
-export function submitVerification(id: string) {
+export function submitVerification(id: string, captchaToken?: string) {
   return request<{ ok: true; submittedAt: string }>(`/verifications/${id}/submit`, {
     method: "POST",
+    ...(captchaToken ? { body: JSON.stringify({ captchaToken }) } : {}),
   });
 }

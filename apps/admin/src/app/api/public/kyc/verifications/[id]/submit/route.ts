@@ -4,13 +4,14 @@ import { SUBMISSION_INCLUDE } from "@/lib/kyc/serialize";
 import { validateSubmissionCompleteness } from "@/lib/kyc/submissionValidation";
 import { notifyAdminsOfSubmission } from "@/lib/kyc/submissionNotificationService";
 import { syncContactCard } from "@/lib/kyc/hubspotContactService";
+import { verifyCaptchaToken } from "@/lib/kyc/turnstile";
 import { jsonWithCors, corsPreflight } from "@/lib/kyc/cors";
 
 export async function OPTIONS() {
   return corsPreflight();
 }
 
-export async function POST(_request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: { params: { id: string } }) {
   const submission = await kycPrisma.verificationSubmission.findUnique({
     where: { id: params.id },
     include: SUBMISSION_INCLUDE,
@@ -18,6 +19,21 @@ export async function POST(_request: Request, { params }: { params: { id: string
   if (!submission) return jsonWithCors({ error: "Submission not found" }, { status: 404 });
   if (submission.status === "SUBMITTED") {
     return jsonWithCors({ error: "Submission already submitted" }, { status: 409 });
+  }
+
+  // Security check before anything else: the browser earned this token
+  // in the Turnstile popup; a submission without a valid one is a bot
+  // (or the integration isn't configured yet, which verifyCaptchaToken
+  // treats as a loud skip).
+  const body = (await request.json().catch(() => ({}))) as { captchaToken?: unknown };
+  const remoteIp =
+    request.headers.get("cf-connecting-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    null;
+  const captcha = await verifyCaptchaToken(body.captchaToken, remoteIp);
+  if (!captcha.ok) {
+    kycLogger.warn({ submissionId: submission.id, reason: captcha.reason }, "submission blocked: captcha failed");
+    return jsonWithCors({ error: "Security check failed. Please try again." }, { status: 403 });
   }
 
   const errors = validateSubmissionCompleteness(submission);

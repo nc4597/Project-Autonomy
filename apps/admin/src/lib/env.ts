@@ -57,6 +57,11 @@ const envSchema = z.object({
   // to a synced contact card on the admin KYC detail page.
   HUBSPOT_PORTAL_ID: z.string().optional(),
 
+  // Cloudflare Turnstile secret for verifying the Review & Submit
+  // security-check token server-side (see lib/kyc/turnstile.ts).
+  // Unset = verification skipped loudly.
+  TURNSTILE_SECRET_KEY: z.string().optional(),
+
   // Admin notification email on every KYC submission. We POST a JSON
   // payload to a Zapier "Catch Hook" webhook; the Zap sends the actual
   // email via a connected real mailbox (e.g. Gmail/Outlook), so no
