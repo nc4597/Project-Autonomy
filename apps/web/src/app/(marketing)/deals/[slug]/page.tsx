@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { DealThumbnail } from "@/components/ui/DealThumbnail";
 import { FaqAccordion } from "@/components/ui/FaqAccordion";
-import { ProgressBar } from "@/components/ui/ProgressBar";
 import { OFFERING_TYPE_LABELS, SECTOR_LABELS } from "@/lib/marketplace/adapters";
 import { getDealBySlug } from "@/lib/marketplace/adminClient";
-import { formatCompactCurrency, percentFunded } from "@/lib/marketplace/format";
+import { formatCompactCurrency } from "@/lib/marketplace/format";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +16,6 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
   const deal = await getDealBySlug(params.slug);
   if (!deal) notFound();
 
-  const percent = percentFunded(deal.raisedAmount, deal.raiseGoal);
   const sectorLabel = SECTOR_LABELS[deal.sector];
   const offeringTypeLabel = OFFERING_TYPE_LABELS[deal.offeringType];
 
@@ -241,24 +239,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
 
         <aside className="h-fit lg:sticky lg:top-[100px]">
           <div className="mb-6 border border-hairline bg-card p-6">
-            {deal.raisedAmountUndisclosed ? (
-              <p className="mb-6 font-serif text-2xl text-ink">Undisclosed Amount</p>
-            ) : (
-              <>
-                <div className="mb-2 flex items-baseline justify-between">
-                  <span className="font-serif text-2xl text-ink">
-                    {formatCompactCurrency(deal.raisedAmount)}
-                  </span>
-                  <span className="text-sm text-ink-secondary">{percent}% funded</span>
-                </div>
-                <ProgressBar percent={percent} />
-                <p className="mb-6 mt-2 text-xs text-ink-muted">
-                  of {formatCompactCurrency(deal.raiseGoal)} goal
-                </p>
-              </>
-            )}
-
-            <div className="mb-6 space-y-4 border-t border-hairline pt-6">
+            <div className="mb-6 space-y-4">
               {sidebarDetails.map((item) => (
                 <div key={item.label} className="grid grid-cols-2 items-baseline gap-4">
                   <span className="text-sm text-ink-secondary">{item.label}</span>
@@ -269,18 +250,13 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
               ))}
             </div>
 
-            <div className="space-y-3">
-              <Button
-                href={`/verify?dealId=${encodeURIComponent(deal.slug)}`}
-                variant="primary"
-                className="w-full"
-              >
-                I&apos;m Interested
-              </Button>
-              <Button variant="secondary" className="w-full">
-                Contact Investment Relations
-              </Button>
-            </div>
+            <Button
+              href={`/verify?dealId=${encodeURIComponent(deal.slug)}`}
+              variant="primary"
+              className="w-full"
+            >
+              I&apos;m Interested
+            </Button>
           </div>
 
           <div className="mb-6 bg-navy-950 p-6">
