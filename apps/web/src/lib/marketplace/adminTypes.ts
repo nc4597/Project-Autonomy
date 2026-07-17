@@ -93,6 +93,10 @@ export interface AdminSiteSettings {
   completedTransactions: string;
   activeDeals: string;
   investorNetwork: string;
+  /** About page team section heading — admin-editable in Home Settings. */
+  teamSectionTitle?: string;
+  /** Team section subtitle; "{count}" renders as the live member count. */
+  teamSectionSubtitle?: string;
   featuredDeal: AdminDeal | null;
   featuredClosedDeals: AdminDeal[];
 }

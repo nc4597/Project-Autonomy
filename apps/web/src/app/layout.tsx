@@ -15,7 +15,7 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Regiment Marketplace",
+  title: "Regiment Securities | Express",
   description: "Private investment marketplace for Reg D deals.",
 };
 

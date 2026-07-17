@@ -15,6 +15,8 @@ export default async function SettingsPage() {
           completedTransactions: settings.completedTransactions,
           activeDeals: settings.activeDeals,
           investorNetwork: settings.investorNetwork,
+          teamSectionTitle: settings.teamSectionTitle,
+          teamSectionSubtitle: settings.teamSectionSubtitle,
           featuredDealId: settings.featuredDeal?.id ?? null,
           featuredClosedDealIds: settings.featuredClosedDeals.map((d) => d.id),
         }}

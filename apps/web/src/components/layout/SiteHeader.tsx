@@ -22,7 +22,7 @@ export function SiteHeader() {
             />
           </span>
           <span className="text-sm font-semibold tracking-wide">
-            REGIMENT <span className="text-white/50">|</span> MARKETPLACE
+            REGIMENT SECURITIES <span className="text-white/50">|</span> EXPRESS
           </span>
         </Link>
 

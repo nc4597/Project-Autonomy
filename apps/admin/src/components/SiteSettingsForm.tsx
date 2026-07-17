@@ -13,6 +13,8 @@ export interface SiteSettingsFormValues {
   completedTransactions: string;
   activeDeals: string;
   investorNetwork: string;
+  teamSectionTitle: string;
+  teamSectionSubtitle: string;
   featuredDealId: string | null;
   featuredClosedDealIds: string[];
 }
@@ -84,6 +86,36 @@ export function SiteSettingsForm({
               />
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="border border-hairline bg-card p-6">
+        <h2 className="mb-4 font-serif text-xl text-ink">About Page — Team Section</h2>
+        <div className="space-y-4">
+          <div>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-secondary">
+              Section Title
+            </label>
+            <input
+              value={values.teamSectionTitle}
+              onChange={(e) => set("teamSectionTitle", e.target.value)}
+              className="w-full border border-hairline bg-page px-3 py-2 text-sm text-ink focus:border-navy-800 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-secondary">
+              Subtitle
+            </label>
+            <input
+              value={values.teamSectionSubtitle}
+              onChange={(e) => set("teamSectionSubtitle", e.target.value)}
+              className="w-full border border-hairline bg-page px-3 py-2 text-sm text-ink focus:border-navy-800 focus:outline-none"
+            />
+            <p className="mt-1 text-xs text-ink-muted">
+              Shown under the title. Write {"{count}"} anywhere and it renders as the live number
+              of team members. Leave empty to show no subtitle.
+            </p>
+          </div>
         </div>
       </section>
 

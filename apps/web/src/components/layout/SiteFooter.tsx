@@ -51,7 +51,7 @@ const FOOTER_COLUMNS: {
 export function ComplianceStrip() {
   return (
     <p className="py-6 text-center text-xs text-ink-muted">
-      Powered by Regiment Marketplace &middot; FINRA/SIPC Member &middot; 256-bit AES Encryption
+      Powered by Regiment Securities | Express &middot; FINRA/SIPC Member &middot; 256-bit AES Encryption
     </p>
   );
 }

@@ -90,6 +90,8 @@ export const siteSettingsInputSchema = z.object({
   completedTransactions: z.string().default("0"),
   activeDeals: z.string().default("0"),
   investorNetwork: z.string().default("0"),
+  teamSectionTitle: z.string().trim().min(1).max(160).default("Meet the Investment Relations Team"),
+  teamSectionSubtitle: z.string().trim().max(300).default(""),
   featuredDealId: z.string().optional().nullable(),
   featuredClosedDealIds: z.array(z.string()).default([]),
 });

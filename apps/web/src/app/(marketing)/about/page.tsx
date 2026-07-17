@@ -1,8 +1,8 @@
 import { Container } from "@/components/ui/Container";
 import { TeamSection } from "@/components/about/TeamSection";
 import { Cta } from "@/components/home/Cta";
-import { getTeamMembers } from "@/lib/marketplace/adminClient";
-import type { AdminTeamMember } from "@/lib/marketplace/adminTypes";
+import { getSiteSettings, getTeamMembers } from "@/lib/marketplace/adminClient";
+import type { AdminSiteSettings, AdminTeamMember } from "@/lib/marketplace/adminTypes";
 
 // Fetch at request time, never during `next build` — same convention as
 // the home/deals pages (a build must not depend on the admin service
@@ -14,10 +14,12 @@ export default async function AboutPage() {
   // is an optional section — if the admin service is unreachable, render
   // the page without it rather than erroring.
   let teamMembers: AdminTeamMember[] = [];
+  let settings: AdminSiteSettings | null = null;
   try {
-    teamMembers = await getTeamMembers();
+    [teamMembers, settings] = await Promise.all([getTeamMembers(), getSiteSettings()]);
   } catch {
-    // TeamSection renders nothing for an empty list.
+    // TeamSection renders nothing for an empty list and falls back to
+    // its default heading without settings.
   }
 
   return (
@@ -51,7 +53,11 @@ export default async function AboutPage() {
         </Container>
       </div>
 
-      <TeamSection members={teamMembers} />
+      <TeamSection
+        members={teamMembers}
+        title={settings?.teamSectionTitle}
+        subtitle={settings?.teamSectionSubtitle}
+      />
       <Cta />
     </>
   );
