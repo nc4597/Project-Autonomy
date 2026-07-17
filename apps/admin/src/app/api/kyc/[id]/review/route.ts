@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auth } from "@/auth";
+import { isComplianceReviewer } from "@/lib/compliance";
 import { kycPrisma } from "@/lib/kyc/prisma";
 import { kycLogger } from "@/lib/kyc/logger";
 import { notifyInvestorOfRejection } from "@/lib/kyc/submissionNotificationService";
@@ -13,6 +15,16 @@ const bodySchema = z.object({
 // /api/public/*, and /api/health are public) — reaching this route at
 // all requires a valid admin session.
 export async function POST(request: Request, { params }: { params: { id: string } }) {
+  // Middleware guarantees a signed-in admin; this is the stricter
+  // compliance check — only allowlisted reviewers may decide.
+  const session = await auth();
+  if (!isComplianceReviewer(session?.user?.email)) {
+    return NextResponse.json(
+      { error: "Compliance review is restricted to authorized reviewers" },
+      { status: 403 }
+    );
+  }
+
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid review payload" }, { status: 400 });

@@ -62,6 +62,11 @@ const envSchema = z.object({
   // Unset = verification skipped loudly.
   TURNSTILE_SECRET_KEY: z.string().optional(),
 
+  // Comma-separated Microsoft account emails allowed to use the KYC
+  // Compliance Review (Verify/Reject) — e.g. Rob's. Unset = every
+  // signed-in admin can review (see lib/compliance.ts).
+  COMPLIANCE_REVIEWER_EMAILS: z.string().optional(),
+
   // Admin notification email on every KYC submission. We POST a JSON
   // payload to a Zapier "Catch Hook" webhook; the Zap sends the actual
   // email via a connected real mailbox (e.g. Gmail/Outlook), so no

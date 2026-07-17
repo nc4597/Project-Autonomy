@@ -50,5 +50,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       });
       return Boolean(allowed);
     },
+    // Persist the resolved email into the session even when Microsoft
+    // omits the `email` claim — the compliance-reviewer check (see
+    // lib/compliance.ts) needs a reliable session email to gate on.
+    jwt({ token, profile }) {
+      const p = profile as { email?: string; preferred_username?: string } | undefined;
+      if (p) token.email = p.email ?? p.preferred_username ?? token.email;
+      return token;
+    },
+    session({ session, token }) {
+      if (token.email && session.user) session.user.email = token.email;
+      return session;
+    },
   },
 });

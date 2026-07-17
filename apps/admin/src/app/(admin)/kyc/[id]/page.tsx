@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getKycSubmissionDetail } from "@/lib/kyc/repository";
 import { KycDocumentRow } from "@/components/KycDocumentRow";
 import { KycReviewSection } from "@/components/KycReviewSection";
+import { auth } from "@/auth";
+import { isComplianceReviewer } from "@/lib/compliance";
 import { env } from "@/lib/env";
 import {
   KYC_ACCREDITATION_METHOD_LABELS,
@@ -76,6 +78,9 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
   }
   if (!submission) notFound();
 
+  const session = await auth();
+  const canReview = isComplianceReviewer(session?.user?.email);
+
   const { contactInfo, kycAmlInfo, accreditation, certification, documents } = submission;
 
   return (
@@ -96,21 +101,20 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
         <div className="flex items-center gap-3">
           <span
             className={`px-3 py-1.5 text-xs font-semibold uppercase ${
-              submission.reviewStatus === "VERIFIED"
-                ? "bg-success text-white"
-                : submission.reviewStatus === "REJECTED"
-                  ? "bg-brand-red/10 text-brand-red"
-                  : submission.status === "SUBMITTED"
-                    ? "bg-success/10 text-success"
-                    : "bg-ink-muted/10 text-ink-muted"
+              submission.status === "SUBMITTED" ? "bg-success/10 text-success" : "bg-ink-muted/10 text-ink-muted"
             }`}
           >
-            {submission.reviewStatus === "VERIFIED"
-              ? "Verified"
-              : submission.reviewStatus === "REJECTED"
-                ? "Rejected"
-                : KYC_STATUS_LABELS[submission.status]}
+            {KYC_STATUS_LABELS[submission.status]}
           </span>
+          {submission.reviewStatus === "VERIFIED" ? (
+            <span className="bg-success px-3 py-1.5 text-xs font-semibold uppercase text-white">Verified</span>
+          ) : submission.reviewStatus === "REJECTED" ? (
+            <span className="bg-brand-red/10 px-3 py-1.5 text-xs font-semibold uppercase text-brand-red">Rejected</span>
+          ) : submission.status === "SUBMITTED" ? (
+            <span className="border border-ink-muted px-3 py-1.5 text-xs font-semibold uppercase text-ink-secondary">
+              Pending
+            </span>
+          ) : null}
           <a
             href={`/api/kyc/${submission.id}/summary`}
             className="border border-navy-950 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-navy-950 hover:bg-navy-950 hover:text-white"
@@ -226,12 +230,18 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
         </div>
 
         <div className="lg:col-span-2">
-          <KycReviewSection
-            submissionId={submission.id}
-            reviewStatus={submission.reviewStatus}
-            reviewNotes={submission.reviewNotes}
-            reviewedAt={submission.reviewedAt}
-          />
+          {canReview ? (
+            <KycReviewSection
+              submissionId={submission.id}
+              reviewStatus={submission.reviewStatus}
+              reviewNotes={submission.reviewNotes}
+              reviewedAt={submission.reviewedAt}
+            />
+          ) : (
+            <div className="border border-dashed border-hairline bg-card px-5 py-4 text-sm text-ink-muted">
+              🔒 Compliance review is restricted to authorized reviewers.
+            </div>
+          )}
         </div>
       </div>
     </div>
