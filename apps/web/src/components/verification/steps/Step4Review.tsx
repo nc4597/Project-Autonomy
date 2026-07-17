@@ -11,7 +11,11 @@ import {
 } from "../../../lib/constants/verification";
 import { saveCertification, submitVerification, type VerificationDraft } from "../../../lib/api/verificationClient";
 import { useFormConfig } from "../../../lib/hooks/useFormConfig";
-import { customFieldsForStep } from "../../../lib/verification/formConfig";
+import {
+  buildWizardSequence,
+  customFieldsForStep,
+  numberForCore,
+} from "../../../lib/verification/formConfig";
 import { SummaryRow } from "../SummaryRow";
 import { WizardCard, WizardFooterNav } from "../WizardCard";
 import { ComplianceNotice } from "../../ui/ComplianceNotice";
@@ -132,7 +136,7 @@ export function Step4Review({
   return (
     <div>
       <WizardCard title="Review & Submit" description="Review your information before submitting for compliance review.">
-        <SummarySection title="Contact Information" onEdit={() => onEditStep(1)}>
+        <SummarySection title="Contact Information" onEdit={() => onEditStep(numberForCore(config, 1))}>
           {draft.contactInfo && (
             <>
               <SummaryRow label="Name" value={`${draft.contactInfo.firstName} ${draft.contactInfo.lastName}`} />
@@ -151,7 +155,7 @@ export function Step4Review({
           ))}
         </SummarySection>
 
-        <SummarySection title="KYC / AML" onEdit={() => onEditStep(2)}>
+        <SummarySection title="KYC / AML" onEdit={() => onEditStep(numberForCore(config, 2))}>
           <SummaryRow label="Government ID" value={idUploaded ? "Uploaded" : "Missing"} />
           <SummaryRow label="Proof of Address" value={proofOfAddressUploaded ? "Uploaded" : "Missing"} />
           {draft.kycAmlInfo && (
@@ -172,7 +176,7 @@ export function Step4Review({
           ))}
         </SummarySection>
 
-        <SummarySection title="Accredited Investor" onEdit={() => onEditStep(3)}>
+        <SummarySection title="Accredited Investor" onEdit={() => onEditStep(numberForCore(config, 3))}>
           <SummaryRow label="Accredited?" value={draft.accreditation ? "Yes" : "No"} />
           {draft.accreditation && (
             <SummaryRow label="Qualification" value={ACCREDITATION_METHOD_DETAILS[draft.accreditation.method].title} />
@@ -190,12 +194,15 @@ export function Step4Review({
           ))}
         </SummarySection>
 
-        {config.customPages.map((page, index) => {
+        {buildWizardSequence(config)
+          .flatMap((entry) => (entry.kind === "page" ? [entry] : []))
+          .map((entry) => {
+          const page = entry.page;
           const rows = customFieldsForStep(config, page.key)
             .map((field) => ({ label: field.label, value: answersByKey[field.key] }))
             .filter((row) => row.value);
           return (
-            <SummarySection key={page.key} title={page.title} onEdit={() => onEditStep(4 + index)}>
+            <SummarySection key={page.key} title={page.title} onEdit={() => onEditStep(entry.number)}>
               {rows.length > 0 ? (
                 rows.map((row) => <SummaryRow key={row.label} label={row.label} value={row.value} />)
               ) : (

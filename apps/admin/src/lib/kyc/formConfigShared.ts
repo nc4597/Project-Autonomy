@@ -26,13 +26,16 @@ const formOptionSchema = z.object({
   hidden: z.boolean().optional(),
 });
 
-// Admin-defined wizard pages. They render between Accreditation (core
-// step 3) and the final Review & Certification step, in array order; a
+// Admin-defined wizard pages. afterStep says which core step the page
+// follows (1 = after Contact Info, 2 = after KYC/AML, 3 = after
+// Accreditation — the default, and what pages created before this
+// field existed mean); array order is the order within that slot. A
 // field whose `step` is a page's key lives on that page.
 const customPageSchema = z.object({
   key: z.string().trim().min(1).max(80),
   title: z.string().trim().min(1).max(120),
   description: z.string().trim().max(300).optional(),
+  afterStep: z.union([z.literal(1), z.literal(2), z.literal(3)]).default(3),
 });
 
 const formFieldSchema = z.object({
@@ -206,4 +209,94 @@ export function validateDraftAgainstCore(draft: VerificationFormConfig): string 
   }
 
   return null;
+}
+
+// ---------------------------------------------------------------------------
+// Wizard sequence — the single source of truth for what order the
+// investor walks through: core steps with their pages interleaved,
+// Review & Certification always last. `number` is the 1-based step
+// number investors see; everything that advances, renders, or links to
+// a step derives it from here.
+// ---------------------------------------------------------------------------
+
+export type WizardEntry =
+  | { number: number; kind: "core"; coreStep: 1 | 2 | 3 }
+  | { number: number; kind: "page"; page: CustomPage }
+  | { number: number; kind: "review" };
+
+export function buildWizardSequence(config: VerificationFormConfig): WizardEntry[] {
+  const entries: (Omit<WizardEntry, "number"> & { number?: number })[] = [];
+  for (const coreStep of [1, 2, 3] as const) {
+    entries.push({ kind: "core", coreStep });
+    for (const page of config.customPages.filter((p) => (p.afterStep ?? 3) === coreStep)) {
+      entries.push({ kind: "page", page });
+    }
+  }
+  entries.push({ kind: "review" });
+  return entries.map((entry, index) => ({ ...entry, number: index + 1 }) as WizardEntry);
+}
+
+/** The step number a core step's save should advance the draft to. */
+export function stepNumberAfterCore(config: VerificationFormConfig, coreStep: 1 | 2 | 3): number {
+  const sequence = buildWizardSequence(config);
+  const entry = sequence.find((e) => e.kind === "core" && e.coreStep === coreStep);
+  return Math.min((entry?.number ?? coreStep) + 1, sequence.length);
+}
+
+export function numberForCore(config: VerificationFormConfig, coreStep: 1 | 2 | 3): number {
+  const entry = buildWizardSequence(config).find((e) => e.kind === "core" && e.coreStep === coreStep);
+  return entry?.number ?? coreStep;
+}
+
+export function numberForPage(config: VerificationFormConfig, pageKey: string): number | null {
+  const entry = buildWizardSequence(config).find((e) => e.kind === "page" && e.page.key === pageKey);
+  return entry?.number ?? null;
+}
+
+/**
+ * Moves a page one position through the wizard: within its slot first,
+ * hopping across the neighboring core step when it hits the slot edge.
+ * Returns a config whose customPages array is stored in sequence order
+ * (the array order is what breaks ties within a slot).
+ */
+export function movePageInConfig(
+  config: VerificationFormConfig,
+  pageKey: string,
+  direction: -1 | 1
+): VerificationFormConfig {
+  const ordered = ([1, 2, 3] as const).flatMap((slot) =>
+    config.customPages.filter((p) => (p.afterStep ?? 3) === slot).map((p) => ({ ...p, afterStep: slot }))
+  );
+  const index = ordered.findIndex((p) => p.key === pageKey);
+  if (index === -1) return config;
+  const page = ordered[index];
+  const neighbor = ordered[index + direction];
+
+  if (neighbor && neighbor.afterStep === page.afterStep) {
+    [ordered[index], ordered[index + direction]] = [ordered[index + direction], ordered[index]];
+  } else if (direction === -1 && page.afterStep > 1) {
+    page.afterStep = (page.afterStep - 1) as 1 | 2 | 3;
+    // Re-sort puts it at the end of the earlier slot, i.e. directly
+    // before the core step it used to follow.
+    ordered.sort((a, b) => a.afterStep - b.afterStep || 0);
+  } else if (direction === 1 && page.afterStep < 3) {
+    page.afterStep = (page.afterStep + 1) as 1 | 2 | 3;
+    // Moving later should land it at the START of the next slot; pull
+    // it out and reinsert before that slot's existing pages.
+    const without = ordered.filter((p) => p.key !== pageKey);
+    const insertAt = without.findIndex((p) => p.afterStep >= page.afterStep);
+    without.splice(insertAt === -1 ? without.length : insertAt, 0, page);
+    return { ...config, customPages: without };
+  } else {
+    return config;
+  }
+  return { ...config, customPages: ordered };
+}
+
+export function canMovePage(
+  config: VerificationFormConfig,
+  pageKey: string,
+  direction: -1 | 1
+): boolean {
+  return movePageInConfig(config, pageKey, direction) !== config;
 }

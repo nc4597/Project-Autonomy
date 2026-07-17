@@ -34,11 +34,16 @@ export interface FormField {
   optionsLocked?: boolean;
 }
 
-/** Admin-defined wizard page, rendered between Accreditation and Review. */
+/**
+ * Admin-defined wizard page. afterStep says which core step it follows
+ * (1 = after Contact Info, 2 = after KYC/AML, 3 = after Accreditation —
+ * also the meaning when absent, for pages saved before it existed).
+ */
 export interface CustomPage {
   key: string;
   title: string;
   description?: string;
+  afterStep?: 1 | 2 | 3;
 }
 
 export interface VerificationFormConfig {
@@ -146,4 +151,37 @@ export function buildFallbackFormConfig(): VerificationFormConfig {
     certificationText:
       "I certify that the information provided is accurate and complete, that I am the person identified above, and that I qualify as an accredited investor under SEC Rule 501 of Regulation D on the basis selected.",
   };
+}
+
+// ---------------------------------------------------------------------------
+// Wizard sequence — structural copy of the admin's helpers: core steps
+// with admin pages interleaved wherever they were moved, Review last.
+// `number` is the 1-based step number investors see.
+// ---------------------------------------------------------------------------
+
+export type WizardEntry =
+  | { number: number; kind: "core"; coreStep: 1 | 2 | 3 }
+  | { number: number; kind: "page"; page: CustomPage }
+  | { number: number; kind: "review" };
+
+export function buildWizardSequence(config: VerificationFormConfig): WizardEntry[] {
+  const entries: (Omit<WizardEntry, "number"> & { number?: number })[] = [];
+  for (const coreStep of [1, 2, 3] as const) {
+    entries.push({ kind: "core", coreStep });
+    for (const page of config.customPages.filter((p) => (p.afterStep ?? 3) === coreStep)) {
+      entries.push({ kind: "page", page });
+    }
+  }
+  entries.push({ kind: "review" });
+  return entries.map((entry, index) => ({ ...entry, number: index + 1 }) as WizardEntry);
+}
+
+export function numberForCore(config: VerificationFormConfig, coreStep: 1 | 2 | 3): number {
+  const entry = buildWizardSequence(config).find((e) => e.kind === "core" && e.coreStep === coreStep);
+  return entry?.number ?? coreStep;
+}
+
+export function numberForPage(config: VerificationFormConfig, pageKey: string): number | null {
+  const entry = buildWizardSequence(config).find((e) => e.kind === "page" && e.page.key === pageKey);
+  return entry?.number ?? null;
 }

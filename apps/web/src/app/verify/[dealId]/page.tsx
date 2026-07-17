@@ -3,6 +3,7 @@
 import { useVerificationDraft } from "../../../lib/hooks/useVerificationDraft";
 import { useVerificationStore } from "../../../lib/state/verificationStore";
 import { useFormConfig } from "../../../lib/hooks/useFormConfig";
+import { buildWizardSequence } from "../../../lib/verification/formConfig";
 import { WizardStepper } from "../../../components/verification/WizardStepper";
 import { SubmittedView } from "../../../components/verification/SubmittedView";
 import { Step1ContactInfo } from "../../../components/verification/steps/Step1ContactInfo";
@@ -39,17 +40,22 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
   const setCurrentStep = useVerificationStore((s) => s.setCurrentStep);
   const config = useFormConfig();
 
-  // Wizard shape: 3 core steps, then admin-defined pages, then Review.
-  const pages = config.customPages;
-  const reviewStep = 4 + pages.length;
-  const stepDefs = [
-    { step: 1, label: "Contact Information" },
-    { step: 2, label: "KYC / AML" },
-    { step: 3, label: "Accredited Investor" },
-    ...pages.map((page, index) => ({ step: 4 + index, label: page.title })),
-    { step: reviewStep, label: "Review & Submit" },
-  ];
-  const activePage = currentStep >= 4 && currentStep < reviewStep ? pages[currentStep - 4] : null;
+  // The wizard's order comes from the published config: core steps with
+  // admin-defined pages wherever they were placed, Review always last.
+  const sequence = buildWizardSequence(config);
+  const coreLabels = { 1: "Contact Information", 2: "KYC / AML", 3: "Accredited Investor" } as const;
+  const stepDefs = sequence.map((entry) => ({
+    step: entry.number,
+    label:
+      entry.kind === "core"
+        ? coreLabels[entry.coreStep]
+        : entry.kind === "page"
+          ? entry.page.title
+          : "Review & Submit",
+  }));
+  // Clamp so a resume point saved under an older, longer wizard still
+  // lands on a real step.
+  const entry = sequence[Math.min(Math.max(currentStep, 1), sequence.length) - 1];
 
   if (isLoading) {
     return (
@@ -78,9 +84,9 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
   return (
     <div>
       <VerificationHero />
-      <WizardStepper currentStep={currentStep} steps={stepDefs} />
+      <WizardStepper currentStep={entry.number} steps={stepDefs} />
       <Container className="py-10">
-        {currentStep === 1 && (
+        {entry.kind === "core" && entry.coreStep === 1 && (
           <Step1ContactInfo
             submissionId={submissionId}
             draft={draft}
@@ -88,39 +94,39 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
             onSaved={handleSaved}
           />
         )}
-        {currentStep === 2 && (
+        {entry.kind === "core" && entry.coreStep === 2 && (
           <Step2KycAml
             submissionId={submissionId}
             draft={draft}
             onSaved={handleSaved}
-            onBack={() => setCurrentStep(1)}
+            onBack={() => setCurrentStep(entry.number - 1)}
           />
         )}
-        {currentStep === 3 && (
+        {entry.kind === "core" && entry.coreStep === 3 && (
           <Step3Accreditation
             submissionId={submissionId}
             draft={draft}
             onSaved={handleSaved}
-            onBack={() => setCurrentStep(2)}
+            onBack={() => setCurrentStep(entry.number - 1)}
           />
         )}
-        {activePage && (
+        {entry.kind === "page" && (
           <StepCustomPage
-            key={activePage.key}
+            key={entry.page.key}
             submissionId={submissionId}
-            page={activePage}
+            page={entry.page}
             config={config}
-            stepNumber={currentStep}
+            stepNumber={entry.number}
             draft={draft}
             onSaved={handleSaved}
-            onBack={() => setCurrentStep(currentStep - 1)}
+            onBack={() => setCurrentStep(entry.number - 1)}
           />
         )}
-        {currentStep >= reviewStep && (
+        {entry.kind === "review" && (
           <Step4Review
             submissionId={submissionId}
             draft={draft}
-            onBack={() => setCurrentStep(reviewStep - 1)}
+            onBack={() => setCurrentStep(entry.number - 1)}
             onEditStep={(step) => setCurrentStep(step)}
             onSubmitted={handleSaved}
           />

@@ -1,6 +1,7 @@
 import { kycPrisma } from "@/lib/kyc/prisma";
 import { accreditationInfoSchema, customAnswersSchema } from "@/lib/kyc/schemas";
-import { upsertCustomAnswers } from "@/lib/kyc/formConfig";
+import { upsertCustomAnswers, getPublishedFormConfig } from "@/lib/kyc/formConfig";
+import { stepNumberAfterCore } from "@/lib/kyc/formConfigShared";
 import { parseJsonBody } from "@/lib/kyc/validate";
 import { jsonWithCors, corsPreflight } from "@/lib/kyc/cors";
 
@@ -30,7 +31,14 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   await kycPrisma.verificationSubmission.update({
     where: { id: submission.id },
-    data: { currentStep: Math.max(submission.currentStep, 4) },
+    // Advance past this core step to whatever follows it in the
+    // published wizard sequence (an admin page may come next).
+    data: {
+      currentStep: Math.max(
+        submission.currentStep,
+        stepNumberAfterCore(await getPublishedFormConfig(), 3)
+      ),
+    },
   });
 
   return jsonWithCors({ ok: true });
