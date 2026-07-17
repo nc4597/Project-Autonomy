@@ -6,12 +6,12 @@ import { KpiStrip } from "@/components/home/KpiStrip";
 import { ProcessTimeline } from "@/components/home/ProcessTimeline";
 import { WhyRegiment } from "@/components/home/WhyRegiment";
 import { toCardDeal } from "@/lib/marketplace/adapters";
-import { getSiteSettings } from "@/lib/marketplace/adminClient";
+import { getDeals, getSiteSettings } from "@/lib/marketplace/adminClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const settings = await getSiteSettings();
+  const [settings, allDeals] = await Promise.all([getSiteSettings(), getDeals()]);
 
   const kpis = [
     { value: settings.capitalRaised, label: "Capital Raised" },
@@ -21,7 +21,17 @@ export default async function Home() {
   ];
 
   const featuredDeal = settings.featuredDeal ? toCardDeal(settings.featuredDeal) : null;
-  const closedDeals = settings.featuredClosedDeals.map(toCardDeal);
+  // Every closed transaction, newest close first — the carousel shows
+  // them all, so this no longer depends on the hand-picked
+  // featuredClosedDeals list in Home Settings.
+  const closedDeals = allDeals
+    .filter((deal) => deal.status === "CLOSED")
+    .sort((a, b) => {
+      const aTime = a.closeDate ? new Date(a.closeDate).getTime() : 0;
+      const bTime = b.closeDate ? new Date(b.closeDate).getTime() : 0;
+      return bTime - aTime;
+    })
+    .map(toCardDeal);
 
   return (
     <>
