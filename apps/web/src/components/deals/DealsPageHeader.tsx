@@ -5,7 +5,7 @@ export function DealsPageHeader() {
   return (
     <section className="bg-navy-950 py-20">
       <Container>
-        <SectionLabel>Regiment Marketplace</SectionLabel>
+        <SectionLabel>Regiment Express</SectionLabel>
         <h1 className="mb-4 font-serif text-5xl text-white">
           Private Investment Offerings
         </h1>

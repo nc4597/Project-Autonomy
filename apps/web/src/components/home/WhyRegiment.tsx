@@ -39,7 +39,7 @@ export function WhyRegiment() {
           </span>
         </div>
         <h2 className="mb-16 text-center font-serif text-4xl font-semibold text-ink">
-          Why Regiment Marketplace
+          Why Regiment Express
         </h2>
 
         <div className="grid grid-cols-1 divide-y divide-hairline border-t border-hairline md:grid-cols-4 md:divide-x md:divide-y-0 md:border-t-0">

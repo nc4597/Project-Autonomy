@@ -4,7 +4,7 @@ const steps = [
   {
     number: "01",
     title: "Discover",
-    description: "Browse curated private offerings in the Regiment Marketplace",
+    description: "Browse curated private offerings on Regiment Express",
   },
   {
     number: "02",

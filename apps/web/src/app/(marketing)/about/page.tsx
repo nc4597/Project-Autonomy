@@ -34,7 +34,7 @@ export default async function AboutPage() {
           </div>
           <h1 className="font-serif text-4xl font-bold sm:text-5xl">Private Markets, Institutional Rigor</h1>
           <p className="mt-4 max-w-2xl text-white/70">
-            Regiment Marketplace is a private investment platform operated by Regiment Securities LLC, a
+            Regiment Express is a private investment platform operated by Regiment Securities LLC, a
             registered broker-dealer and member of FINRA/SIPC. We connect accredited investors with
             off-market opportunities sourced through our proprietary network of founders, sponsors, and
             family offices.
@@ -45,7 +45,7 @@ export default async function AboutPage() {
       <div className="bg-page py-16">
         <Container className="max-w-3xl">
           <p className="text-base leading-relaxed text-ink-secondary">
-            Every offering on Regiment Marketplace is reviewed by our investment banking team before
+            Every offering on Regiment Express is reviewed by our investment banking team before
             it&rsquo;s listed, and every investor works with a dedicated Regiment representative from
             first contact through funding. We built this platform because accredited investors deserve
             the same diligence and service in private markets that they expect from public ones.

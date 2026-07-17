@@ -25,7 +25,7 @@ function VerificationHero() {
         </div>
         <h1 className="font-serif text-4xl font-bold sm:text-5xl">Accredited Investor Verification</h1>
         <p className="mt-4 max-w-2xl text-white/70">
-          Complete your verification to access Regiment Marketplace offerings. Documents are encrypted
+          Complete your verification to access Regiment Express offerings. Documents are encrypted
           and handled by our FINRA-compliant compliance team.
         </p>
       </Container>

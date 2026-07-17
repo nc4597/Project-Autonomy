@@ -15,7 +15,7 @@ export function Cta() {
           Ready to Access Private Markets?
         </h2>
         <p className="mx-auto mb-10 max-w-[540px] text-[15px] leading-relaxed text-ink-secondary">
-          Regiment Marketplace is available exclusively to accredited
+          Regiment Express is available exclusively to accredited
           investors. Complete your verification to unlock full access to
           active offerings and deal materials.
         </p>
