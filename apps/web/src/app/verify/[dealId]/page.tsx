@@ -2,11 +2,13 @@
 
 import { useVerificationDraft } from "../../../lib/hooks/useVerificationDraft";
 import { useVerificationStore } from "../../../lib/state/verificationStore";
+import { useFormConfig } from "../../../lib/hooks/useFormConfig";
 import { WizardStepper } from "../../../components/verification/WizardStepper";
 import { SubmittedView } from "../../../components/verification/SubmittedView";
 import { Step1ContactInfo } from "../../../components/verification/steps/Step1ContactInfo";
 import { Step2KycAml } from "../../../components/verification/steps/Step2KycAml";
 import { Step3Accreditation } from "../../../components/verification/steps/Step3Accreditation";
+import { StepCustomPage } from "../../../components/verification/steps/StepCustomPage";
 import { Step4Review } from "../../../components/verification/steps/Step4Review";
 import { Container } from "../../../components/ui/Container";
 
@@ -35,6 +37,19 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
   const { submissionId, draft, isLoading, error, refresh } = useVerificationDraft(dealId);
   const currentStep = useVerificationStore((s) => s.currentStep);
   const setCurrentStep = useVerificationStore((s) => s.setCurrentStep);
+  const config = useFormConfig();
+
+  // Wizard shape: 3 core steps, then admin-defined pages, then Review.
+  const pages = config.customPages;
+  const reviewStep = 4 + pages.length;
+  const stepDefs = [
+    { step: 1, label: "Contact Information" },
+    { step: 2, label: "KYC / AML" },
+    { step: 3, label: "Accredited Investor" },
+    ...pages.map((page, index) => ({ step: 4 + index, label: page.title })),
+    { step: reviewStep, label: "Review & Submit" },
+  ];
+  const activePage = currentStep >= 4 && currentStep < reviewStep ? pages[currentStep - 4] : null;
 
   if (isLoading) {
     return (
@@ -63,7 +78,7 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
   return (
     <div>
       <VerificationHero />
-      <WizardStepper currentStep={currentStep} />
+      <WizardStepper currentStep={currentStep} steps={stepDefs} />
       <Container className="py-10">
         {currentStep === 1 && (
           <Step1ContactInfo
@@ -89,11 +104,23 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
             onBack={() => setCurrentStep(2)}
           />
         )}
-        {currentStep === 4 && (
+        {activePage && (
+          <StepCustomPage
+            key={activePage.key}
+            submissionId={submissionId}
+            page={activePage}
+            config={config}
+            stepNumber={currentStep}
+            draft={draft}
+            onSaved={handleSaved}
+            onBack={() => setCurrentStep(currentStep - 1)}
+          />
+        )}
+        {currentStep >= reviewStep && (
           <Step4Review
             submissionId={submissionId}
             draft={draft}
-            onBack={() => setCurrentStep(3)}
+            onBack={() => setCurrentStep(reviewStep - 1)}
             onEditStep={(step) => setCurrentStep(step)}
             onSubmitted={handleSaved}
           />

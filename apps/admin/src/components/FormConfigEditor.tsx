@@ -10,15 +10,22 @@ import {
   type VerificationFormConfig,
 } from "@/lib/kyc/formConfigShared";
 
-const STEP_TABS = [
-  { step: 1 as const, label: "Step 1 · Contact Info" },
-  { step: 2 as const, label: "Step 2 · KYC / AML" },
-  { step: 3 as const, label: "Step 3 · Accreditation" },
-  { step: 4 as const, label: "Step 4 · Certification" },
+const CORE_TABS = [
+  { tab: 1 as const, label: "Step 1 · Contact Info" },
+  { tab: 2 as const, label: "Step 2 · KYC / AML" },
+  { tab: 3 as const, label: "Step 3 · Accreditation" },
 ];
+
+// Which editor tab is open: a core step, an admin-defined page (by its
+// key), or the certification statement.
+type ActiveTab = 1 | 2 | 3 | string | "cert";
 
 function newFieldKey() {
   return `custom_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function newPageKey() {
+  return `page_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
 export function FormConfigEditor() {
@@ -29,7 +36,7 @@ export function FormConfigEditor() {
   const [busy, setBusy] = useState<"save" | "publish" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
+  const [activeTab, setActiveTab] = useState<ActiveTab>(1);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [newField, setNewField] = useState<{
@@ -55,9 +62,66 @@ export function FormConfigEditor() {
   }, []);
 
   const stepFields = useMemo(
-    () => (config && activeStep !== 4 ? config.fields.filter((f) => f.step === activeStep) : []),
-    [config, activeStep]
+    () => (config && activeTab !== "cert" ? config.fields.filter((f) => f.step === activeTab) : []),
+    [config, activeTab]
   );
+  const customPages = config?.customPages ?? [];
+  const activePage = typeof activeTab === "string" && activeTab !== "cert"
+    ? customPages.find((p) => p.key === activeTab) ?? null
+    : null;
+  const activePageIndex = activePage ? customPages.findIndex((p) => p.key === activePage.key) : -1;
+  // Investor-facing step numbering: 3 core steps, then pages, then the
+  // final Review & Certification step.
+  const totalSteps = 4 + customPages.length;
+  const previewStepNumber = typeof activeTab === "number" ? activeTab : 4 + activePageIndex;
+
+  function openTab(tab: ActiveTab) {
+    setActiveTab(tab);
+    setEditingKey(null);
+    setAdding(false);
+  }
+
+  function addPage() {
+    const key = newPageKey();
+    mutate((draft) => ({
+      ...draft,
+      customPages: [...draft.customPages, { key, title: "New Page" }],
+    }));
+    openTab(key);
+  }
+
+  function updatePage(key: string, patch: Partial<{ title: string; description: string }>) {
+    mutate((draft) => ({
+      ...draft,
+      customPages: draft.customPages.map((p) =>
+        p.key === key
+          ? { ...p, ...patch, description: (patch.description ?? p.description) || undefined }
+          : p
+      ),
+    }));
+  }
+
+  function movePage(key: string, direction: -1 | 1) {
+    mutate((draft) => {
+      const pages = [...draft.customPages];
+      const index = pages.findIndex((p) => p.key === key);
+      const target = index + direction;
+      if (index === -1 || target < 0 || target >= pages.length) return draft;
+      [pages[index], pages[target]] = [pages[target], pages[index]];
+      return { ...draft, customPages: pages };
+    });
+  }
+
+  function removePage(key: string) {
+    const index = customPages.findIndex((p) => p.key === key);
+    mutate((draft) => ({
+      ...draft,
+      customPages: draft.customPages.filter((p) => p.key !== key),
+      // A page's fields go with it.
+      fields: draft.fields.filter((f) => f.step !== key),
+    }));
+    openTab(index > 0 ? customPages[index - 1].key : 3);
+  }
 
   function mutate(updater: (draft: VerificationFormConfig) => VerificationFormConfig) {
     setConfig((current) => (current ? updater(current) : current));
@@ -95,7 +159,7 @@ export function FormConfigEditor() {
   }
 
   function addCustomField() {
-    if (!newField.label.trim() || activeStep === 4) return;
+    if (!newField.label.trim() || activeTab === "cert") return;
     const options =
       newField.type === "DROPDOWN"
         ? newField.optionsText
@@ -110,7 +174,7 @@ export function FormConfigEditor() {
     }
     const field: FormField = {
       key: newFieldKey(),
-      step: activeStep,
+      step: activeTab as FormField["step"],
       label: newField.label.trim(),
       helpText: newField.helpText.trim() || undefined,
       type: newField.type,
@@ -122,7 +186,7 @@ export function FormConfigEditor() {
       const fields = [...draft.fields];
       let insertAt = fields.length;
       for (let i = fields.length - 1; i >= 0; i--) {
-        if (fields[i].step === activeStep) {
+        if (fields[i].step === activeTab) {
           insertAt = i + 1;
           break;
         }
@@ -145,6 +209,10 @@ export function FormConfigEditor() {
           : f
       ),
     };
+    if (sanitized.customPages.some((p) => !p.title.trim())) {
+      setError("Every page needs a title.");
+      return;
+    }
     const coreViolation = validateDraftAgainstCore(sanitized);
     if (coreViolation) {
       setError(coreViolation);
@@ -193,18 +261,14 @@ export function FormConfigEditor() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <div className="flex gap-1 border-b border-hairline">
-          {STEP_TABS.map((tab) => (
+        <div className="flex flex-wrap items-end gap-1 border-b border-hairline">
+          {CORE_TABS.map((tab) => (
             <button
-              key={tab.step}
+              key={tab.tab}
               type="button"
-              onClick={() => {
-                setActiveStep(tab.step);
-                setEditingKey(null);
-                setAdding(false);
-              }}
+              onClick={() => openTab(tab.tab)}
               className={`border border-b-0 px-4 py-2.5 text-xs font-semibold ${
-                activeStep === tab.step
+                activeTab === tab.tab
                   ? "-mb-px border-hairline bg-card text-ink"
                   : "border-transparent text-ink-secondary hover:text-ink"
               }`}
@@ -212,6 +276,38 @@ export function FormConfigEditor() {
               {tab.label}
             </button>
           ))}
+          {customPages.map((page, index) => (
+            <button
+              key={page.key}
+              type="button"
+              onClick={() => openTab(page.key)}
+              className={`border border-b-0 px-4 py-2.5 text-xs font-semibold ${
+                activeTab === page.key
+                  ? "-mb-px border-hairline bg-card text-ink"
+                  : "border-transparent text-ink-secondary hover:text-ink"
+              }`}
+            >
+              Step {4 + index} · {page.title || "Untitled Page"}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => openTab("cert")}
+            className={`border border-b-0 px-4 py-2.5 text-xs font-semibold ${
+              activeTab === "cert"
+                ? "-mb-px border-hairline bg-card text-ink"
+                : "border-transparent text-ink-secondary hover:text-ink"
+            }`}
+          >
+            Step {totalSteps} · Certification
+          </button>
+          <button
+            type="button"
+            onClick={addPage}
+            className="mb-1.5 ml-1 border border-dashed border-ink-muted/50 px-3 py-2 text-xs font-semibold text-navy-950 hover:border-navy-950"
+          >
+            + Add Page
+          </button>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-xs text-ink-muted">
@@ -248,7 +344,67 @@ export function FormConfigEditor() {
         </div>
       )}
 
-      {activeStep === 4 ? (
+      {activePage && (
+        <div className="mb-5 border border-hairline bg-card p-5">
+          <div className="grid gap-4 sm:grid-cols-[280px_1fr]">
+            <div>
+              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
+                Page title
+              </label>
+              <input
+                type="text"
+                value={activePage.title}
+                onChange={(e) => updatePage(activePage.key, { title: e.target.value })}
+                className="w-full border border-hairline bg-page px-3 py-2 text-sm text-ink focus:border-navy-800 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
+                Description (optional — shown under the title)
+              </label>
+              <input
+                type="text"
+                value={activePage.description ?? ""}
+                onChange={(e) => updatePage(activePage.key, { description: e.target.value })}
+                className="w-full border border-hairline bg-page px-3 py-2 text-sm text-ink focus:border-navy-800 focus:outline-none"
+              />
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs text-ink-muted">
+              Shown to investors as Step {4 + activePageIndex}, between Accreditation and
+              Certification.
+            </span>
+            <span className="flex gap-2">
+              <button
+                type="button"
+                disabled={activePageIndex === 0}
+                onClick={() => movePage(activePage.key, -1)}
+                className="border border-hairline px-3 py-1.5 text-xs font-semibold text-ink-secondary disabled:opacity-40"
+              >
+                ◀ Move Earlier
+              </button>
+              <button
+                type="button"
+                disabled={activePageIndex === customPages.length - 1}
+                onClick={() => movePage(activePage.key, 1)}
+                className="border border-hairline px-3 py-1.5 text-xs font-semibold text-ink-secondary disabled:opacity-40"
+              >
+                Move Later ▶
+              </button>
+              <button
+                type="button"
+                onClick={() => removePage(activePage.key)}
+                className="border border-hairline px-3 py-1.5 text-xs font-semibold text-brand-red"
+              >
+                Delete Page
+              </button>
+            </span>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "cert" ? (
         <div className="max-w-3xl border border-hairline bg-card p-6">
           <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-ink-secondary">
             Certification Statement
@@ -565,8 +721,11 @@ export function FormConfigEditor() {
             </div>
             <div className="p-5">
               <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-brand-red">
-                Step {activeStep} of 4
+                Step {previewStepNumber} of {totalSteps}
               </p>
+              {activePage?.description && (
+                <p className="mb-3 text-xs text-ink-secondary">{activePage.description}</p>
+              )}
               {stepFields
                 .filter((f) => f.type !== "DROPDOWN" || (f.options ?? []).some((o) => !o.hidden))
                 .map((field) => (

@@ -1,4 +1,3 @@
-import { WIZARD_STEPS } from "../../lib/constants/verification";
 import { Container } from "../ui/Container";
 
 function CheckIcon() {
@@ -15,11 +14,17 @@ function CheckIcon() {
   );
 }
 
-export function WizardStepper({ currentStep }: { currentStep: number }) {
+export function WizardStepper({
+  currentStep,
+  steps,
+}: {
+  currentStep: number;
+  steps: { step: number; label: string }[];
+}) {
   return (
     <div className="border-b border-hairline bg-card">
       <Container as="ol" className="flex flex-wrap items-center justify-center gap-x-2 gap-y-4 py-5">
-        {WIZARD_STEPS.map((step, index) => {
+        {steps.map((step, index) => {
           const isCompleted = step.step < currentStep;
           const isActive = step.step === currentStep;
 
@@ -47,7 +52,7 @@ export function WizardStepper({ currentStep }: { currentStep: number }) {
                   {step.label}
                 </span>
               </div>
-              {index < WIZARD_STEPS.length - 1 && (
+              {index < steps.length - 1 && (
                 <span className="hidden h-px w-10 bg-hairline sm:block" aria-hidden="true" />
               )}
             </li>

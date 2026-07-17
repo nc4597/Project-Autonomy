@@ -2,6 +2,7 @@ import { kycPrisma } from "@/lib/kyc/prisma";
 import { kycLogger } from "@/lib/kyc/logger";
 import { SUBMISSION_INCLUDE } from "@/lib/kyc/serialize";
 import { validateSubmissionCompleteness } from "@/lib/kyc/submissionValidation";
+import { getPublishedFormConfig } from "@/lib/kyc/formConfig";
 import { notifyAdminsOfSubmission } from "@/lib/kyc/submissionNotificationService";
 import { syncContactCard } from "@/lib/kyc/hubspotContactService";
 import { verifyCaptchaToken } from "@/lib/kyc/turnstile";
@@ -36,7 +37,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
     return jsonWithCors({ error: "Security check failed. Please try again." }, { status: 403 });
   }
 
-  const errors = validateSubmissionCompleteness(submission);
+  const formConfig = await getPublishedFormConfig().catch(() => null);
+  const errors = validateSubmissionCompleteness(submission, formConfig);
   if (errors.length > 0) {
     return jsonWithCors({ error: "Submission is incomplete", details: errors }, { status: 422 });
   }

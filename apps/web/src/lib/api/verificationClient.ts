@@ -107,6 +107,22 @@ export function getFormConfig() {
   return request<VerificationFormConfig>("/form-config");
 }
 
+/**
+ * Saves one admin-defined page's answers; advanceTo moves the draft's
+ * resume point past this page (the server clamps it to the wizard's
+ * real length).
+ */
+export function savePageAnswers(
+  id: string,
+  customAnswers: Record<string, string>,
+  advanceTo?: number
+) {
+  return request<{ ok: true }>(`/verifications/${id}/page-answers`, {
+    method: "PATCH",
+    body: JSON.stringify({ customAnswers, advanceTo }),
+  });
+}
+
 export function createVerificationDraft(dealId: string) {
   return request<{ id: string }>("/verifications", {
     method: "POST",

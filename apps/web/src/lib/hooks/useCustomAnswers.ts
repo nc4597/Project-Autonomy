@@ -14,7 +14,7 @@ import {
  */
 export function useCustomAnswers(
   config: VerificationFormConfig,
-  step: 1 | 2 | 3,
+  step: 1 | 2 | 3 | string,
   draft: VerificationDraft
 ) {
   const fields = customFieldsForStep(config, step);

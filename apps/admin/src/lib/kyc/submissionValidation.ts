@@ -4,6 +4,7 @@ import {
   KYC_REQUIRED_DOCUMENT_CATEGORIES,
   type AccreditationMethod,
 } from "./schemas";
+import type { VerificationFormConfig } from "./formConfigShared";
 
 export type SubmissionWithRelations = Prisma.VerificationSubmissionGetPayload<{
   include: {
@@ -12,6 +13,7 @@ export type SubmissionWithRelations = Prisma.VerificationSubmissionGetPayload<{
     accreditation: true;
     certification: true;
     documents: true;
+    customAnswers: true;
   };
 }>;
 
@@ -28,9 +30,28 @@ export interface SubmissionCompletenessError {
  * documents.
  */
 export function validateSubmissionCompleteness(
-  submission: SubmissionWithRelations
+  submission: SubmissionWithRelations,
+  // When the published form config is provided, required admin-defined
+  // custom fields (on core steps and custom pages alike) must be
+  // answered — the server-side twin of the wizard's own gating.
+  config?: VerificationFormConfig | null
 ): SubmissionCompletenessError[] {
   const errors: SubmissionCompletenessError[] = [];
+
+  if (config) {
+    const answered = new Set(
+      submission.customAnswers.filter((a) => a.value.trim().length > 0).map((a) => a.fieldKey)
+    );
+    for (const field of config.fields) {
+      if (field.core || !field.required) continue;
+      // A dropdown with every option hidden isn't renderable — don't
+      // require what the investor can't answer.
+      if (field.type === "DROPDOWN" && !(field.options ?? []).some((o) => !o.hidden)) continue;
+      if (!answered.has(field.key)) {
+        errors.push({ field: `custom.${field.key}`, message: `${field.label} is required` });
+      }
+    }
+  }
 
   if (!submission.contactInfo) {
     errors.push({ field: "contactInfo", message: "Contact information is required" });

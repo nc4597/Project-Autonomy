@@ -26,9 +26,19 @@ const formOptionSchema = z.object({
   hidden: z.boolean().optional(),
 });
 
+// Admin-defined wizard pages. They render between Accreditation (core
+// step 3) and the final Review & Certification step, in array order; a
+// field whose `step` is a page's key lives on that page.
+const customPageSchema = z.object({
+  key: z.string().trim().min(1).max(80),
+  title: z.string().trim().min(1).max(120),
+  description: z.string().trim().max(300).optional(),
+});
+
 const formFieldSchema = z.object({
   key: z.string().trim().min(1).max(80),
-  step: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  // 1-3 are the core steps; a string is a custom page's key.
+  step: z.union([z.literal(1), z.literal(2), z.literal(3), z.string().min(1).max(80)]),
   label: z.string().trim().min(1).max(160),
   helpText: z.string().trim().max(300).optional(),
   type: z.enum(FIELD_TYPES),
@@ -43,11 +53,14 @@ const formFieldSchema = z.object({
 export const formConfigSchema = z.object({
   version: z.literal(1),
   fields: z.array(formFieldSchema).max(80),
+  // default([]) upgrades configs stored before custom pages existed.
+  customPages: z.array(customPageSchema).max(20).default([]),
   certificationText: z.string().trim().min(1).max(2000),
 });
 
 export type FormOption = z.infer<typeof formOptionSchema>;
 export type FormField = z.infer<typeof formFieldSchema>;
+export type CustomPage = z.infer<typeof customPageSchema>;
 export type VerificationFormConfig = z.infer<typeof formConfigSchema>;
 
 const COUNTRY_OPTIONS = [
@@ -65,6 +78,7 @@ const COUNTRY_OPTIONS = [
 // visually until an admin edits something.
 export const DEFAULT_FORM_CONFIG: VerificationFormConfig = {
   version: 1,
+  customPages: [],
   fields: [
     // --- Step 1: Contact Information ---
     { key: "contact.firstName", step: 1, label: "First Name", type: "SHORT_TEXT", required: true, core: true },
@@ -177,9 +191,15 @@ export function validateDraftAgainstCore(draft: VerificationFormConfig): string 
   const keys = draft.fields.map((f) => f.key);
   if (new Set(keys).size !== keys.length) return "Field keys must be unique";
 
+  const pageKeys = draft.customPages.map((p) => p.key);
+  if (new Set(pageKeys).size !== pageKeys.length) return "Page keys must be unique";
+
   for (const field of draft.fields) {
     const isKnownCore = DEFAULT_FORM_CONFIG.fields.some((c) => c.key === field.key);
     if (field.core && !isKnownCore) return `Unknown core field "${field.key}"`;
+    if (typeof field.step === "string" && !pageKeys.includes(field.step)) {
+      return `"${field.label}" belongs to a page that no longer exists`;
+    }
     if (!field.core && field.type === "DROPDOWN" && !(field.options ?? []).some((o) => !o.hidden)) {
       return `"${field.label}" needs at least one visible option`;
     }

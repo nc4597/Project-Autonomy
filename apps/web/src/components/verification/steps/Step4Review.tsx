@@ -190,6 +190,21 @@ export function Step4Review({
           ))}
         </SummarySection>
 
+        {config.customPages.map((page, index) => {
+          const rows = customFieldsForStep(config, page.key)
+            .map((field) => ({ label: field.label, value: answersByKey[field.key] }))
+            .filter((row) => row.value);
+          return (
+            <SummarySection key={page.key} title={page.title} onEdit={() => onEditStep(4 + index)}>
+              {rows.length > 0 ? (
+                rows.map((row) => <SummaryRow key={row.label} label={row.label} value={row.value} />)
+              ) : (
+                <p className="py-3 text-sm text-ink-secondary">Nothing filled in.</p>
+              )}
+            </SummarySection>
+          );
+        })}
+
         <ComplianceNotice>
           <label className="flex items-start gap-3">
             <input

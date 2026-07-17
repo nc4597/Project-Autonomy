@@ -25,8 +25,10 @@ export function useFormConfig(): VerificationFormConfig {
     let cancelled = false;
     getFormConfig()
       .then((fetched) => {
-        cachedConfig = fetched;
-        if (!cancelled) setConfig(fetched);
+        // Configs published before custom pages existed lack the array.
+        const normalized = { ...fetched, customPages: fetched.customPages ?? [] };
+        cachedConfig = normalized;
+        if (!cancelled) setConfig(normalized);
       })
       .catch(() => {
         // Keep the fallback.

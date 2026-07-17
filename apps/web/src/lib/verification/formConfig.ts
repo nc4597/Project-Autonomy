@@ -23,7 +23,8 @@ export interface FormOption {
 
 export interface FormField {
   key: string;
-  step: 1 | 2 | 3;
+  // 1-3 are the core steps; a string is a custom page's key.
+  step: 1 | 2 | 3 | string;
   label: string;
   helpText?: string;
   type: FieldType;
@@ -33,9 +34,17 @@ export interface FormField {
   optionsLocked?: boolean;
 }
 
+/** Admin-defined wizard page, rendered between Accreditation and Review. */
+export interface CustomPage {
+  key: string;
+  title: string;
+  description?: string;
+}
+
 export interface VerificationFormConfig {
   version: 1;
   fields: FormField[];
+  customPages: CustomPage[];
   certificationText: string;
 }
 
@@ -55,7 +64,10 @@ export function visibleOptions(field: FormField | undefined): FormOption[] {
   return (field?.options ?? []).filter((o) => !o.hidden);
 }
 
-export function customFieldsForStep(config: VerificationFormConfig, step: 1 | 2 | 3): FormField[] {
+export function customFieldsForStep(
+  config: VerificationFormConfig,
+  step: 1 | 2 | 3 | string
+): FormField[] {
   return config.fields.filter((f) => !f.core && f.step === step);
 }
 
@@ -65,6 +77,7 @@ export function buildFallbackFormConfig(): VerificationFormConfig {
   const countryOptions = COUNTRY_OPTIONS.map((c) => ({ value: c, label: c }));
   return {
     version: 1,
+    customPages: [],
     fields: [
       { key: "contact.firstName", step: 1, label: "First Name", type: "SHORT_TEXT", required: true, core: true },
       { key: "contact.lastName", step: 1, label: "Last Name", type: "SHORT_TEXT", required: true, core: true },
