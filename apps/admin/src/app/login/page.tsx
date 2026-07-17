@@ -8,7 +8,7 @@ export default async function LoginPage({
   return (
     <div className="flex min-h-screen items-center justify-center bg-page px-6">
       <div className="w-full max-w-sm border border-hairline bg-card p-8 text-center">
-        <h1 className="mb-1 font-serif text-2xl text-ink">Regiment Marketplace</h1>
+        <h1 className="mb-1 font-serif text-2xl text-ink">Regiment Securities | Express</h1>
         <p className="mb-6 text-sm text-ink-secondary">Admin sign in</p>
 
         {searchParams.error && (

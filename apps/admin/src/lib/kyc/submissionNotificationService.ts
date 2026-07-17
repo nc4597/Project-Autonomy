@@ -76,7 +76,7 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
           ? `<a href="${adminReviewUrl}">${escapeHtml(adminReviewUrl)}</a>`
           : "(Admin panel link not yet configured — open KYC Review in the admin CMS and select the investor.)"
       }</p>
-      <p>Thank you,<br>The Regiment Marketplace Team</p>
+      <p>Thank you,<br>The Regiment Securities Team</p>
     `;
 
     // Sent as flat fields (not just the html blob) so the Zap's email
@@ -155,7 +155,7 @@ export async function notifyInvestorOfRejection(submissionId: string, notes: str
       place &mdash; you only need to correct the items above, re-upload the relevant documents,
       and submit again:</p>
       <p><a href="${resubmitUrl}" style="display:inline-block; background:#071C35; color:#ffffff; padding:11px 20px; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; text-decoration:none;">Update My Verification</a></p>
-      <p>Thank you,<br>The Regiment Marketplace Team</p>
+      <p>Thank you,<br>The Regiment Securities Team</p>
     `;
 
     const response = await fetch(webhookUrl, {

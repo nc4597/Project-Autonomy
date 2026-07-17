@@ -7,7 +7,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="border-b border-hairline bg-navy-950">
         <div className="mx-auto flex max-w-content items-center justify-between px-6 py-4">
           <Link href="/" className="font-serif text-lg text-white">
-            Regiment Marketplace <span className="text-white/40">Admin</span>
+            Regiment Securities | Express <span className="text-white/40">Admin</span>
           </Link>
           <nav className="flex items-center gap-6 text-xs font-semibold uppercase tracking-wide text-white/70">
             <Link href="/" className="hover:text-white">

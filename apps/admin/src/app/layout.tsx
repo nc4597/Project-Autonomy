@@ -15,8 +15,8 @@ const body = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Regiment Marketplace Admin",
-  description: "Internal content management for the Regiment Marketplace site.",
+  title: "Regiment Securities | Express Admin",
+  description: "Internal content management for the Regiment Securities | Express site.",
   robots: "noindex, nofollow",
 };
 
