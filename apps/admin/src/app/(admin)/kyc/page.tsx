@@ -81,7 +81,11 @@ export default async function KycSubmissionsPage() {
                         : "bg-ink-muted/10 text-ink-muted"
                     }`}
                   >
-                    {KYC_STATUS_LABELS[submission.status]}
+                    {submission.status === "SUBMITTED" &&
+                    submission.firstSubmittedAt &&
+                    submission.submittedAt !== submission.firstSubmittedAt
+                      ? "Resubmitted"
+                      : KYC_STATUS_LABELS[submission.status]}
                   </span>
                 </td>
                 <td className="px-4 py-3">

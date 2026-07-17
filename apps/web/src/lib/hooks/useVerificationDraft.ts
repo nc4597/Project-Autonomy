@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useVerificationStore } from "../state/verificationStore";
-import { ApiError, createVerificationDraft, getVerificationDraft } from "../api/verificationClient";
+import {
+  ApiError,
+  createVerificationDraft,
+  getVerificationDraft,
+  storeDraftSecret,
+  unlockVerificationDraft,
+} from "../api/verificationClient";
 
 function storageKey(dealId: string) {
   return `verification:${dealId}`;
@@ -22,6 +28,9 @@ function storageKey(dealId: string) {
 export function useVerificationDraft(dealId: string) {
   const { submissionId, draft, isLoading, setSubmissionId, setDraft, setLoading } = useVerificationStore();
   const [error, setError] = useState<string | null>(null);
+  // A resume link opened on a device without the draft's access key:
+  // the identity challenge must pass before anything loads.
+  const [challengeId, setChallengeId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     const id = window.localStorage.getItem(storageKey(dealId));
@@ -50,6 +59,12 @@ export function useVerificationDraft(dealId: string) {
           try {
             resumed = await getVerificationDraft(resumeId);
           } catch (err) {
+            if (err instanceof ApiError && err.status === 401) {
+              // Locked draft, no key on this device — show the
+              // "Confirm it's you" challenge instead of the wizard.
+              if (!cancelled) setChallengeId(resumeId);
+              return;
+            }
             if (!(err instanceof ApiError && err.status === 404)) throw err;
           }
           if (cancelled) return;
@@ -68,7 +83,7 @@ export function useVerificationDraft(dealId: string) {
           try {
             existingDraft = await getVerificationDraft(existingId);
           } catch (err) {
-            if (!(err instanceof ApiError && err.status === 404)) throw err;
+            if (!(err instanceof ApiError && (err.status === 404 || err.status === 401))) throw err;
           }
           if (cancelled) return;
 
@@ -84,6 +99,7 @@ export function useVerificationDraft(dealId: string) {
         const created = await createVerificationDraft(dealId);
         if (cancelled) return;
         window.localStorage.setItem(storageKey(dealId), created.id);
+        if (created.clientSecret) storeDraftSecret(created.id, created.clientSecret);
         setSubmissionId(created.id, dealId);
         const freshDraft = await getVerificationDraft(created.id);
         if (cancelled) return;
@@ -103,5 +119,25 @@ export function useVerificationDraft(dealId: string) {
     };
   }, [dealId, setSubmissionId, setDraft, setLoading]);
 
-  return { submissionId, draft, isLoading, error, refresh };
+  /**
+   * Passes the resume identity challenge: verifies the details with the
+   * server, stores the re-issued access key, and loads the draft.
+   * Throws ApiError (403 wrong details / 429 rate-limited) for the
+   * challenge UI to render.
+   */
+  const submitChallenge = useCallback(
+    async (email: string, ssnLast4: string) => {
+      if (!challengeId) return;
+      const { clientSecret } = await unlockVerificationDraft(challengeId, email, ssnLast4);
+      storeDraftSecret(challengeId, clientSecret);
+      const unlocked = await getVerificationDraft(challengeId);
+      window.localStorage.setItem(storageKey(dealId), challengeId);
+      setSubmissionId(challengeId, dealId);
+      setDraft(unlocked);
+      setChallengeId(null);
+    },
+    [challengeId, dealId, setSubmissionId, setDraft]
+  );
+
+  return { submissionId, draft, isLoading, error, refresh, challengeId, submitChallenge };
 }

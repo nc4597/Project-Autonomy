@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { kycPrisma } from "@/lib/kyc/prisma";
 import { kycLogger } from "@/lib/kyc/logger";
 import { createSubmissionSchema } from "@/lib/kyc/schemas";
@@ -13,8 +14,10 @@ export async function POST(request: Request) {
   if (!parsed.ok) return parsed.response;
 
   const submission = await kycPrisma.verificationSubmission.create({
-    data: { dealId: parsed.data.dealId },
+    // clientSecret goes back to (only) the creating browser — see
+    // lib/kyc/draftAuth.ts.
+    data: { dealId: parsed.data.dealId, clientSecret: randomUUID() },
   });
   kycLogger.info({ submissionId: submission.id, dealId: submission.dealId }, "draft created");
-  return jsonWithCors({ id: submission.id }, { status: 201 });
+  return jsonWithCors({ id: submission.id, clientSecret: submission.clientSecret }, { status: 201 });
 }

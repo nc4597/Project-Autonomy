@@ -78,7 +78,16 @@ model VerificationSubmission {
   reviewStatus ReviewStatus @default(PENDING)
   reviewNotes  String?
   reviewedAt   DateTime?
+  // Compliance audit: submittedAt is the LATEST (re)submission;
+  // firstSubmittedAt is set on the original submission and never
+  // overwritten by resubmissions after rejection.
   submittedAt DateTime?
+  firstSubmittedAt DateTime?
+  // Browser-held draft access key. Issued at creation, required on all
+  // draft reads/saves; null only for drafts created before keys existed
+  // (grandfathered). Re-issued to new devices via the identity-challenge
+  // unlock endpoint.
+  clientSecret String?
 
   // Bookkeeping for the HubSpot contact-card sync (see
   // lib/kyc/hubspotContactService.ts) — deliberately plain columns, not

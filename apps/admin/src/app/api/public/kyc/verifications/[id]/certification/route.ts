@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { draftSecretValid, draftUnauthorized } from "@/lib/kyc/draftAuth";
 import { kycPrisma } from "@/lib/kyc/prisma";
 import { certificationSchema } from "@/lib/kyc/schemas";
 import { parseJsonBody } from "@/lib/kyc/validate";
@@ -14,6 +15,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   const submission = await kycPrisma.verificationSubmission.findUnique({ where: { id: params.id } });
   if (!submission) return jsonWithCors({ error: "Submission not found" }, { status: 404 });
+  if (!draftSecretValid(submission, request)) return draftUnauthorized();
   if (submission.status === "SUBMITTED") {
     return jsonWithCors({ error: "Submission already submitted" }, { status: 409 });
   }

@@ -1,4 +1,5 @@
 import { kycPrisma } from "@/lib/kyc/prisma";
+import { draftSecretValid, draftUnauthorized } from "@/lib/kyc/draftAuth";
 import { customAnswersSchema, kycAmlInfoSchema } from "@/lib/kyc/schemas";
 import { upsertCustomAnswers, getPublishedFormConfig } from "@/lib/kyc/formConfig";
 import { stepNumberAfterCore } from "@/lib/kyc/formConfigShared";
@@ -18,6 +19,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
   const submission = await kycPrisma.verificationSubmission.findUnique({ where: { id: params.id } });
   if (!submission) return jsonWithCors({ error: "Submission not found" }, { status: 404 });
+  if (!draftSecretValid(submission, request)) return draftUnauthorized();
   if (submission.status === "SUBMITTED") {
     return jsonWithCors({ error: "Submission already submitted" }, { status: 409 });
   }

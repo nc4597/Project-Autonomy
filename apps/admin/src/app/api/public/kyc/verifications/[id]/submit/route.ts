@@ -1,4 +1,5 @@
 import { kycPrisma } from "@/lib/kyc/prisma";
+import { draftSecretValid, draftUnauthorized } from "@/lib/kyc/draftAuth";
 import { kycLogger } from "@/lib/kyc/logger";
 import { SUBMISSION_INCLUDE } from "@/lib/kyc/serialize";
 import { validateSubmissionCompleteness } from "@/lib/kyc/submissionValidation";
@@ -18,6 +19,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     include: SUBMISSION_INCLUDE,
   });
   if (!submission) return jsonWithCors({ error: "Submission not found" }, { status: 404 });
+  if (!draftSecretValid(submission, request)) return draftUnauthorized();
   if (submission.status === "SUBMITTED") {
     return jsonWithCors({ error: "Submission already submitted" }, { status: 409 });
   }
@@ -46,9 +48,12 @@ export async function POST(request: Request, { params }: { params: { id: string 
   const updated = await kycPrisma.verificationSubmission.update({
     where: { id: submission.id },
     // A resubmission after rejection returns to a fresh PENDING review.
+    // submittedAt is the latest (re)submission; firstSubmittedAt is the
+    // original and is never overwritten — compliance needs both dates.
     data: {
       status: "SUBMITTED",
       submittedAt: new Date(),
+      firstSubmittedAt: submission.firstSubmittedAt ?? new Date(),
       reviewStatus: "PENDING",
       reviewNotes: null,
       reviewedAt: null,

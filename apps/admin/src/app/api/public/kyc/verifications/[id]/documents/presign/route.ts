@@ -1,4 +1,5 @@
 import { kycPrisma } from "@/lib/kyc/prisma";
+import { draftSecretValid, draftUnauthorized } from "@/lib/kyc/draftAuth";
 import { presignDocumentSchema } from "@/lib/kyc/schemas";
 import { parseJsonBody } from "@/lib/kyc/validate";
 import { buildDocumentKey, createPresignedUploadUrl } from "@/lib/kyc/s3Client";
@@ -15,6 +16,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
   const submission = await kycPrisma.verificationSubmission.findUnique({ where: { id: params.id } });
   if (!submission) return jsonWithCors({ error: "Submission not found" }, { status: 404 });
+  if (!draftSecretValid(submission, request)) return draftUnauthorized();
   if (submission.status === "SUBMITTED") {
     return jsonWithCors({ error: "Submission already submitted" }, { status: 409 });
   }

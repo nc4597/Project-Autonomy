@@ -1,4 +1,5 @@
 import { kycPrisma } from "@/lib/kyc/prisma";
+import { draftSecretValid, draftUnauthorized } from "@/lib/kyc/draftAuth";
 import { kycLogger } from "@/lib/kyc/logger";
 import { ALLOWED_UPLOAD_MIME_TYPES, MAX_UPLOAD_SIZE_BYTES } from "@/lib/kyc/schemas";
 import { headObject } from "@/lib/kyc/s3Client";
@@ -8,11 +9,14 @@ export async function OPTIONS() {
   return corsPreflight();
 }
 
-export async function POST(_request: Request, { params }: { params: { id: string; docId: string } }) {
+export async function POST(request: Request, { params }: { params: { id: string; docId: string } }) {
   const document = await kycPrisma.document.findUnique({ where: { id: params.docId } });
   if (!document || document.submissionId !== params.id) {
     return jsonWithCors({ error: "Document not found" }, { status: 404 });
   }
+  const submission = await kycPrisma.verificationSubmission.findUnique({ where: { id: params.id } });
+  if (!submission) return jsonWithCors({ error: "Submission not found" }, { status: 404 });
+  if (!draftSecretValid(submission, request)) return draftUnauthorized();
 
   try {
     const head = await headObject(document.s3Key);

@@ -97,6 +97,14 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
           <p className="mt-1 text-sm text-ink-secondary">
             Deal: {submission.dealId} &middot; Submission ID: {submission.id}
           </p>
+          {submission.firstSubmittedAt && (
+            <p className="mt-1 text-sm text-ink-secondary">
+              First submitted {formatDateTime(submission.firstSubmittedAt)}
+              {submission.submittedAt && submission.submittedAt !== submission.firstSubmittedAt && (
+                <> &middot; Resubmitted {formatDateTime(submission.submittedAt)}</>
+              )}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <span
@@ -104,7 +112,11 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
               submission.status === "SUBMITTED" ? "bg-success/10 text-success" : "bg-ink-muted/10 text-ink-muted"
             }`}
           >
-            {KYC_STATUS_LABELS[submission.status]}
+            {submission.status === "SUBMITTED" &&
+            submission.firstSubmittedAt &&
+            submission.submittedAt !== submission.firstSubmittedAt
+              ? "Resubmitted"
+              : KYC_STATUS_LABELS[submission.status]}
           </span>
           {submission.reviewStatus === "VERIFIED" ? (
             <span className="bg-success px-3 py-1.5 text-xs font-semibold uppercase text-white">Verified</span>

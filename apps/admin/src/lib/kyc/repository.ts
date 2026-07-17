@@ -17,6 +17,7 @@ export interface KycSubmissionSummary {
   investorType: string | null;
   accreditationMethod: string | null;
   reviewStatus: string;
+  firstSubmittedAt: string | null;
 }
 
 function summarize(submission: SubmissionWithRelations): KycSubmissionSummary {
@@ -33,6 +34,7 @@ function summarize(submission: SubmissionWithRelations): KycSubmissionSummary {
     investorType: submission.contactInfo?.investorType ?? null,
     accreditationMethod: submission.accreditation?.method ?? null,
     reviewStatus: submission.reviewStatus,
+    firstSubmittedAt: submission.firstSubmittedAt?.toISOString() ?? null,
   };
 }
 
@@ -66,6 +68,7 @@ export async function getKycSubmissionDetail(id: string) {
     status: submission.status,
     createdAt: submission.createdAt.toISOString(),
     submittedAt: submission.submittedAt?.toISOString() ?? null,
+    firstSubmittedAt: submission.firstSubmittedAt?.toISOString() ?? null,
     reviewStatus: submission.reviewStatus,
     reviewNotes: submission.reviewNotes,
     reviewedAt: submission.reviewedAt?.toISOString() ?? null,

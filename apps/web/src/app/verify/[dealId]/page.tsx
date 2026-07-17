@@ -6,6 +6,7 @@ import { useFormConfig } from "../../../lib/hooks/useFormConfig";
 import { buildWizardSequence } from "../../../lib/verification/formConfig";
 import { WizardStepper } from "../../../components/verification/WizardStepper";
 import { SubmittedView } from "../../../components/verification/SubmittedView";
+import { ResumeChallengeCard } from "../../../components/verification/ResumeChallengeCard";
 import { Step1ContactInfo } from "../../../components/verification/steps/Step1ContactInfo";
 import { Step2KycAml } from "../../../components/verification/steps/Step2KycAml";
 import { Step3Accreditation } from "../../../components/verification/steps/Step3Accreditation";
@@ -35,7 +36,8 @@ function VerificationHero() {
 
 export default function VerifyPage({ params }: { params: { dealId: string } }) {
   const { dealId } = params;
-  const { submissionId, draft, isLoading, error, refresh } = useVerificationDraft(dealId);
+  const { submissionId, draft, isLoading, error, refresh, challengeId, submitChallenge } =
+    useVerificationDraft(dealId);
   const currentStep = useVerificationStore((s) => s.currentStep);
   const setCurrentStep = useVerificationStore((s) => s.setCurrentStep);
   const config = useFormConfig();
@@ -56,6 +58,17 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
   // Clamp so a resume point saved under an older, longer wizard still
   // lands on a real step.
   const entry = sequence[Math.min(Math.max(currentStep, 1), sequence.length) - 1];
+
+  if (challengeId) {
+    return (
+      <div>
+        <VerificationHero />
+        <Container className="py-10">
+          <ResumeChallengeCard onSubmit={submitChallenge} />
+        </Container>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

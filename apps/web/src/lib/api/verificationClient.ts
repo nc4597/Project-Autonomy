@@ -25,12 +25,33 @@ export class ApiError extends Error {
   }
 }
 
+// Per-draft access key, held only by this browser (localStorage). The
+// server hands it out at draft creation (or through the resume unlock
+// challenge) and requires it on every draft read/save.
+const SECRET_PREFIX = "verification-secret:";
+
+export function storeDraftSecret(submissionId: string, secret: string) {
+  window.localStorage.setItem(SECRET_PREFIX + submissionId, secret);
+}
+
+function getDraftSecret(submissionId: string): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(SECRET_PREFIX + submissionId);
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   // Only claim application/json when we're actually sending a body —
   // confirm/delete/submit send none, and a strict JSON body parser
   // rejects an empty body when the header promises JSON that never
   // arrives.
-  const headers = init?.body ? { "Content-Type": "application/json", ...init.headers } : init?.headers;
+  let headers: HeadersInit | undefined = init?.body
+    ? { "Content-Type": "application/json", ...init.headers }
+    : init?.headers;
+
+  // Draft-scoped paths carry the draft's access key when we hold one.
+  const draftId = path.match(/^\/verifications\/([^/?]+)/)?.[1];
+  const secret = draftId ? getDraftSecret(draftId) : null;
+  if (secret) headers = { ...headers, "x-draft-secret": secret };
 
   const response = await fetch(`${ADMIN_BASE_URL}${KYC_API_PREFIX}${path}`, {
     ...init,
@@ -124,7 +145,7 @@ export function savePageAnswers(
 }
 
 export function createVerificationDraft(dealId: string) {
-  return request<{ id: string }>("/verifications", {
+  return request<{ id: string; clientSecret: string | null }>("/verifications", {
     method: "POST",
     body: JSON.stringify({ dealId }),
   });
@@ -211,5 +232,17 @@ export function submitVerification(id: string, captchaToken?: string) {
   return request<{ ok: true; submittedAt: string }>(`/verifications/${id}/submit`, {
     method: "POST",
     ...(captchaToken ? { body: JSON.stringify({ captchaToken }) } : {}),
+  });
+}
+
+/**
+ * Identity challenge behind resume links: verifies the email + SSN
+ * last-4 the investor applied with and returns the draft's access key
+ * for this device. Rate-limited server-side.
+ */
+export function unlockVerificationDraft(id: string, email: string, ssnLast4: string) {
+  return request<{ clientSecret: string }>(`/verifications/${id}/unlock`, {
+    method: "POST",
+    body: JSON.stringify({ email, ssnLast4 }),
   });
 }
