@@ -4,7 +4,7 @@ import type { Deal } from "@/lib/marketplace/types";
 
 export function TombstoneCard({ deal }: { deal: Deal }) {
   return (
-    <div className="border border-hairline bg-card p-7">
+    <div className="flex h-full flex-col border border-hairline bg-card p-7">
       <div className="mb-6 flex items-start justify-between">
         <span className="flex h-12 w-12 items-center justify-center overflow-hidden bg-navy-800 text-sm font-semibold text-white">
           {deal.logoUrl ? (
@@ -20,7 +20,7 @@ export function TombstoneCard({ deal }: { deal: Deal }) {
       <h3 className="mb-1 font-serif text-lg text-ink">{deal.name}</h3>
       <p className="mb-5 text-sm text-ink-secondary">{deal.tagline}</p>
 
-      <div className="grid grid-cols-2 gap-y-4 border-t border-hairline pt-5">
+      <div className="mt-auto grid grid-cols-2 gap-y-4 border-t border-hairline pt-5">
         <div>
           <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-ink">
             Raised
