@@ -25,6 +25,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/settings" className="hover:text-white">
               Home Settings
             </Link>
+            <Link href="/admin-users" className="hover:text-white">
+              Admin Access
+            </Link>
             <LogoutButton />
           </nav>
         </div>

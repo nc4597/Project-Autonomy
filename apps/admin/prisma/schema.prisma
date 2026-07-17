@@ -187,3 +187,14 @@ model TeamMember {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// The admin login allowlist. Signing in with a Regiment Microsoft account
+// only confirms *identity* (see auth.ts's Microsoft Entra ID provider) —
+// this table is the separate authorization check: only emails present
+// here are allowed to actually complete sign-in and reach the admin UI.
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+}

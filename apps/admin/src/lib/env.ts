@@ -5,11 +5,6 @@ const envSchema = z.object({
 
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
 
-  // Gates the admin UI and write API routes. Deliberately a single shared
-  // secret for now rather than per-user accounts — see middleware.ts.
-  ADMIN_PASSWORD: z.string().min(1, "ADMIN_PASSWORD is required"),
-  ADMIN_SESSION_SECRET: z.string().min(1, "ADMIN_SESSION_SECRET is required"),
-
   // Origin allowed to call the public read endpoints (apps/web) — both
   // the CMS content routes and the KYC investor-facing routes below,
   // since apps/web's wizard calls those directly from the browser.
