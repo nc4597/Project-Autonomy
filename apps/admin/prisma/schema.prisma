@@ -53,6 +53,12 @@ model Deal {
   offeringType      OfferingType
   logoUrl           String?
   thumbnailUrl      String?
+  // Deal representative shown on the public "Meet the Representative"
+  // card. repEmail is internal-only: stripped in serializeDeal, never
+  // sent to the public site.
+  repName           String?
+  repPhotoUrl       String?
+  repEmail          String?
   raiseGoal         Decimal  @db.Decimal(14, 2)
   raisedAmount      Decimal  @db.Decimal(14, 2)
   // When true, the public site shows "Undisclosed Amount" instead of

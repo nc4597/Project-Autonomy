@@ -237,7 +237,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
           </section>
         </div>
 
-        <aside className="h-fit lg:sticky lg:top-[100px]">
+        <aside>
           <div className="mb-6 border border-hairline bg-card p-6">
             <div className="mb-6 space-y-4">
               {sidebarDetails.map((item) => (
@@ -259,7 +259,48 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
             </Button>
           </div>
 
-          <div className="mb-6 bg-navy-950 p-6">
+          <div className="mb-6 border border-hairline bg-card p-6">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.08em] text-ink">
+              {deal.repName ? "Meet the Representative" : "Have Questions?"}
+            </p>
+            <div className="flex items-start gap-3">
+              {deal.repName && deal.repPhotoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={deal.repPhotoUrl}
+                  alt=""
+                  className="h-12 w-12 shrink-0 object-cover"
+                />
+              ) : (
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-navy-900 text-xs font-semibold text-white">
+                  {deal.repName
+                    ? deal.repName
+                        .split(/\s+/)
+                        .map((part) => part[0])
+                        .slice(0, 2)
+                        .join("")
+                        .toUpperCase()
+                    : "IR"}
+                </span>
+              )}
+              <div>
+                <p className="text-sm font-semibold text-ink">
+                  {deal.repName ?? "Investor Relations"}
+                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.06em] text-brand-red">
+                  Regiment Securities
+                </p>
+                {!deal.repName && (
+                  <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
+                    Available Mon-Fri, 9am-6pm EST. Our team is happy to answer
+                    any questions about this offering.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-navy-950 p-6">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-white">
               FINRA / SIPC Member
             </p>
@@ -268,27 +309,6 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
               offerings are reviewed for regulatory compliance before
               listing.
             </p>
-          </div>
-
-          <div className="border border-hairline bg-card p-6">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.08em] text-ink">
-              Have Questions?
-            </p>
-            <div className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-navy-900 text-xs font-semibold text-white">
-                IR
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-ink">Investor Relations</p>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.06em] text-brand-red">
-                  Regiment Securities
-                </p>
-                <p className="text-sm leading-relaxed text-ink-secondary">
-                  Available Mon-Fri, 9am-6pm EST. Our team is happy to answer
-                  any questions about this offering.
-                </p>
-              </div>
-            </div>
           </div>
         </aside>
       </Container>

@@ -71,6 +71,9 @@ export interface AdminDeal {
   sector: AdminSector;
   offeringType: AdminOfferingType;
   logoUrl: string | null;
+  /** Deal representative shown on the "Meet the Representative" card. */
+  repName?: string | null;
+  repPhotoUrl?: string | null;
   thumbnailUrl: string | null;
   bannerImageUrl: string | null;
   raiseGoal: number;

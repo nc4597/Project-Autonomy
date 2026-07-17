@@ -34,6 +34,9 @@ export interface DealFormValues {
   logoUrl: string | null;
   thumbnailUrl: string | null;
   bannerImageUrl: string | null;
+  repName: string;
+  repPhotoUrl: string | null;
+  repEmail: string;
   raiseGoal: string;
   raisedAmount: string;
   raisedAmountUndisclosed: boolean;
@@ -59,6 +62,9 @@ export const emptyDealForm: DealFormValues = {
   logoUrl: null,
   thumbnailUrl: null,
   bannerImageUrl: null,
+  repName: "",
+  repPhotoUrl: null,
+  repEmail: "",
   raiseGoal: "",
   raisedAmount: "",
   raisedAmountUndisclosed: false,
@@ -302,6 +308,25 @@ export function DealForm({
             aspect="wide"
             value={values.bannerImageUrl}
             onChange={(url) => set("bannerImageUrl", url)}
+          />
+        </div>
+      </Section>
+
+      <Section title="Deal Representative">
+        <div className="grid grid-cols-2 gap-4">
+          <TextField label="Rep Name" value={values.repName} onChange={(v) => set("repName", v)} />
+          <TextField label="Rep Email" value={values.repEmail} onChange={(v) => set("repEmail", v)} />
+        </div>
+        <p className="mt-2 text-xs text-ink-muted">
+          Rep Email is <span className="font-semibold text-brand-red">internal only</span> — stored
+          for the team&rsquo;s reference and never shown anywhere on the public site.
+        </p>
+        <div className="mt-6">
+          <ImageUploadField
+            label="Headshot (square works best — initials shown if empty)"
+            kind="logo"
+            value={values.repPhotoUrl}
+            onChange={(url) => set("repPhotoUrl", url)}
           />
         </div>
       </Section>
