@@ -3,6 +3,7 @@ import { kycLogger } from "@/lib/kyc/logger";
 import { SUBMISSION_INCLUDE } from "@/lib/kyc/serialize";
 import { validateSubmissionCompleteness } from "@/lib/kyc/submissionValidation";
 import { notifyAdminsOfSubmission } from "@/lib/kyc/submissionNotificationService";
+import { syncContactCard } from "@/lib/kyc/hubspotContactService";
 import { jsonWithCors, corsPreflight } from "@/lib/kyc/cors";
 
 export async function OPTIONS() {
@@ -29,9 +30,13 @@ export async function POST(_request: Request, { params }: { params: { id: string
     data: { status: "SUBMITTED", submittedAt: new Date() },
   });
 
-  // Fire-and-forget: the notification email is not on the critical path
-  // for the investor's success response — Postgres is already durable by
-  // the time this runs, and the admin panel reads from it directly.
+  // Fire-and-forget: neither the notification email nor the HubSpot
+  // contact card is on the critical path for the investor's success
+  // response — Postgres is already durable by the time this runs, and
+  // the admin panel reads from it directly.
+  syncContactCard(updated.id).catch((err) => {
+    kycLogger.error({ submissionId: updated.id, err: String(err) }, "unhandled hubspot contact card error");
+  });
   notifyAdminsOfSubmission(updated.id).catch((err) => {
     kycLogger.error({ submissionId: updated.id, err: String(err) }, "unhandled admin notification error");
   });

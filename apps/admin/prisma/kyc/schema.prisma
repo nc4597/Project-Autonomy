@@ -66,6 +66,14 @@ model VerificationSubmission {
   updatedAt   DateTime         @updatedAt
   submittedAt DateTime?
 
+  // Bookkeeping for the HubSpot contact-card sync (see
+  // lib/kyc/hubspotContactService.ts) — deliberately plain columns, not
+  // a separate sync table: one contact card per submission, deduped by
+  // email on HubSpot's side, so there's no retry state machine to model.
+  hubspotContactId String?
+  hubspotSyncedAt  DateTime?
+  hubspotSyncError String?
+
   contactInfo   ContactInfo?
   kycAmlInfo    KycAmlInfo?
   accreditation AccreditationInfo?

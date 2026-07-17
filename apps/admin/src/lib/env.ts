@@ -48,6 +48,12 @@ const envSchema = z.object({
   // the notification email straight to a submission's review page.
   ADMIN_APP_ORIGIN: z.string().url().optional(),
 
+  // HubSpot private-app token for the contact-card sync (see
+  // lib/kyc/hubspotContactService.ts). Only needs the
+  // crm.objects.contacts.read + crm.objects.contacts.write scopes.
+  // Unset = sync skipped loudly, submissions unaffected.
+  HUBSPOT_ACCESS_TOKEN: z.string().optional(),
+
   // Admin notification email on every KYC submission. We POST a JSON
   // payload to a Zapier "Catch Hook" webhook; the Zap sends the actual
   // email via a connected real mailbox (e.g. Gmail/Outlook), so no
