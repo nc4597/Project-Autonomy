@@ -2,12 +2,18 @@ import { Container } from "@/components/ui/Container";
 import type { AdminTeamMember } from "@/lib/marketplace/adminTypes";
 
 function initials(name: string) {
-  return name
+  // Strip parenthetical nicknames (e.g. "Catherine (O'Connor) Buxton")
+  // before taking first + last initials, so they don't get picked up
+  // as a middle word.
+  const words = name
+    .replace(/\([^)]*\)/g, "")
+    .trim()
     .split(/\s+/)
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+    .filter(Boolean);
+  if (words.length === 0) return "";
+  const first = words[0][0];
+  const last = words[words.length - 1][0];
+  return (words.length === 1 ? first : first + last).toUpperCase();
 }
 
 // Deliberately simple, unlike DealCard — no border, no button, no
@@ -29,9 +35,9 @@ export function TeamSection({ members }: { members: AdminTeamMember[] }) {
           <h2 className="font-serif text-4xl text-ink">Meet the Team</h2>
         </div>
 
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-wrap justify-center gap-10">
           {members.map((member) => (
-            <div key={member.id}>
+            <div key={member.id} className="w-full sm:w-[calc(50%-1.25rem)] lg:w-[calc(25%-1.875rem)]">
               <div className="mb-4 flex aspect-square w-full items-center justify-center overflow-hidden bg-navy-900 text-2xl font-semibold text-white">
                 {member.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
