@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { kycPrisma } from "@/lib/kyc/prisma";
 import { SUBMISSION_INCLUDE } from "@/lib/kyc/serialize";
 import { generateSubmissionSummaryPdf } from "@/lib/kyc/submissionSummaryPdf";
-import { investorFolderName } from "@/lib/kyc/hubspotService";
+import { investorFolderName } from "@/lib/kyc/investorFolder";
 
 // Already gated by middleware.ts (only /login, /api/auth/login,
 // /api/public/*, and /api/health are public) — reaching this route at
@@ -16,9 +16,6 @@ export async function GET(_request: Request, { params }: { params: { id: string 
     return NextResponse.json({ error: "Submission not found" }, { status: 404 });
   }
 
-  // Same generator that uploads Verification_Summary.pdf to the
-  // investor's HubSpot folder on submit — here produced on demand so a
-  // reviewer can grab it without opening HubSpot.
   const pdf = await generateSubmissionSummaryPdf(submission);
   return new NextResponse(new Uint8Array(pdf), {
     headers: {

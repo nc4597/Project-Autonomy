@@ -2,7 +2,7 @@ import JSZip from "jszip";
 import { NextResponse } from "next/server";
 import { kycPrisma } from "@/lib/kyc/prisma";
 import { SUBMISSION_INCLUDE } from "@/lib/kyc/serialize";
-import { investorFolderName } from "@/lib/kyc/hubspotService";
+import { investorFolderName } from "@/lib/kyc/investorFolder";
 import { createPresignedDownloadUrl } from "@/lib/kyc/s3Client";
 
 // Already gated by middleware.ts (only /login, /api/auth/login,

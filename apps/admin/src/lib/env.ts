@@ -43,17 +43,10 @@ const envSchema = z.object({
     .default("false")
     .transform((v) => v === "true"),
 
-  // HubSpot integration (stubbed until real credentials exist — same
-  // NOT_CONFIGURED-safe pattern as before). See lib/kyc/hubspotService.ts.
-  HUBSPOT_ACCESS_TOKEN: z.string().optional(),
-  HUBSPOT_PORTAL_ID: z.string().optional(),
-  HUBSPOT_FORM_GUID: z.string().optional(),
-  // Numeric folder ID (from HubSpot's file manager URL, e.g.
-  // ?folderId=123) of the root /kyc-verifications folder — used to link
-  // straight to it in the admin notification email. Every investor's
-  // subfolder lives inside this one; the email names which subfolder to
-  // open.
-  HUBSPOT_KYC_ROOT_FOLDER_ID: z.string().optional(),
+  // Public origin of this admin app itself (e.g.
+  // https://regimentadmin-production.up.railway.app) — used to deep-link
+  // the notification email straight to a submission's review page.
+  ADMIN_APP_ORIGIN: z.string().url().optional(),
 
   // Admin notification email on every KYC submission. We POST a JSON
   // payload to a Zapier "Catch Hook" webhook; the Zap sends the actual
@@ -65,10 +58,6 @@ const envSchema = z.object({
   // signs after reviewing a submission. Not a real PandaDoc API
   // integration yet — same link goes in every notification email.
   PANDADOC_CERTIFICATION_TEMPLATE_URL: z.string().optional(),
-
-  // Shared secret required (x-internal-secret header) to call the
-  // HubSpot retry-sweep route — see app/api/public/kyc/internal/*.
-  INTERNAL_SWEEP_SECRET: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

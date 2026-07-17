@@ -12,7 +12,6 @@ export type SubmissionWithRelations = Prisma.VerificationSubmissionGetPayload<{
     accreditation: true;
     certification: true;
     documents: true;
-    hubspotSync: true;
   };
 }>;
 

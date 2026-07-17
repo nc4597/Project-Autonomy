@@ -101,7 +101,6 @@ export interface VerificationDraft {
   certification: { acceptedAt: string; tosVersion: string } | null;
   documents: DocumentRecord[];
   customAnswers?: CustomAnswerRecord[];
-  hubspotSyncStatus: string;
 }
 
 export function getFormConfig() {

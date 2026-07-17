@@ -1,5 +1,5 @@
 import PDFDocument from "pdfkit";
-import type { SubmissionWithRelations } from "./hubspotService";
+import type { SubmissionWithRelations } from "./serialize";
 
 function humanize(enumValue: string): string {
   return enumValue
@@ -10,14 +10,10 @@ function humanize(enumValue: string): string {
 }
 
 /**
- * Renders a PDF summarizing every submitted answer, so a reviewer can
- * see the full picture (documents + answers) inside the investor's
- * HubSpot folder without also opening the Contact record. Includes SSN
- * (last 4) and date of birth per explicit instruction — scoped
- * deliberately to this one private PDF only, not to the HubSpot
- * Contact/Forms sync (see hubspotService.ts's buildContactProperties),
- * which still excludes both so they never become searchable/exportable
- * CRM properties.
+ * Renders a PDF summarizing every submitted answer — the one-page
+ * compliance view downloaded from the admin KYC detail page. Includes
+ * SSN (last 4) and date of birth per explicit instruction; this PDF is
+ * only ever served through the session-gated admin routes.
  */
 export async function generateSubmissionSummaryPdf(submission: SubmissionWithRelations): Promise<Buffer> {
   const { contactInfo, kycAmlInfo, accreditation, documents, certification } = submission;

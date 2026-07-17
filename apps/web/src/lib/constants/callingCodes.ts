@@ -1,7 +1,7 @@
 // International calling codes for the phone field on the verification
 // form's contact step. The stored phone value is a single string —
 // "<code> <national number>", e.g. "+44 7911 123456" — so nothing
-// downstream (admin panel, summary PDF, HubSpot) needs to know about
+// downstream (admin panel, summary PDF) needs to know about
 // this list; it exists only to compose that string and to split it back
 // apart when a saved draft is reloaded.
 

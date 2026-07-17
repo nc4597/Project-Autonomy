@@ -16,7 +16,6 @@ export interface KycSubmissionSummary {
   email: string | null;
   investorType: string | null;
   accreditationMethod: string | null;
-  hubspotSyncStatus: string;
 }
 
 function summarize(submission: SubmissionWithRelations): KycSubmissionSummary {
@@ -32,7 +31,6 @@ function summarize(submission: SubmissionWithRelations): KycSubmissionSummary {
     email: submission.contactInfo?.email ?? null,
     investorType: submission.contactInfo?.investorType ?? null,
     accreditationMethod: submission.accreditation?.method ?? null,
-    hubspotSyncStatus: submission.hubspotSync?.status ?? "NOT_CONFIGURED",
   };
 }
 
@@ -53,9 +51,9 @@ export async function getKycSubmissionDetail(id: string) {
   });
   if (!submission) return null;
 
-  // Internal compliance view — unlike the payload sent to HubSpot, SSN
-  // last-4 and date of birth are legitimately part of what a reviewer
-  // needs to see here, so nothing is stripped.
+  // Internal compliance view — SSN last-4 and date of birth are
+  // legitimately part of what a reviewer needs to see here, so nothing
+  // is stripped.
   return {
     id: submission.id,
     dealId: submission.dealId,
@@ -87,13 +85,6 @@ export async function getKycSubmissionDetail(id: string) {
       label: answer.label,
       value: answer.value,
     })),
-    hubspotSync: submission.hubspotSync
-      ? {
-          ...submission.hubspotSync,
-          lastAttemptAt: submission.hubspotSync.lastAttemptAt?.toISOString() ?? null,
-          syncedAt: submission.hubspotSync.syncedAt?.toISOString() ?? null,
-        }
-      : null,
   };
 }
 

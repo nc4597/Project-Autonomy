@@ -25,6 +25,4 @@ npm run dev:admin       # http://localhost:3100
 npm run dev:web         # http://localhost:3000
 ```
 
-Visit `http://localhost:3000/verify/test-deal-123` to walk the wizard end to end. Submitted verifications show up in `apps/admin`'s KYC Review section.
-
-HubSpot sync is intentionally unconfigured until `HUBSPOT_ACCESS_TOKEN` is set in `apps/admin/.env` — submissions still save and complete normally, and the sync status is visible via `hubspotSyncStatus` on `GET /api/public/kyc/verifications/:id`.
+Visit `http://localhost:3000/verify/test-deal-123` to walk the wizard end to end. Submitted verifications show up in `apps/admin`'s KYC Review section — the system of record for review: inline document previews, per-document downloads, a Download All zip, and an on-demand Verification Summary PDF per submission. (An earlier HubSpot sync was removed in July 2026; `apps/api` still contains its own dormant copy of that era's code.)

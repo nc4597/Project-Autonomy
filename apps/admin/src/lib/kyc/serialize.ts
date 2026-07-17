@@ -6,7 +6,6 @@ export const SUBMISSION_INCLUDE = {
   accreditation: true,
   certification: true,
   documents: true,
-  hubspotSync: true,
   customAnswers: true,
 } as const;
 
@@ -42,6 +41,5 @@ export function serializeSubmission(submission: SubmissionWithRelations) {
       label: answer.label,
       value: answer.value,
     })),
-    hubspotSyncStatus: submission.hubspotSync?.status ?? "NOT_CONFIGURED",
   };
 }

@@ -51,7 +51,6 @@ export default async function KycSubmissionsPage() {
               <th className="px-4 py-3">Investor Type</th>
               <th className="px-4 py-3">Accreditation</th>
               <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">HubSpot</th>
               <th className="px-4 py-3">Submitted</th>
             </tr>
           </thead>
@@ -84,25 +83,12 @@ export default async function KycSubmissionsPage() {
                     {KYC_STATUS_LABELS[submission.status]}
                   </span>
                 </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`px-2 py-1 text-[11px] font-semibold uppercase ${
-                      submission.hubspotSyncStatus === "SYNCED"
-                        ? "bg-success/10 text-success"
-                        : submission.hubspotSyncStatus === "FAILED"
-                          ? "bg-brand-red/10 text-brand-red"
-                          : "bg-ink-muted/10 text-ink-muted"
-                    }`}
-                  >
-                    {submission.hubspotSyncStatus}
-                  </span>
-                </td>
                 <td className="px-4 py-3 text-ink-secondary">{formatDate(submission.submittedAt)}</td>
               </tr>
             ))}
             {submissions.length === 0 && !loadError && (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-ink-secondary">
+                <td colSpan={6} className="px-4 py-10 text-center text-ink-secondary">
                   No KYC submissions yet.
                 </td>
               </tr>

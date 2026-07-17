@@ -74,7 +74,7 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
   }
   if (!submission) notFound();
 
-  const { contactInfo, kycAmlInfo, accreditation, certification, documents, hubspotSync } = submission;
+  const { contactInfo, kycAmlInfo, accreditation, certification, documents } = submission;
 
   return (
     <div>
@@ -165,31 +165,6 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
             </>
           ) : (
             <p className="py-4 text-sm text-ink-secondary">Not certified yet.</p>
-          )}
-        </Section>
-
-        <Section title="HubSpot Sync">
-          <Field
-            label="Status"
-            value={
-              <span
-                className={`px-2 py-1 text-[11px] font-semibold uppercase ${
-                  hubspotSync?.status === "SYNCED"
-                    ? "bg-success/10 text-success"
-                    : hubspotSync?.status === "FAILED"
-                      ? "bg-brand-red/10 text-brand-red"
-                      : "bg-ink-muted/10 text-ink-muted"
-                }`}
-              >
-                {hubspotSync?.status ?? "NOT_CONFIGURED"}
-              </span>
-            }
-          />
-          <Field label="Attempts" value={hubspotSync?.attempts ?? 0} />
-          <Field label="Last Attempt" value={formatDateTime(hubspotSync?.lastAttemptAt ?? null)} />
-          <Field label="Synced At" value={formatDateTime(hubspotSync?.syncedAt ?? null)} />
-          {hubspotSync?.lastError && (
-            <div className="py-2.5 text-sm text-brand-red">Error: {hubspotSync.lastError}</div>
           )}
         </Section>
 

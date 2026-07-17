@@ -57,13 +57,6 @@ enum DocumentStatus {
   REJECTED
 }
 
-enum HubspotSyncStatus {
-  NOT_CONFIGURED
-  PENDING
-  SYNCED
-  FAILED
-}
-
 model VerificationSubmission {
   id          String           @id @default(uuid())
   dealId      String
@@ -78,7 +71,6 @@ model VerificationSubmission {
   accreditation AccreditationInfo?
   certification CertificationAcceptance?
   documents     Document[]
-  hubspotSync   HubspotSync?
   customAnswers CustomAnswer[]
 
   @@index([dealId])
@@ -173,16 +165,4 @@ model CertificationAcceptance {
   tosVersion   String
   ipAddress    String
   userAgent    String
-}
-
-model HubspotSync {
-  id               String            @id @default(uuid())
-  submissionId     String            @unique
-  submission       VerificationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  status           HubspotSyncStatus @default(NOT_CONFIGURED)
-  hubspotContactId String?
-  attempts         Int               @default(0)
-  lastAttemptAt    DateTime?
-  lastError        String?
-  syncedAt         DateTime?
 }

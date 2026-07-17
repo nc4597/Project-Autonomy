@@ -1,7 +1,6 @@
 import { env } from "../env";
 import { kycLogger } from "./logger";
 import { kycPrisma } from "./prisma";
-import { HUBSPOT_FILES_ROOT_FOLDER, investorFolderName } from "./hubspotService";
 import { SUBMISSION_INCLUDE } from "./serialize";
 
 function escapeHtml(value: string): string {
@@ -26,8 +25,9 @@ function humanize(enumValue: string): string {
  * verification is submitted, via a Zapier webhook (the Zap sends the
  * actual email through a connected real mailbox). Best-effort: logs and
  * returns on failure rather than retrying — this is a "go take a look"
- * nudge, not the system of record (HubSpot is). Same
- * NOT_CONFIGURED-until-set pattern as the HubSpot integration.
+ * nudge, not the system of record (the KYC database behind the admin
+ * panel is). NOT_CONFIGURED-until-set: skips loudly when the webhook or
+ * recipient env vars are absent.
  */
 export async function notifyAdminsOfSubmission(submissionId: string): Promise<void> {
   const recipients = (env.ADMIN_NOTIFICATION_EMAILS ?? "")
@@ -47,8 +47,6 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
   try {
     const submission = await kycPrisma.verificationSubmission.findUniqueOrThrow({
       where: { id: submissionId },
-      // Full include (not just the fields this email uses) so the result
-      // satisfies SubmissionWithRelations for investorFolderName().
       include: SUBMISSION_INCLUDE,
     });
 
@@ -58,16 +56,11 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
     const uploadedCount = documents.filter((d) => d.status === "UPLOADED").length;
     const investorName = `${contactInfo.firstName} ${contactInfo.lastName}`;
 
-    const hubspotFolderPath = `${HUBSPOT_FILES_ROOT_FOLDER}/${investorFolderName(submission)}`;
-    const investorFolder = investorFolderName(submission);
-    // Links to the shared root /kyc-verifications folder (same link in
-    // every email) — the investor's own subfolder lives inside it, named
-    // below, since each investor's numeric per-folder ID isn't known
-    // ahead of time without an extra HubSpot API lookup.
-    const hubspotFolderUrl =
-      env.HUBSPOT_PORTAL_ID && env.HUBSPOT_KYC_ROOT_FOLDER_ID
-        ? `https://app.hubspot.com/files/${env.HUBSPOT_PORTAL_ID}/?folderId=${env.HUBSPOT_KYC_ROOT_FOLDER_ID}`
-        : null;
+    // Deep link straight to this submission's review page — documents
+    // (inline previews + downloads) and the summary PDF all live there.
+    const adminReviewUrl = env.ADMIN_APP_ORIGIN
+      ? `${env.ADMIN_APP_ORIGIN.replace(/\/$/, "")}/kyc/${submission.id}`
+      : null;
     const pandaDocUrl = env.PANDADOC_CERTIFICATION_TEMPLATE_URL ?? null;
 
     const html = `
@@ -76,13 +69,13 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
         contactInfo.email
       )}) has submitted accredited investor verification materials in connection with
       ${escapeHtml(submission.dealId)}.</p>
-      <p>Please review the submitted documentation in the HubSpot folder below (look for the
-      <strong>${escapeHtml(investorFolder)}</strong> subfolder) and confirm that the materials are
-      complete and sufficient for the applicable accreditation requirements:</p>
+      <p>Please review the submitted documentation and answer summary in the admin panel and
+      confirm that the materials are complete and sufficient for the applicable accreditation
+      requirements:</p>
       <p>${
-        hubspotFolderUrl
-          ? `<a href="${hubspotFolderUrl}">${escapeHtml(hubspotFolderUrl)}</a>`
-          : "(HubSpot folder link not yet configured)"
+        adminReviewUrl
+          ? `<a href="${adminReviewUrl}">${escapeHtml(adminReviewUrl)}</a>`
+          : "(Admin panel link not yet configured — open KYC Review in the admin CMS and select the investor.)"
       }</p>
       <p>Following your review, please complete and sign the related PandaDoc certification here:</p>
       <p>${
@@ -111,8 +104,7 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
         accreditationMethod: accreditation ? humanize(accreditation.method) : "—",
         documentsUploaded: uploadedCount,
         submittedAt: submission.submittedAt?.toISOString() ?? null,
-        hubspotFolderPath,
-        hubspotFolderUrl,
+        adminReviewUrl,
         pandaDocUrl,
       }),
     });
