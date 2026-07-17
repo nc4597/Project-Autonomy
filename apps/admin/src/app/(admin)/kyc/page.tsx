@@ -75,12 +75,20 @@ export default async function KycSubmissionsPage() {
                 <td className="px-4 py-3">
                   <span
                     className={`px-2 py-1 text-[11px] font-semibold uppercase ${
-                      submission.status === "SUBMITTED"
-                        ? "bg-success/10 text-success"
-                        : "bg-ink-muted/10 text-ink-muted"
+                      submission.reviewStatus === "VERIFIED"
+                        ? "bg-success text-white"
+                        : submission.reviewStatus === "REJECTED"
+                          ? "bg-brand-red/10 text-brand-red"
+                          : submission.status === "SUBMITTED"
+                            ? "bg-success/10 text-success"
+                            : "bg-ink-muted/10 text-ink-muted"
                     }`}
                   >
-                    {KYC_STATUS_LABELS[submission.status]}
+                    {submission.reviewStatus === "VERIFIED"
+                      ? "Verified"
+                      : submission.reviewStatus === "REJECTED"
+                        ? "Rejected"
+                        : KYC_STATUS_LABELS[submission.status]}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-ink-secondary">{formatDate(submission.submittedAt)}</td>

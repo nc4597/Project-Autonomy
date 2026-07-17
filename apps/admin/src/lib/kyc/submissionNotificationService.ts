@@ -115,3 +115,76 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
     );
   }
 }
+
+/**
+ * Emails the investor when their submission is rejected: the reviewer's
+ * notes verbatim plus a link back to the reopened wizard. Sent through
+ * the same Zapier webhook as the admin notification — the Zap's email
+ * action must map the recipient from the payload's `to` field, since
+ * this one goes to the investor rather than the admin list. Returns
+ * whether the webhook accepted the send.
+ */
+export async function notifyInvestorOfRejection(submissionId: string, notes: string): Promise<boolean> {
+  const webhookUrl = env.ZAPIER_KYC_NOTIFICATION_WEBHOOK_URL;
+  if (!webhookUrl) {
+    kycLogger.warn(
+      { submissionId, reason: "ZAPIER_KYC_NOTIFICATION_WEBHOOK_URL not set" },
+      "rejection email skipped: integration not configured"
+    );
+    return false;
+  }
+
+  try {
+    const submission = await kycPrisma.verificationSubmission.findUniqueOrThrow({
+      where: { id: submissionId },
+      include: SUBMISSION_INCLUDE,
+    });
+    const { contactInfo } = submission;
+    if (!contactInfo) throw new Error("Cannot email a rejection without contact info");
+
+    const resubmitUrl = `${env.FRONTEND_ORIGIN.replace(/\/$/, "")}/verify/${submission.dealId}`;
+    const notesHtml = escapeHtml(notes).replace(/\n/g, "<br />");
+
+    const html = `
+      <p>Dear ${escapeHtml(contactInfo.firstName)},</p>
+      <p>Our compliance team has reviewed your accredited investor verification for
+      <strong>${escapeHtml(submission.dealId)}</strong> and we need a few updates before we can
+      approve it:</p>
+      <div style="border-left:3px solid #C8102E; background:#F5F4F1; padding:12px 14px; margin:0 0 14px; color:#10233E;">${notesHtml}</div>
+      <p>Your verification has been reopened with everything you previously entered still in
+      place &mdash; you only need to correct the items above, re-upload the relevant documents,
+      and submit again:</p>
+      <p><a href="${resubmitUrl}" style="display:inline-block; background:#071C35; color:#ffffff; padding:11px 20px; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; text-decoration:none;">Update My Verification</a></p>
+      <p>Thank you,<br>The Regiment Marketplace Team</p>
+    `;
+
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: [contactInfo.email],
+        subject: "Action needed — updates required on your investor verification",
+        html,
+        submissionId: submission.id,
+        investorName: `${contactInfo.firstName} ${contactInfo.lastName}`,
+        investorEmail: contactInfo.email,
+        dealId: submission.dealId,
+        reviewNotes: notes,
+        resubmitUrl,
+      }),
+    });
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      throw new Error(`Zapier webhook failed: ${response.status} ${body}`);
+    }
+
+    kycLogger.info({ submissionId, to: contactInfo.email }, "rejection email webhook sent");
+    return true;
+  } catch (err) {
+    kycLogger.error(
+      { submissionId, err: err instanceof Error ? err.message : String(err) },
+      "rejection email failed"
+    );
+    return false;
+  }
+}

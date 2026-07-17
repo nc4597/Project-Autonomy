@@ -16,6 +16,7 @@ export interface KycSubmissionSummary {
   email: string | null;
   investorType: string | null;
   accreditationMethod: string | null;
+  reviewStatus: string;
 }
 
 function summarize(submission: SubmissionWithRelations): KycSubmissionSummary {
@@ -31,6 +32,7 @@ function summarize(submission: SubmissionWithRelations): KycSubmissionSummary {
     email: submission.contactInfo?.email ?? null,
     investorType: submission.contactInfo?.investorType ?? null,
     accreditationMethod: submission.accreditation?.method ?? null,
+    reviewStatus: submission.reviewStatus,
   };
 }
 
@@ -64,6 +66,9 @@ export async function getKycSubmissionDetail(id: string) {
     status: submission.status,
     createdAt: submission.createdAt.toISOString(),
     submittedAt: submission.submittedAt?.toISOString() ?? null,
+    reviewStatus: submission.reviewStatus,
+    reviewNotes: submission.reviewNotes,
+    reviewedAt: submission.reviewedAt?.toISOString() ?? null,
     hubspotContactId: submission.hubspotContactId,
     hubspotSyncedAt: submission.hubspotSyncedAt?.toISOString() ?? null,
     hubspotSyncError: submission.hubspotSyncError,

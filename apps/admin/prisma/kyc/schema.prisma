@@ -57,6 +57,12 @@ enum DocumentStatus {
   REJECTED
 }
 
+enum ReviewStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 model VerificationSubmission {
   id          String           @id @default(uuid())
   dealId      String
@@ -64,6 +70,14 @@ model VerificationSubmission {
   currentStep Int              @default(1)
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+
+  // Compliance decision made on the admin detail page. Rejection stores
+  // the reviewer's notes (emailed to the investor verbatim) and flips
+  // status back to DRAFT so the investor can revise and resubmit;
+  // resubmitting resets the review to PENDING.
+  reviewStatus ReviewStatus @default(PENDING)
+  reviewNotes  String?
+  reviewedAt   DateTime?
   submittedAt DateTime?
 
   // Bookkeeping for the HubSpot contact-card sync (see

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getKycSubmissionDetail } from "@/lib/kyc/repository";
 import { KycDocumentRow } from "@/components/KycDocumentRow";
+import { KycReviewSection } from "@/components/KycReviewSection";
 import { env } from "@/lib/env";
 import {
   KYC_ACCREDITATION_METHOD_LABELS,
@@ -95,10 +96,20 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
         <div className="flex items-center gap-3">
           <span
             className={`px-3 py-1.5 text-xs font-semibold uppercase ${
-              submission.status === "SUBMITTED" ? "bg-success/10 text-success" : "bg-ink-muted/10 text-ink-muted"
+              submission.reviewStatus === "VERIFIED"
+                ? "bg-success text-white"
+                : submission.reviewStatus === "REJECTED"
+                  ? "bg-brand-red/10 text-brand-red"
+                  : submission.status === "SUBMITTED"
+                    ? "bg-success/10 text-success"
+                    : "bg-ink-muted/10 text-ink-muted"
             }`}
           >
-            {KYC_STATUS_LABELS[submission.status]}
+            {submission.reviewStatus === "VERIFIED"
+              ? "Verified"
+              : submission.reviewStatus === "REJECTED"
+                ? "Rejected"
+                : KYC_STATUS_LABELS[submission.status]}
           </span>
           <a
             href={`/api/kyc/${submission.id}/summary`}
@@ -212,6 +223,15 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
               />
             ))}
           </Section>
+        </div>
+
+        <div className="lg:col-span-2">
+          <KycReviewSection
+            submissionId={submission.id}
+            reviewStatus={submission.reviewStatus}
+            reviewNotes={submission.reviewNotes}
+            reviewedAt={submission.reviewedAt}
+          />
         </div>
       </div>
     </div>

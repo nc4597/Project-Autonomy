@@ -1,0 +1,54 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { kycPrisma } from "@/lib/kyc/prisma";
+import { kycLogger } from "@/lib/kyc/logger";
+import { notifyInvestorOfRejection } from "@/lib/kyc/submissionNotificationService";
+
+const bodySchema = z.object({
+  decision: z.enum(["VERIFIED", "REJECTED"]),
+  notes: z.string().trim().max(2000).optional(),
+});
+
+// Already gated by middleware.ts (only /login, /api/auth/login,
+// /api/public/*, and /api/health are public) — reaching this route at
+// all requires a valid admin session.
+export async function POST(request: Request, { params }: { params: { id: string } }) {
+  const parsed = bodySchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid review payload" }, { status: 400 });
+  }
+  const { decision, notes } = parsed.data;
+
+  const submission = await kycPrisma.verificationSubmission.findUnique({ where: { id: params.id } });
+  if (!submission) {
+    return NextResponse.json({ error: "Submission not found" }, { status: 404 });
+  }
+
+  if (decision === "VERIFIED") {
+    await kycPrisma.verificationSubmission.update({
+      where: { id: submission.id },
+      data: { reviewStatus: "VERIFIED", reviewNotes: null, reviewedAt: new Date() },
+    });
+    kycLogger.info({ submissionId: submission.id }, "submission marked verified");
+    return NextResponse.json({ ok: true });
+  }
+
+  // Rejection: the notes are what the investor receives, so an empty
+  // rejection is not allowed.
+  if (!notes) {
+    return NextResponse.json(
+      { error: "Notes to the investor are required to reject" },
+      { status: 422 }
+    );
+  }
+
+  // Reopen the submission so the investor can revise and resubmit —
+  // everything they entered stays in place.
+  await kycPrisma.verificationSubmission.update({
+    where: { id: submission.id },
+    data: { reviewStatus: "REJECTED", reviewNotes: notes, reviewedAt: new Date(), status: "DRAFT" },
+  });
+  const emailSent = await notifyInvestorOfRejection(submission.id, notes);
+  kycLogger.info({ submissionId: submission.id, emailSent }, "submission rejected");
+  return NextResponse.json({ ok: true, emailSent });
+}

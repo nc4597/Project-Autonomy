@@ -43,7 +43,14 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
   const updated = await kycPrisma.verificationSubmission.update({
     where: { id: submission.id },
-    data: { status: "SUBMITTED", submittedAt: new Date() },
+    // A resubmission after rejection returns to a fresh PENDING review.
+    data: {
+      status: "SUBMITTED",
+      submittedAt: new Date(),
+      reviewStatus: "PENDING",
+      reviewNotes: null,
+      reviewedAt: null,
+    },
   });
 
   // Fire-and-forget: neither the notification email nor the HubSpot
