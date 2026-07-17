@@ -237,7 +237,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
           </section>
         </div>
 
-        <aside>
+        <aside className="h-fit lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:pr-1 lg:[scrollbar-width:thin]">
           <div className="mb-6 border border-hairline bg-card p-6">
             <div className="mb-6 space-y-4">
               {sidebarDetails.map((item) => (
