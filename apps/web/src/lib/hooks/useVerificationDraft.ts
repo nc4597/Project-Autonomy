@@ -37,6 +37,30 @@ export function useVerificationDraft(dealId: string) {
       setLoading(true);
       setError(null);
       try {
+        // Magic-link resume: the rejection email links back with
+        // ?resume=<submissionId> so the investor can reopen their
+        // submission from any device — not just the browser whose
+        // localStorage remembers it. Adopt the linked draft when it's
+        // real and belongs to this deal; a SUBMITTED one still adopts
+        // so an outdated link shows the thank-you screen instead of
+        // silently starting a blank duplicate.
+        const resumeId = new URLSearchParams(window.location.search).get("resume");
+        if (resumeId) {
+          let resumed = null;
+          try {
+            resumed = await getVerificationDraft(resumeId);
+          } catch (err) {
+            if (!(err instanceof ApiError && err.status === 404)) throw err;
+          }
+          if (cancelled) return;
+          if (resumed && resumed.dealId === dealId) {
+            window.localStorage.setItem(storageKey(dealId), resumeId);
+            setSubmissionId(resumeId, dealId);
+            setDraft(resumed);
+            return;
+          }
+        }
+
         const existingId = window.localStorage.getItem(storageKey(dealId));
 
         if (existingId) {

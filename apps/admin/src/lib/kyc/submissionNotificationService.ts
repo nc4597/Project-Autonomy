@@ -142,7 +142,11 @@ export async function notifyInvestorOfRejection(submissionId: string, notes: str
     const { contactInfo } = submission;
     if (!contactInfo) throw new Error("Cannot email a rejection without contact info");
 
-    const resubmitUrl = `${env.FRONTEND_ORIGIN.replace(/\/$/, "")}/verify/${submission.dealId}`;
+    // ?resume= lets the wizard reopen this exact submission from any
+    // device the investor opens the email on (see apps/web's
+    // useVerificationDraft) — without it, only the original browser
+    // remembers which draft is theirs.
+    const resubmitUrl = `${env.FRONTEND_ORIGIN.replace(/\/$/, "")}/verify/${submission.dealId}?resume=${submission.id}`;
     const notesHtml = escapeHtml(notes).replace(/\n/g, "<br />");
 
     const html = `
