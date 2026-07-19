@@ -72,6 +72,13 @@ const envSchema = z.object({
   // email via a connected real mailbox (e.g. Gmail/Outlook), so no
   // sending-domain/DNS setup is needed on our end.
   ZAPIER_KYC_NOTIFICATION_WEBHOOK_URL: z.string().optional(),
+  // Third dedicated Zap: notifies the deal's representative when a
+  // submission is marked Verified (To = deal's repEmail, CC below,
+  // signed Robert J. Khoury). Unset = verified emails skip loudly.
+  ZAPIER_KYC_VERIFIED_WEBHOOK_URL: z.string().optional(),
+  // CC on every verified email; defaults to ir@regimentsecurities.com
+  // in code when unset. Comma-separate for multiple.
+  VERIFIED_EMAIL_CC: z.string().optional(),
   // Separate Zap for investor rejection emails, so its recipient,
   // sending mailbox, and template are configured independently of the
   // admin notification Zap above. Unset = rejection emails skip loudly

@@ -57,6 +57,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       reviewStatus: "PENDING",
       reviewNotes: null,
       reviewedAt: null,
+      reviewedBy: null,
     },
   });
 

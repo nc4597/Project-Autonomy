@@ -1,6 +1,7 @@
 import { env } from "../env";
 import { kycLogger } from "./logger";
 import { kycPrisma } from "./prisma";
+import { prisma } from "../prisma";
 import { SUBMISSION_INCLUDE } from "./serialize";
 
 function escapeHtml(value: string): string {
@@ -190,6 +191,118 @@ export async function notifyInvestorOfRejection(submissionId: string, notes: str
     kycLogger.error(
       { submissionId, err: err instanceof Error ? err.message : String(err) },
       "rejection email failed"
+    );
+    return false;
+  }
+}
+
+/**
+ * Notifies the deal's representative (repEmail on the Deal record) that
+ * an investor has been verified, CC'ing IR. Sent through its own Zap
+ * (ZAPIER_KYC_VERIFIED_WEBHOOK_URL). If the deal has no rep email, the
+ * notice goes directly to the CC address instead so a verification is
+ * never silently lost. Returns whether the webhook accepted the send.
+ */
+export async function notifyRepOfVerification(
+  submissionId: string,
+  reviewer: { name: string | null; email: string | null }
+): Promise<boolean> {
+  const webhookUrl = env.ZAPIER_KYC_VERIFIED_WEBHOOK_URL;
+  if (!webhookUrl) {
+    kycLogger.warn(
+      { submissionId, reason: "ZAPIER_KYC_VERIFIED_WEBHOOK_URL not set" },
+      "verified email skipped: integration not configured"
+    );
+    return false;
+  }
+
+  try {
+    const submission = await kycPrisma.verificationSubmission.findUniqueOrThrow({
+      where: { id: submissionId },
+      include: SUBMISSION_INCLUDE,
+    });
+    const { contactInfo, accreditation } = submission;
+    if (!contactInfo) throw new Error("Cannot send a verified notice without contact info");
+
+    // The submission's dealId is the deal's slug in the CMS database.
+    const deal = await prisma.deal.findUnique({
+      where: { slug: submission.dealId },
+      select: { name: true, repName: true, repEmail: true },
+    });
+    const dealName = deal?.name ?? submission.dealId;
+
+    const ccAddresses = (env.VERIFIED_EMAIL_CC ?? "ir@regimentsecurities.com")
+      .split(",")
+      .map((address) => address.trim())
+      .filter(Boolean);
+    // No rep on the deal: IR becomes the direct recipient rather than
+    // the notice disappearing.
+    const to = deal?.repEmail ? [deal.repEmail] : ccAddresses;
+    const cc = deal?.repEmail ? ccAddresses : [];
+
+    const investorName = `${contactInfo.firstName} ${contactInfo.lastName}`;
+    const greeting = deal?.repName ? `Dear ${escapeHtml(deal.repName.split(/\s+/)[0])},` : "Hello,";
+    const verifiedOn = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "America/New_York",
+    });
+
+    const row = (label: string, value: string) =>
+      `<tr><td style="padding:6px 14px 6px 0; color:#68758A; white-space:nowrap;">${label}</td>` +
+      `<td style="padding:6px 0; font-weight:600; color:#10233E;">${escapeHtml(value)}</td></tr>`;
+
+    const html = `
+      <p style="margin:0 0 14px;"><span style="display:inline-block; background:#18B57B; color:#ffffff; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:5px 12px;">&#10003; Compliance Verified</span></p>
+      <p>${greeting}</p>
+      <p>Compliance review is complete for the following investor, and they are
+      <strong>approved as an accredited investor</strong> for your deal:</p>
+      <table style="border-collapse:collapse; margin:0 0 14px; font-size:14px;">
+        ${row("Investor", investorName)}
+        ${row("Email", contactInfo.email)}
+        ${row("Phone", contactInfo.phone)}
+        ${row("Deal", dealName)}
+        ${row("Accreditation", accreditation ? humanize(accreditation.method) : "—")}
+        ${row("Verified on", verifiedOn)}
+      </table>
+      <p>You're clear to proceed with this investor on next steps for the offering.</p>
+      <p>Thank you,<br>Robert J. Khoury</p>
+    `;
+
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to,
+        cc,
+        subject: `Investor verified — ${investorName} · ${dealName}`,
+        html,
+        submissionId: submission.id,
+        investorName,
+        investorEmail: contactInfo.email,
+        investorPhone: contactInfo.phone,
+        dealId: submission.dealId,
+        dealName,
+        repName: deal?.repName ?? null,
+        repEmail: deal?.repEmail ?? null,
+        accreditationMethod: accreditation ? humanize(accreditation.method) : null,
+        verifiedAt: new Date().toISOString(),
+        reviewedByName: reviewer.name,
+        reviewedByEmail: reviewer.email,
+      }),
+    });
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      throw new Error(`Zapier webhook failed: ${response.status} ${body}`);
+    }
+
+    kycLogger.info({ submissionId, to, cc }, "verified email webhook sent");
+    return true;
+  } catch (err) {
+    kycLogger.error(
+      { submissionId, err: err instanceof Error ? err.message : String(err) },
+      "verified email failed"
     );
     return false;
   }

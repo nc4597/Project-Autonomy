@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { isComplianceReviewer } from "@/lib/compliance";
 import { kycPrisma } from "@/lib/kyc/prisma";
 import { kycLogger } from "@/lib/kyc/logger";
-import { notifyInvestorOfRejection } from "@/lib/kyc/submissionNotificationService";
+import { notifyInvestorOfRejection, notifyRepOfVerification } from "@/lib/kyc/submissionNotificationService";
 
 const bodySchema = z.object({
   decision: z.enum(["VERIFIED", "REJECTED"]),
@@ -36,13 +36,19 @@ export async function POST(request: Request, { params }: { params: { id: string 
     return NextResponse.json({ error: "Submission not found" }, { status: 404 });
   }
 
+  const reviewedBy = session?.user?.email ?? null;
+
   if (decision === "VERIFIED") {
     await kycPrisma.verificationSubmission.update({
       where: { id: submission.id },
-      data: { reviewStatus: "VERIFIED", reviewNotes: null, reviewedAt: new Date() },
+      data: { reviewStatus: "VERIFIED", reviewNotes: null, reviewedAt: new Date(), reviewedBy },
     });
-    kycLogger.info({ submissionId: submission.id }, "submission marked verified");
-    return NextResponse.json({ ok: true });
+    const emailSent = await notifyRepOfVerification(submission.id, {
+      name: session?.user?.name ?? null,
+      email: reviewedBy,
+    });
+    kycLogger.info({ submissionId: submission.id, emailSent }, "submission marked verified");
+    return NextResponse.json({ ok: true, emailSent });
   }
 
   // Rejection: the notes are what the investor receives, so an empty
@@ -58,7 +64,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
   // everything they entered stays in place.
   await kycPrisma.verificationSubmission.update({
     where: { id: submission.id },
-    data: { reviewStatus: "REJECTED", reviewNotes: notes, reviewedAt: new Date(), status: "DRAFT" },
+    data: { reviewStatus: "REJECTED", reviewNotes: notes, reviewedAt: new Date(), reviewedBy, status: "DRAFT" },
   });
   const emailSent = await notifyInvestorOfRejection(submission.id, notes);
   kycLogger.info({ submissionId: submission.id, emailSent }, "submission rejected");

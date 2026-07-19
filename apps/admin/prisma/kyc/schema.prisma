@@ -78,6 +78,9 @@ model VerificationSubmission {
   reviewStatus ReviewStatus @default(PENDING)
   reviewNotes  String?
   reviewedAt   DateTime?
+  // Audit: the signed-in reviewer (Microsoft account email) who made
+  // the decision. Reset with the rest of the review on resubmission.
+  reviewedBy   String?
   // Compliance audit: submittedAt is the LATEST (re)submission;
   // firstSubmittedAt is set on the original submission and never
   // overwritten by resubmissions after rejection.

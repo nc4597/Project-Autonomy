@@ -248,6 +248,7 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
               reviewStatus={submission.reviewStatus}
               reviewNotes={submission.reviewNotes}
               reviewedAt={submission.reviewedAt}
+              reviewedBy={submission.reviewedBy}
             />
           ) : (
             <div className="border border-dashed border-hairline bg-card px-5 py-4 text-sm text-ink-muted">

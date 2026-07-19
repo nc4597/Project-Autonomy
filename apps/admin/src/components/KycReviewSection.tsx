@@ -24,11 +24,13 @@ export function KycReviewSection({
   reviewStatus,
   reviewNotes,
   reviewedAt,
+  reviewedBy,
 }: {
   submissionId: string;
   reviewStatus: string;
   reviewNotes: string | null;
   reviewedAt: string | null;
+  reviewedBy: string | null;
 }) {
   const router = useRouter();
   const [choice, setChoice] = useState<"VERIFIED" | "REJECTED" | null>(null);
@@ -53,9 +55,11 @@ export function KycReviewSection({
       });
       const body = (await response.json().catch(() => ({}))) as { error?: string; emailSent?: boolean };
       if (!response.ok) throw new Error(body.error ?? "Failed to record the decision");
-      if (decision === "REJECTED" && body.emailSent === false) {
+      if (body.emailSent === false) {
         setEmailNotice(
-          "Decision recorded, but the email could not be sent (check the Zapier webhook configuration)."
+          decision === "REJECTED"
+            ? "Decision recorded, but the investor email could not be sent (check the rejection Zap configuration)."
+            : "Verified, but the rep notification email could not be sent (check the verified Zap configuration)."
         );
       } else {
         setEmailNotice(null);
@@ -124,10 +128,12 @@ export function KycReviewSection({
             {reviewStatus === "VERIFIED" ? (
               <div className="border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
                 ✓ Verified{reviewedAt ? ` · ${formatDateTime(reviewedAt)}` : ""}
+                {reviewedBy ? ` · by ${reviewedBy}` : ""}
               </div>
             ) : (
               <div className="border border-brand-red/40 bg-brand-red/5 px-4 py-3 text-sm text-brand-red">
-                Rejected{reviewedAt ? ` · ${formatDateTime(reviewedAt)}` : ""} — the investor was
+                Rejected{reviewedAt ? ` · ${formatDateTime(reviewedAt)}` : ""}
+                {reviewedBy ? ` · by ${reviewedBy}` : ""} — the investor was
                 emailed and the submission reopened for resubmission.
                 {reviewNotes && (
                   <span className="mt-2 block whitespace-pre-wrap text-ink-secondary">

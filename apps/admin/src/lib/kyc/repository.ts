@@ -72,6 +72,7 @@ export async function getKycSubmissionDetail(id: string) {
     reviewStatus: submission.reviewStatus,
     reviewNotes: submission.reviewNotes,
     reviewedAt: submission.reviewedAt?.toISOString() ?? null,
+    reviewedBy: submission.reviewedBy,
     hubspotContactId: submission.hubspotContactId,
     hubspotSyncedAt: submission.hubspotSyncedAt?.toISOString() ?? null,
     hubspotSyncError: submission.hubspotSyncError,
