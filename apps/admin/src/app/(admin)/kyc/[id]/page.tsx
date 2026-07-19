@@ -79,7 +79,7 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
   if (!submission) notFound();
 
   const session = await auth();
-  const canReview = isComplianceReviewer(session?.user?.email);
+  const canReview = await isComplianceReviewer(session?.user?.email);
 
   const { contactInfo, kycAmlInfo, accreditation, certification, documents } = submission;
 

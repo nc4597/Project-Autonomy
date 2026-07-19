@@ -9,9 +9,13 @@ export async function GET() {
   return NextResponse.json({ adminUsers });
 }
 
+import { ADMIN_ROLES, ADMIN_LICENSES } from "@/lib/adminAccess";
+
 const bodySchema = z.object({
   email: z.string().email(),
   name: z.string().optional(),
+  role: z.enum(ADMIN_ROLES).nullable().optional(),
+  licenses: z.array(z.enum(ADMIN_LICENSES)).max(ADMIN_LICENSES.length).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -21,7 +25,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const adminUser = await createAdminUser(parsed.data.email, parsed.data.name);
+    const adminUser = await createAdminUser(parsed.data.email, parsed.data.name, parsed.data.role, parsed.data.licenses);
     return NextResponse.json({ adminUser }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "That email is already on the list" }, { status: 409 });

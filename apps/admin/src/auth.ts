@@ -48,7 +48,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const allowed = await prisma.adminUser.findFirst({
         where: { email: { equals: email, mode: "insensitive" } },
       });
-      return Boolean(allowed);
+      if (!allowed) return false;
+
+      // Heal blank display names from the Microsoft profile — entries
+      // added without a name fill themselves in at first sign-in.
+      const profileName =
+        user.name ?? (profile as { name?: string } | undefined)?.name ?? null;
+      if (!allowed.name && profileName) {
+        await prisma.adminUser
+          .update({ where: { id: allowed.id }, data: { name: profileName } })
+          .catch(() => {});
+      }
+      return true;
     },
     // Persist the resolved email into the session even when Microsoft
     // omits the `email` claim — the compliance-reviewer check (see

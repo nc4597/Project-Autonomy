@@ -206,5 +206,11 @@ model AdminUser {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
+  // Company role (CEO … Intern) — informational for now, every role has
+  // full admin access; structure ready for future role-based permissions.
+  role      String?
+  // FINRA exams/licenses held (display strings, see lib/adminAccess.ts).
+  // Holding "Series 24" grants Compliance Review access.
+  licenses  String[] @default([])
   createdAt DateTime @default(now())
 }

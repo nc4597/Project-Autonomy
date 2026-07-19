@@ -18,7 +18,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
   // Middleware guarantees a signed-in admin; this is the stricter
   // compliance check — only allowlisted reviewers may decide.
   const session = await auth();
-  if (!isComplianceReviewer(session?.user?.email)) {
+  if (!(await isComplianceReviewer(session?.user?.email))) {
     return NextResponse.json(
       { error: "Compliance review is restricted to authorized reviewers" },
       { status: 403 }
