@@ -284,7 +284,7 @@ export async function notifyRepOfVerification(
         ${row("Verified on", verifiedOn)}
       </table>
       <p>You're clear to proceed with this investor on next steps for the offering.</p>
-      <p>Thank you,<br>Robert J. Khoury</p>
+      <p>Thank you,<br>${escapeHtml(reviewer.name ?? "Regiment Securities Compliance")}</p>
     `;
 
     const response = await fetch(webhookUrl, {
