@@ -60,6 +60,10 @@ export function Step1ContactInfo({
           coOwnerDateOfBirth: draft.contactInfo.coOwnerDateOfBirth ?? undefined,
           coOwnerTaxIdType: draft.contactInfo.coOwnerTaxIdType ?? undefined,
           coOwnerTaxIdLast4: draft.contactInfo.coOwnerTaxIdLast4 ?? undefined,
+          coOwnerStreetAddress: draft.contactInfo.coOwnerStreetAddress ?? undefined,
+          coOwnerCity: draft.contactInfo.coOwnerCity ?? undefined,
+          coOwnerState: draft.contactInfo.coOwnerState ?? undefined,
+          coOwnerZipCode: draft.contactInfo.coOwnerZipCode ?? undefined,
         }
       : { investorType: "INDIVIDUAL", phoneCountryCode: "US", taxIdType: "SSN" },
   });
@@ -284,6 +288,28 @@ export function Step1ContactInfo({
                   />
                 </div>
               </Field>
+            </div>
+            <div className="mt-6">
+              <Field
+                label={L("contact.coOwnerStreetAddress", "Co-Owner Street Address")}
+                error={errors.coOwnerStreetAddress?.message}
+              >
+                <TextInput {...register("coOwnerStreetAddress")} placeholder="88 Birchwood Lane, Unit 2" />
+              </Field>
+              <div className="mt-4 grid gap-6 sm:grid-cols-3">
+                <Field label={L("contact.coOwnerCity", "Co-Owner City")} error={errors.coOwnerCity?.message}>
+                  <TextInput {...register("coOwnerCity")} placeholder="City" />
+                </Field>
+                <Field label={L("contact.coOwnerState", "Co-Owner State")} error={errors.coOwnerState?.message}>
+                  <TextInput {...register("coOwnerState")} placeholder="State" />
+                </Field>
+                <Field
+                  label={L("contact.coOwnerZipCode", "Co-Owner ZIP Code")}
+                  error={errors.coOwnerZipCode?.message}
+                >
+                  <TextInput {...register("coOwnerZipCode")} placeholder="ZIP Code" />
+                </Field>
+              </div>
             </div>
           </div>
         )}

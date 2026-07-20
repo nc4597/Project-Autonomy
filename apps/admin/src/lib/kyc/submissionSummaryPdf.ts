@@ -77,6 +77,12 @@ export async function generateSubmissionSummaryPdf(submission: SubmissionWithRel
           `Co-Owner ${contactInfo.coOwnerTaxIdType ?? "Tax ID"} (Last 4 Digits)`,
           contactInfo.coOwnerTaxIdLast4 ?? "—",
         ]);
+        contactRows.push([
+          "Co-Owner Address",
+          contactInfo.coOwnerStreetAddress
+            ? `${contactInfo.coOwnerStreetAddress}, ${contactInfo.coOwnerCity}, ${contactInfo.coOwnerState} ${contactInfo.coOwnerZipCode}`
+            : "—",
+        ]);
       }
       section("Contact Information", contactRows);
     }

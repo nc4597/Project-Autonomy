@@ -6,7 +6,7 @@ import { useState } from "react";
 import { step2Schema, type Step2FormValues } from "../../../lib/validation/verificationSchemas";
 import {
   DOCUMENT_LABELS,
-  KYC_REQUIRED_DOCUMENT_CATEGORIES,
+  kycRequiredDocumentCategories,
 } from "../../../lib/constants/verification";
 import { saveKycAmlInfo, type VerificationDraft } from "../../../lib/api/verificationClient";
 import { useFormConfig } from "../../../lib/hooks/useFormConfig";
@@ -43,7 +43,9 @@ export function Step2KycAml({
     defaultValues: draft.kycAmlInfo ?? { countryOfCitizenship: "United States", taxResidence: "United States" },
   });
 
-  const missingRequiredDocs = KYC_REQUIRED_DOCUMENT_CATEGORIES.filter(
+  const investorType = draft.contactInfo?.investorType ?? "INDIVIDUAL";
+  const isJoint = investorType === "JOINT";
+  const missingRequiredDocs = kycRequiredDocumentCategories(investorType).filter(
     (category) => !documents.some((doc) => doc.category === category && doc.status === "UPLOADED")
   );
 
@@ -72,11 +74,12 @@ export function Step2KycAml({
         <ComplianceNotice>
           Federal regulations require identity verification for all private investment participants
           under the Bank Secrecy Act and AML compliance requirements.
+          {isJoint && " Joint accounts must verify both account holders."}
         </ComplianceNotice>
 
         <div>
           <span className="mb-3 block text-xs font-semibold uppercase tracking-wide text-ink-secondary">
-            Government-Issued ID
+            {isJoint ? "Primary Applicant's Government-Issued ID" : "Government-Issued ID"}
           </span>
           <div className="grid gap-4 sm:grid-cols-2">
             <FileDropzone
@@ -93,6 +96,28 @@ export function Step2KycAml({
             />
           </div>
         </div>
+
+        {isJoint && (
+          <div>
+            <span className="mb-3 block text-xs font-semibold uppercase tracking-wide text-ink-secondary">
+              Co-Owner&rsquo;s Government-Issued ID
+            </span>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FileDropzone
+                submissionId={submissionId}
+                category="CO_OWNER_ID_FRONT"
+                title={DOCUMENT_LABELS.CO_OWNER_ID_FRONT.title}
+                helperText={DOCUMENT_LABELS.CO_OWNER_ID_FRONT.helperText}
+              />
+              <FileDropzone
+                submissionId={submissionId}
+                category="CO_OWNER_ID_BACK"
+                title={DOCUMENT_LABELS.CO_OWNER_ID_BACK.title}
+                helperText={DOCUMENT_LABELS.CO_OWNER_ID_BACK.helperText}
+              />
+            </div>
+          </div>
+        )}
 
         <div>
           <span className="mb-3 block text-xs font-semibold uppercase tracking-wide text-ink-secondary">

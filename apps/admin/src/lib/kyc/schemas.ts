@@ -19,6 +19,8 @@ export const ACCREDITATION_METHODS = [
 export const DOCUMENT_CATEGORIES = [
   "ID_FRONT",
   "ID_BACK",
+  "CO_OWNER_ID_FRONT",
+  "CO_OWNER_ID_BACK",
   "PROOF_OF_ADDRESS",
   "ENTITY_FORMATION_DOC",
   "INCOME_TAX_RETURN",
@@ -44,6 +46,31 @@ export const KYC_REQUIRED_DOCUMENT_CATEGORIES: DocumentCategory[] = [
   "ID_BACK",
   "PROOF_OF_ADDRESS",
 ];
+
+export type InvestorType = (typeof INVESTOR_TYPES)[number];
+
+// Joint accounts must also verify the co-owner's identity: their ID
+// front/back on top of the base KYC documents above.
+export const CO_OWNER_ID_DOCUMENT_CATEGORIES: DocumentCategory[] = [
+  "CO_OWNER_ID_FRONT",
+  "CO_OWNER_ID_BACK",
+];
+
+// KYC documents actually required for a given investor type — authoritative
+// twin of the web helper (apps/web constants/verification.ts).
+export function kycRequiredDocumentCategories(investorType: string): DocumentCategory[] {
+  return investorType === "JOINT"
+    ? [...KYC_REQUIRED_DOCUMENT_CATEGORIES, ...CO_OWNER_ID_DOCUMENT_CATEGORIES]
+    : KYC_REQUIRED_DOCUMENT_CATEGORIES;
+}
+
+// Which qualification methods apply to each investor type. Enforced at
+// submit so a bypassed client can't pick a method that doesn't fit the type.
+export const ACCREDITATION_METHODS_BY_INVESTOR_TYPE: Record<InvestorType, AccreditationMethod[]> = {
+  INDIVIDUAL: ["ANNUAL_INCOME", "NET_WORTH", "PROFESSIONAL_CERTIFICATION", "KNOWLEDGEABLE_EMPLOYEE"],
+  JOINT: ["ANNUAL_INCOME", "NET_WORTH", "PROFESSIONAL_CERTIFICATION", "KNOWLEDGEABLE_EMPLOYEE"],
+  ENTITY_TRUST: ["ENTITY_QUALIFICATION"],
+};
 
 // Server-side mirror of the frontend's SUPPORTING_DOC_REQUIREMENTS map.
 // Authoritative here — a modified/bypassed client can never force a
@@ -72,7 +99,7 @@ export const createSubmissionSchema = z.object({
 
 const usStateOrRegion = z.string().trim().min(2).max(56);
 
-export const TAX_ID_TYPES = ["SSN", "TIN"] as const;
+export const TAX_ID_TYPES = ["SSN", "ITIN"] as const;
 export type TaxIdType = (typeof TAX_ID_TYPES)[number];
 
 const last4 = (label: string) => z.string().regex(/^\d{4}$/, `${label} must be exactly 4 digits`);
@@ -126,6 +153,10 @@ export const contactInfoBaseSchema = z.object({
     coOwnerDateOfBirth: dobString("coOwnerDateOfBirth").optional(),
     coOwnerTaxIdType: z.enum(TAX_ID_TYPES).optional(),
     coOwnerTaxIdLast4: last4("coOwnerTaxIdLast4").optional(),
+    coOwnerStreetAddress: z.string().trim().max(200).optional(),
+    coOwnerCity: z.string().trim().max(100).optional(),
+    coOwnerState: usStateOrRegion.optional(),
+    coOwnerZipCode: z.string().trim().min(3).max(12).optional(),
 });
 
 // Shared between contactInfoSchema and the contact-info route's extended
@@ -161,6 +192,18 @@ export function refineContactInfo(
     }
     if (!data.coOwnerTaxIdLast4) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerTaxIdLast4"], message: "Co-owner tax ID is required" });
+    }
+    if (!data.coOwnerStreetAddress?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerStreetAddress"], message: "Co-owner street address is required" });
+    }
+    if (!data.coOwnerCity?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerCity"], message: "Co-owner city is required" });
+    }
+    if (!data.coOwnerState?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerState"], message: "Co-owner state is required" });
+    }
+    if (!data.coOwnerZipCode?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerZipCode"], message: "Co-owner ZIP code is required" });
     }
   }
 }

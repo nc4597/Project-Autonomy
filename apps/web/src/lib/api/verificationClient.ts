@@ -102,6 +102,10 @@ export interface ContactInfoRecord {
   coOwnerDateOfBirth: string | null;
   coOwnerTaxIdType: TaxIdType | null;
   coOwnerTaxIdLast4: string | null;
+  coOwnerStreetAddress: string | null;
+  coOwnerCity: string | null;
+  coOwnerState: string | null;
+  coOwnerZipCode: string | null;
 }
 
 export interface KycAmlInfoRecord {
@@ -190,6 +194,10 @@ export interface ContactInfoInput {
   coOwnerDateOfBirth?: string;
   coOwnerTaxIdType?: TaxIdType;
   coOwnerTaxIdLast4?: string;
+  coOwnerStreetAddress?: string;
+  coOwnerCity?: string;
+  coOwnerState?: string;
+  coOwnerZipCode?: string;
 }
 
 export function saveContactInfo(

@@ -34,7 +34,7 @@ export const step1Schema = z
         eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
         return dob <= eighteenYearsAgo;
       }, "You must be at least 18 years old"),
-    taxIdType: z.enum(TAX_ID_TYPES, { required_error: "Select SSN or TIN" }),
+    taxIdType: z.enum(TAX_ID_TYPES, { required_error: "Select SSN or ITIN" }),
     taxIdLast4: last4("Enter the last 4 digits"),
     streetAddress: z.string().trim().min(1, "Street address is required"),
     city: z.string().trim().min(1, "City is required"),
@@ -51,6 +51,10 @@ export const step1Schema = z
     coOwnerDateOfBirth: dobString("Enter a valid date").optional(),
     coOwnerTaxIdType: z.enum(TAX_ID_TYPES).optional(),
     coOwnerTaxIdLast4: last4("Enter the last 4 digits").optional(),
+    coOwnerStreetAddress: z.string().trim().max(200).optional(),
+    coOwnerCity: z.string().trim().max(100).optional(),
+    coOwnerState: z.string().trim().max(56).optional(),
+    coOwnerZipCode: z.string().trim().max(12).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.investorType === "ENTITY_TRUST") {
@@ -75,10 +79,22 @@ export const step1Schema = z
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerDateOfBirth"], message: "Co-owner date of birth is required" });
       }
       if (!data.coOwnerTaxIdType) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerTaxIdType"], message: "Select SSN or TIN" });
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerTaxIdType"], message: "Select SSN or ITIN" });
       }
       if (!data.coOwnerTaxIdLast4) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerTaxIdLast4"], message: "Co-owner tax ID is required" });
+      }
+      if (!data.coOwnerStreetAddress?.trim()) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerStreetAddress"], message: "Co-owner street address is required" });
+      }
+      if (!data.coOwnerCity?.trim()) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerCity"], message: "Co-owner city is required" });
+      }
+      if (!data.coOwnerState?.trim()) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerState"], message: "Co-owner state is required" });
+      }
+      if (!data.coOwnerZipCode?.trim()) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["coOwnerZipCode"], message: "Co-owner ZIP code is required" });
       }
     }
   });

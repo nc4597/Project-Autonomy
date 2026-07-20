@@ -201,6 +201,14 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
                         : "—"
                     }
                   />
+                  <Field
+                    label="Co-Owner Address"
+                    value={
+                      contactInfo.coOwnerStreetAddress
+                        ? `${contactInfo.coOwnerStreetAddress}, ${contactInfo.coOwnerCity}, ${contactInfo.coOwnerState} ${contactInfo.coOwnerZipCode}`
+                        : "—"
+                    }
+                  />
                 </>
               )}
               <Field label="Citizenship" value={kycAmlInfo?.countryOfCitizenship ?? "—"} />

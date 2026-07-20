@@ -1,8 +1,10 @@
 import type { Prisma } from ".prisma/kyc-client";
 import {
   ACCREDITATION_DOCUMENT_REQUIREMENTS,
-  KYC_REQUIRED_DOCUMENT_CATEGORIES,
+  ACCREDITATION_METHODS_BY_INVESTOR_TYPE,
+  kycRequiredDocumentCategories,
   type AccreditationMethod,
+  type InvestorType,
 } from "./schemas";
 import type { VerificationFormConfig } from "./formConfigShared";
 
@@ -70,7 +72,9 @@ export function validateSubmissionCompleteness(
     submission.documents.filter((doc) => doc.status === "UPLOADED").map((doc) => doc.category)
   );
 
-  for (const category of KYC_REQUIRED_DOCUMENT_CATEGORIES) {
+  // Joint accounts additionally require the co-owner's ID (see the helper).
+  const investorType = submission.contactInfo?.investorType ?? "INDIVIDUAL";
+  for (const category of kycRequiredDocumentCategories(investorType)) {
     if (!uploadedCategories.has(category)) {
       errors.push({ field: `documents.${category}`, message: `${category} must be uploaded` });
     }
@@ -84,6 +88,21 @@ export function validateSubmissionCompleteness(
         errors.push({
           field: `documents.${requirement.category}`,
           message: `${requirement.category} must be uploaded for the selected accreditation method`,
+        });
+      }
+    }
+
+    // The chosen method must fit the investor type (individuals/joint
+    // qualify personally; entities on the entity test) — the server-side
+    // twin of Step 3's filtered method list.
+    if (submission.contactInfo) {
+      const allowed = ACCREDITATION_METHODS_BY_INVESTOR_TYPE[
+        submission.contactInfo.investorType as InvestorType
+      ];
+      if (allowed && !allowed.includes(method)) {
+        errors.push({
+          field: "accreditation.method",
+          message: "Selected accreditation method does not apply to this investor type",
         });
       }
     }

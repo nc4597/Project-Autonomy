@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   ACCREDITATION_METHOD_DETAILS,
+  ACCREDITATION_METHODS_BY_INVESTOR_TYPE,
   SUPPORTING_DOC_REQUIREMENTS,
   DOCUMENT_LABELS,
   type AccreditationMethod,
@@ -34,9 +35,19 @@ export function Step3Accreditation({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const documents = useVerificationStore((s) => s.draft?.documents ?? []);
-  const methodOptions = visibleOptions(fieldFor(config, "accreditation.method"));
+  // Only show the qualification methods that apply to this investor type
+  // (individuals/joint qualify personally; entities on the entity test).
+  const investorType = draft.contactInfo?.investorType;
+  const allowedMethods = investorType ? ACCREDITATION_METHODS_BY_INVESTOR_TYPE[investorType] : null;
+  const methodOptions = visibleOptions(fieldFor(config, "accreditation.method")).filter(
+    (option) => !allowedMethods || allowedMethods.includes(option.value as AccreditationMethod)
+  );
+  // If a previously-saved method no longer applies (e.g. the investor type
+  // changed), ignore it so the investor reselects from the valid list.
+  const effectiveMethod =
+    method && (!allowedMethods || allowedMethods.includes(method)) ? method : null;
 
-  const requirements = method ? SUPPORTING_DOC_REQUIREMENTS[method] : [];
+  const requirements = effectiveMethod ? SUPPORTING_DOC_REQUIREMENTS[effectiveMethod] : [];
   const missingRequired = requirements.filter(
     (req) =>
       req.required && !documents.some((doc) => doc.category === req.category && doc.status === "UPLOADED")
@@ -44,7 +55,7 @@ export function Step3Accreditation({
 
   async function handleContinue() {
     setSubmitError(null);
-    if (!method) {
+    if (!effectiveMethod) {
       setSubmitError("Select a qualification method to continue.");
       return;
     }
@@ -59,7 +70,7 @@ export function Step3Accreditation({
     }
     setIsSubmitting(true);
     try {
-      await saveAccreditation(submissionId, { method }, custom.payload());
+      await saveAccreditation(submissionId, { method: effectiveMethod }, custom.payload());
       onSaved();
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Failed to save. Please try again.");
@@ -82,13 +93,13 @@ export function Step3Accreditation({
               description={
                 ACCREDITATION_METHOD_DETAILS[option.value as AccreditationMethod]?.description ?? ""
               }
-              selected={method === option.value}
+              selected={effectiveMethod === option.value}
               onSelect={() => setMethod(option.value as AccreditationMethod)}
             />
           ))}
         </div>
 
-        {method && (
+        {effectiveMethod && (
           <div>
             <span className="mb-3 block text-xs font-semibold uppercase tracking-wide text-ink-secondary">
               Supporting Documentation

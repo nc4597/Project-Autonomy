@@ -86,7 +86,11 @@ export function Step4Review({
 
   const uploadedDocs = draft.documents.filter((doc) => doc.status === "UPLOADED");
   const idUploaded = uploadedDocs.some((d) => d.category === "ID_FRONT") && uploadedDocs.some((d) => d.category === "ID_BACK");
+  const coOwnerIdUploaded =
+    uploadedDocs.some((d) => d.category === "CO_OWNER_ID_FRONT") &&
+    uploadedDocs.some((d) => d.category === "CO_OWNER_ID_BACK");
   const proofOfAddressUploaded = uploadedDocs.some((d) => d.category === "PROOF_OF_ADDRESS");
+  const isJoint = draft.contactInfo?.investorType === "JOINT";
 
   // "Supporting Docs" should only list documents relevant to the chosen
   // accreditation method (e.g. brokerage/bank statements for Net Worth) —
@@ -138,10 +142,18 @@ export function Step4Review({
                 <SummaryRow label="Entity / Trust Name" value={draft.contactInfo.entityName} />
               )}
               {draft.contactInfo.investorType === "JOINT" && draft.contactInfo.coOwnerFirstName && (
-                <SummaryRow
-                  label="Co-Owner"
-                  value={`${draft.contactInfo.coOwnerFirstName} ${draft.contactInfo.coOwnerLastName ?? ""}`.trim()}
-                />
+                <>
+                  <SummaryRow
+                    label="Co-Owner"
+                    value={`${draft.contactInfo.coOwnerFirstName} ${draft.contactInfo.coOwnerLastName ?? ""}`.trim()}
+                  />
+                  {draft.contactInfo.coOwnerStreetAddress && (
+                    <SummaryRow
+                      label="Co-Owner Address"
+                      value={`${draft.contactInfo.coOwnerStreetAddress}, ${draft.contactInfo.coOwnerCity}, ${draft.contactInfo.coOwnerState} ${draft.contactInfo.coOwnerZipCode}`}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
@@ -151,7 +163,13 @@ export function Step4Review({
         </SummarySection>
 
         <SummarySection title="KYC / AML" onEdit={() => onEditStep(numberForCore(config, 2))}>
-          <SummaryRow label="Government ID" value={idUploaded ? "Uploaded" : "Missing"} />
+          <SummaryRow
+            label={isJoint ? "Primary Applicant ID" : "Government ID"}
+            value={idUploaded ? "Uploaded" : "Missing"}
+          />
+          {isJoint && (
+            <SummaryRow label="Co-Owner ID" value={coOwnerIdUploaded ? "Uploaded" : "Missing"} />
+          )}
           <SummaryRow label="Proof of Address" value={proofOfAddressUploaded ? "Uploaded" : "Missing"} />
           {draft.kycAmlInfo && (
             <>

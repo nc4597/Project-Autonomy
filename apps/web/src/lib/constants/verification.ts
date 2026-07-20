@@ -14,7 +14,7 @@ export const INVESTOR_TYPE_LABELS: Record<InvestorType, string> = {
   ENTITY_TRUST: "Entity / Trust",
 };
 
-export const TAX_ID_TYPES = ["SSN", "TIN"] as const;
+export const TAX_ID_TYPES = ["SSN", "ITIN"] as const;
 export type TaxIdType = (typeof TAX_ID_TYPES)[number];
 
 export const SOURCE_OF_FUNDS = [
@@ -71,9 +71,21 @@ export const ACCREDITATION_METHOD_DETAILS: Record<
   },
 };
 
+// Which qualification methods apply to each investor type. Individuals and
+// joint accounts qualify on personal income / net worth / credentials;
+// entities and trusts qualify on the entity test. Step 3 shows only the
+// applicable methods, and the backend enforces the same mapping at submit.
+export const ACCREDITATION_METHODS_BY_INVESTOR_TYPE: Record<InvestorType, AccreditationMethod[]> = {
+  INDIVIDUAL: ["ANNUAL_INCOME", "NET_WORTH", "PROFESSIONAL_CERTIFICATION", "KNOWLEDGEABLE_EMPLOYEE"],
+  JOINT: ["ANNUAL_INCOME", "NET_WORTH", "PROFESSIONAL_CERTIFICATION", "KNOWLEDGEABLE_EMPLOYEE"],
+  ENTITY_TRUST: ["ENTITY_QUALIFICATION"],
+};
+
 export const DOCUMENT_CATEGORIES = [
   "ID_FRONT",
   "ID_BACK",
+  "CO_OWNER_ID_FRONT",
+  "CO_OWNER_ID_BACK",
   "PROOF_OF_ADDRESS",
   "ENTITY_FORMATION_DOC",
   "INCOME_TAX_RETURN",
@@ -90,6 +102,14 @@ export type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];
 export const DOCUMENT_LABELS: Record<DocumentCategory, { title: string; helperText: string }> = {
   ID_FRONT: { title: "Front of ID", helperText: "Accepted: Passport, Driver's License, State ID" },
   ID_BACK: { title: "Back of ID", helperText: "Accepted: Passport, Driver's License, State ID" },
+  CO_OWNER_ID_FRONT: {
+    title: "Front of Co-Owner ID",
+    helperText: "Accepted: Passport, Driver's License, State ID",
+  },
+  CO_OWNER_ID_BACK: {
+    title: "Back of Co-Owner ID",
+    helperText: "Accepted: Passport, Driver's License, State ID",
+  },
   PROOF_OF_ADDRESS: {
     title: "Utility Bill, Bank Statement, or Government Letter (within 90 days)",
     helperText: "",
@@ -127,6 +147,21 @@ export const KYC_REQUIRED_DOCUMENT_CATEGORIES: DocumentCategory[] = [
   "ID_BACK",
   "PROOF_OF_ADDRESS",
 ];
+
+// Joint accounts must also verify the co-owner's identity: their ID
+// front/back are required on top of the base KYC documents above.
+export const CO_OWNER_ID_DOCUMENT_CATEGORIES: DocumentCategory[] = [
+  "CO_OWNER_ID_FRONT",
+  "CO_OWNER_ID_BACK",
+];
+
+// The KYC documents actually required for a given investor type — the
+// base set for everyone, plus the co-owner's ID for joint accounts.
+export function kycRequiredDocumentCategories(investorType: InvestorType): DocumentCategory[] {
+  return investorType === "JOINT"
+    ? [...KYC_REQUIRED_DOCUMENT_CATEGORIES, ...CO_OWNER_ID_DOCUMENT_CATEGORIES]
+    : KYC_REQUIRED_DOCUMENT_CATEGORIES;
+}
 
 // Method -> the supporting-document categories to render in step 3.
 // Adding/adjusting a qualification method's requirements is a data

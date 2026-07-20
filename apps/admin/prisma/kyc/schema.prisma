@@ -39,6 +39,8 @@ enum AccreditationMethod {
 enum DocumentCategory {
   ID_FRONT
   ID_BACK
+  CO_OWNER_ID_FRONT
+  CO_OWNER_ID_BACK
   PROOF_OF_ADDRESS
   ENTITY_FORMATION_DOC
   INCOME_TAX_RETURN
@@ -149,7 +151,7 @@ model VerificationFormConfig {
 
 enum TaxIdType {
   SSN
-  TIN
+  ITIN
 }
 
 model ContactInfo {
@@ -189,6 +191,10 @@ model ContactInfo {
   coOwnerDateOfBirth DateTime?  @db.Date
   coOwnerTaxIdType   TaxIdType?
   coOwnerTaxIdLast4  String?
+  coOwnerStreetAddress String?
+  coOwnerCity          String?
+  coOwnerState         String?
+  coOwnerZipCode       String?
 
   updatedAt      DateTime @updatedAt
 }

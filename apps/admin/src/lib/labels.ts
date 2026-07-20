@@ -53,6 +53,8 @@ export const KYC_SOURCE_OF_FUNDS_LABELS: Record<string, string> = {
 export const KYC_DOCUMENT_CATEGORY_LABELS: Record<string, string> = {
   ID_FRONT: "Front of ID",
   ID_BACK: "Back of ID",
+  CO_OWNER_ID_FRONT: "Front of Co-Owner ID",
+  CO_OWNER_ID_BACK: "Back of Co-Owner ID",
   PROOF_OF_ADDRESS: "Proof of Address",
   ENTITY_FORMATION_DOC: "Entity Formation Document",
   INCOME_TAX_RETURN: "Tax Returns / W-2s",

@@ -70,6 +70,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       body.investorType === "JOINT" && body.coOwnerDateOfBirth ? new Date(body.coOwnerDateOfBirth) : null,
     coOwnerTaxIdType: body.investorType === "JOINT" ? body.coOwnerTaxIdType ?? null : null,
     coOwnerTaxIdLast4: body.investorType === "JOINT" ? last4(body.coOwnerTaxIdLast4) ?? null : null,
+    coOwnerStreetAddress: body.investorType === "JOINT" ? body.coOwnerStreetAddress ?? null : null,
+    coOwnerCity: body.investorType === "JOINT" ? body.coOwnerCity ?? null : null,
+    coOwnerState: body.investorType === "JOINT" ? body.coOwnerState ?? null : null,
+    coOwnerZipCode: body.investorType === "JOINT" ? body.coOwnerZipCode ?? null : null,
   };
 
   await kycPrisma.contactInfo.upsert({

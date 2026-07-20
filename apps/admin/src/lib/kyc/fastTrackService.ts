@@ -109,6 +109,10 @@ export async function applyFastTrack(
           coOwnerDateOfBirth: source.contactInfo.coOwnerDateOfBirth,
           coOwnerTaxIdType: source.contactInfo.coOwnerTaxIdType,
           coOwnerTaxIdLast4: source.contactInfo.coOwnerTaxIdLast4,
+          coOwnerStreetAddress: source.contactInfo.coOwnerStreetAddress,
+          coOwnerCity: source.contactInfo.coOwnerCity,
+          coOwnerState: source.contactInfo.coOwnerState,
+          coOwnerZipCode: source.contactInfo.coOwnerZipCode,
         },
       }),
       kycPrisma.kycAmlInfo.create({
