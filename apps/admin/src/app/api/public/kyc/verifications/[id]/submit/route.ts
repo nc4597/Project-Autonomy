@@ -6,7 +6,6 @@ import { validateSubmissionCompleteness } from "@/lib/kyc/submissionValidation";
 import { getPublishedFormConfig } from "@/lib/kyc/formConfig";
 import { notifyAdminsOfSubmission } from "@/lib/kyc/submissionNotificationService";
 import { syncContactCard } from "@/lib/kyc/hubspotContactService";
-import { verifyCaptchaToken } from "@/lib/kyc/turnstile";
 import { jsonWithCors, corsPreflight } from "@/lib/kyc/cors";
 
 export async function OPTIONS() {
@@ -24,20 +23,11 @@ export async function POST(request: Request, { params }: { params: { id: string 
     return jsonWithCors({ error: "Submission already submitted" }, { status: 409 });
   }
 
-  // Security check before anything else: the browser earned this token
-  // in the Turnstile popup; a submission without a valid one is a bot
-  // (or the integration isn't configured yet, which verifyCaptchaToken
-  // treats as a loud skip).
-  const body = (await request.json().catch(() => ({}))) as { captchaToken?: unknown };
-  const remoteIp =
-    request.headers.get("cf-connecting-ip") ??
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    null;
-  const captcha = await verifyCaptchaToken(body.captchaToken, remoteIp);
-  if (!captcha.ok) {
-    kycLogger.warn({ submissionId: submission.id, reason: captcha.reason }, "submission blocked: captcha failed");
-    return jsonWithCors({ error: "Security check failed. Please try again." }, { status: 403 });
-  }
+  // Turnstile captcha removed 2026-07-20 (widget was failing to load in
+  // production and dead-ending submissions). Every submission still goes
+  // through human compliance review. Frontend no longer sends a token;
+  // re-add verifyCaptchaToken here + SecurityCheckModal on the web side
+  // to restore it.
 
   const formConfig = await getPublishedFormConfig().catch(() => null);
   const errors = validateSubmissionCompleteness(submission, formConfig);

@@ -19,7 +19,6 @@ import {
 import { SummaryRow } from "../SummaryRow";
 import { WizardCard, WizardFooterNav } from "../WizardCard";
 import { ComplianceNotice } from "../../ui/ComplianceNotice";
-import { SecurityCheckModal } from "../SecurityCheckModal";
 
 const TOS_VERSION = "2026-07-14";
 
@@ -76,12 +75,6 @@ export function Step4Review({
   const [certified, setCertified] = useState(Boolean(draft.certification));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [checkOpen, setCheckOpen] = useState(false);
-
-  // Inlined into the client bundle at build time (Dockerfile ARG on the
-  // Railway service). Unset = no popup, submit directly — keeps local
-  // dev and pre-configuration production working.
-  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const answersByKey = Object.fromEntries(
     (draft.customAnswers ?? []).map((a) => [a.fieldKey, a.value])
@@ -104,14 +97,13 @@ export function Step4Review({
     : [];
   const accreditationDocs = uploadedDocs.filter((d) => accreditationDocCategories.includes(d.category));
 
-  async function completeSubmit(captchaToken?: string) {
+  async function completeSubmit() {
     setIsSubmitting(true);
     try {
       await saveCertification(submissionId, TOS_VERSION);
-      await submitVerification(submissionId, captchaToken);
+      await submitVerification(submissionId);
       onSubmitted();
     } catch (err) {
-      setCheckOpen(false);
       setSubmitError(err instanceof Error ? err.message : "Submission failed. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -124,13 +116,7 @@ export function Step4Review({
       setSubmitError("You must certify before submitting.");
       return;
     }
-    if (!turnstileSiteKey) {
-      void completeSubmit();
-      return;
-    }
-    // The security-check popup takes it from here: Turnstile verifies
-    // (usually hands-free), then completeSubmit runs with the token.
-    setCheckOpen(true);
+    void completeSubmit();
   }
 
   return (
@@ -253,15 +239,6 @@ export function Step4Review({
         continueDisabled={!certified}
         isSubmitting={isSubmitting}
       />
-
-      {checkOpen && turnstileSiteKey && (
-        <SecurityCheckModal
-          siteKey={turnstileSiteKey}
-          submitting={isSubmitting}
-          onToken={(token) => void completeSubmit(token)}
-          onCancel={() => setCheckOpen(false)}
-        />
-      )}
     </div>
   );
 }
