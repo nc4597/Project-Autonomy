@@ -80,6 +80,14 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
       <p>Thank you,<br>The Regiment Securities Team</p>
     `;
 
+    // Same CC address as the verified-notification flow (ir@ by
+    // default) — one env var controls it everywhere rather than
+    // duplicating the value.
+    const cc = (env.VERIFIED_EMAIL_CC ?? "ir@regimentsecurities.com")
+      .split(",")
+      .map((address) => address.trim())
+      .filter(Boolean);
+
     // Sent as flat fields (not just the html blob) so the Zap's email
     // action can map each one into the message individually without
     // having to parse HTML.
@@ -88,6 +96,7 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         to: recipients,
+        cc,
         subject: `New investor verification submitted — ${investorName}`,
         html,
         submissionId: submission.id,
@@ -122,9 +131,15 @@ export async function notifyAdminsOfSubmission(submissionId: string): Promise<vo
  * notes verbatim plus a link back to the reopened wizard. Sent through
  * its own dedicated Zap (ZAPIER_KYC_REJECTION_WEBHOOK_URL) whose email
  * action should map the recipient from the payload's `to` field — the
- * investor's address. Returns whether the webhook accepted the send.
+ * investor's address — and, same as the verified-notification flow, map
+ * Reply-To from `reviewedByEmail` so replies reach whoever actually
+ * rejected it. Returns whether the webhook accepted the send.
  */
-export async function notifyInvestorOfRejection(submissionId: string, notes: string): Promise<boolean> {
+export async function notifyInvestorOfRejection(
+  submissionId: string,
+  notes: string,
+  reviewer: { name: string | null; email: string | null }
+): Promise<boolean> {
   // Deliberately its own webhook (not the admin-notification one): the
   // two Zaps address different audiences, so each can hardcode its own
   // recipient handling and sender mailbox without filters.
@@ -178,6 +193,8 @@ export async function notifyInvestorOfRejection(submissionId: string, notes: str
         dealId: submission.dealId,
         reviewNotes: notes,
         resubmitUrl,
+        reviewedByName: reviewer.name,
+        reviewedByEmail: reviewer.email,
       }),
     });
     if (!response.ok) {

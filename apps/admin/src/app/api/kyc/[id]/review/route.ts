@@ -66,7 +66,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
     where: { id: submission.id },
     data: { reviewStatus: "REJECTED", reviewNotes: notes, reviewedAt: new Date(), reviewedBy, status: "DRAFT" },
   });
-  const emailSent = await notifyInvestorOfRejection(submission.id, notes);
+  const emailSent = await notifyInvestorOfRejection(submission.id, notes, {
+    name: session?.user?.name ?? null,
+    email: reviewedBy,
+  });
   kycLogger.info({ submissionId: submission.id, emailSent }, "submission rejected");
   return NextResponse.json({ ok: true, emailSent });
 }
