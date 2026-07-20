@@ -118,7 +118,14 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
               ? "Resubmitted"
               : KYC_STATUS_LABELS[submission.status]}
           </span>
-          {submission.reviewStatus === "VERIFIED" ? (
+          {submission.reviewStatus === "VERIFIED" && submission.fastTracked ? (
+            <span
+              className="bg-navy-950 px-3 py-1.5 text-xs font-semibold uppercase text-white"
+              title="Auto-verified via the returning-investor fast-track, not a manual review"
+            >
+              Pre-Verified
+            </span>
+          ) : submission.reviewStatus === "VERIFIED" ? (
             <span className="bg-success px-3 py-1.5 text-xs font-semibold uppercase text-white">Verified</span>
           ) : submission.reviewStatus === "REJECTED" ? (
             <span className="bg-brand-red/10 px-3 py-1.5 text-xs font-semibold uppercase text-brand-red">Rejected</span>
@@ -249,6 +256,7 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
               reviewNotes={submission.reviewNotes}
               reviewedAt={submission.reviewedAt}
               reviewedBy={submission.reviewedBy}
+              fastTracked={submission.fastTracked}
             />
           ) : (
             <div className="border border-dashed border-hairline bg-card px-5 py-4 text-sm text-ink-muted">

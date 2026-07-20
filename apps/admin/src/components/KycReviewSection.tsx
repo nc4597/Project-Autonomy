@@ -25,12 +25,14 @@ export function KycReviewSection({
   reviewNotes,
   reviewedAt,
   reviewedBy,
+  fastTracked = false,
 }: {
   submissionId: string;
   reviewStatus: string;
   reviewNotes: string | null;
   reviewedAt: string | null;
   reviewedBy: string | null;
+  fastTracked?: boolean;
 }) {
   const router = useRouter();
   const [choice, setChoice] = useState<"VERIFIED" | "REJECTED" | null>(null);
@@ -127,8 +129,12 @@ export function KycReviewSection({
           <div>
             {reviewStatus === "VERIFIED" ? (
               <div className="border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
-                ✓ Verified{reviewedAt ? ` · ${formatDateTime(reviewedAt)}` : ""}
+                {fastTracked ? "◆ Pre-Verified" : "✓ Verified"}
+                {reviewedAt ? ` · ${formatDateTime(reviewedAt)}` : ""}
                 {reviewedBy ? ` · by ${reviewedBy}` : ""}
+                {fastTracked && reviewNotes && (
+                  <span className="mt-2 block whitespace-pre-wrap text-ink-secondary">{reviewNotes}</span>
+                )}
               </div>
             ) : (
               <div className="border border-brand-red/40 bg-brand-red/5 px-4 py-3 text-sm text-brand-red">

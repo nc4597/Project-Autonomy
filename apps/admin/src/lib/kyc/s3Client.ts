@@ -4,6 +4,7 @@ import {
   HeadObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  CopyObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "node:crypto";
@@ -56,6 +57,22 @@ export async function headObject(key: string) {
 
 export async function deleteObject(key: string) {
   await kycS3().send(new DeleteObjectCommand({ Bucket: env.KYC_S3_BUCKET, Key: key }));
+}
+
+// Physically duplicates an object under a new key — used by the
+// returning-investor fast-track (see lib/kyc/fastTrackService.ts) to give
+// the new submission its own copy of each document rather than a second
+// Document row pointing at the original's s3Key. Sharing a key would mean
+// deleting either submission's copy (a normal, supported action) deletes
+// the file out from under the other.
+export async function copyObject(sourceKey: string, destinationKey: string) {
+  await kycS3().send(
+    new CopyObjectCommand({
+      Bucket: env.KYC_S3_BUCKET,
+      CopySource: `${env.KYC_S3_BUCKET}/${encodeURIComponent(sourceKey)}`,
+      Key: destinationKey,
+    })
+  );
 }
 
 export async function createPresignedDownloadUrl(key: string, downloadFilename?: string) {

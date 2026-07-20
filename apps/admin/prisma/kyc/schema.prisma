@@ -100,6 +100,16 @@ model VerificationSubmission {
   hubspotSyncedAt  DateTime?
   hubspotSyncError String?
 
+  // Returning-investor fast-track (see lib/kyc/fastTrackService.ts): set
+  // when this submission was auto-verified from a still-valid prior
+  // accreditation instead of going through the wizard + manual review.
+  // fastTrackedFromId is a plain reference (like the HubSpot columns
+  // above) to the source submission's id — no FK, since it may point
+  // across deals and the source could later be deleted without this
+  // record needing to change.
+  fastTracked      Boolean @default(false)
+  fastTrackedFromId String?
+
   contactInfo   ContactInfo?
   kycAmlInfo    KycAmlInfo?
   accreditation AccreditationInfo?

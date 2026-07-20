@@ -57,7 +57,13 @@ function StepBadge({ state }: { state: StepState }) {
   return null;
 }
 
-export function SubmittedView({ firstName }: { firstName: string }) {
+export function SubmittedView({
+  firstName,
+  fastTrackedFrom,
+}: {
+  firstName: string;
+  fastTrackedFrom?: { verifiedOn: string; sourceDealName: string } | null;
+}) {
   return (
     <div className="bg-page py-16">
       <Container>
@@ -72,6 +78,17 @@ export function SubmittedView({ firstName }: { firstName: string }) {
             </span>
           </div>
           <h2 className="font-serif text-3xl font-bold text-ink">Thank You, {firstName}.</h2>
+          {fastTrackedFrom && (
+            <div className="mx-auto mt-4 inline-block border border-navy-950/15 bg-navy-950/5 px-4 py-2.5 text-left text-xs text-ink-secondary">
+              Fast-tracked using your accreditation verification from{" "}
+              {new Date(fastTrackedFrom.verifiedOn).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}{" "}
+              &mdash; no additional compliance review needed.
+            </div>
+          )}
           <p className="mt-4 text-sm leading-relaxed text-ink-secondary">
             Your verification has been submitted to Regiment&rsquo;s compliance team. We will review your
             documents and a Regiment representative will contact you within{" "}

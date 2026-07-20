@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useVerificationDraft } from "../../../lib/hooks/useVerificationDraft";
 import { useVerificationStore } from "../../../lib/state/verificationStore";
 import { useFormConfig } from "../../../lib/hooks/useFormConfig";
@@ -7,6 +8,7 @@ import { buildWizardSequence } from "../../../lib/verification/formConfig";
 import { WizardStepper } from "../../../components/verification/WizardStepper";
 import { SubmittedView } from "../../../components/verification/SubmittedView";
 import { ResumeChallengeCard } from "../../../components/verification/ResumeChallengeCard";
+import { ReturningInvestorCheck } from "../../../components/verification/ReturningInvestorCheck";
 import { Step1ContactInfo } from "../../../components/verification/steps/Step1ContactInfo";
 import { Step2KycAml } from "../../../components/verification/steps/Step2KycAml";
 import { Step3Accreditation } from "../../../components/verification/steps/Step3Accreditation";
@@ -41,6 +43,13 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
   const currentStep = useVerificationStore((s) => s.currentStep);
   const setCurrentStep = useVerificationStore((s) => s.setCurrentStep);
   const config = useFormConfig();
+  // Gates the wizard behind "have you verified with us before?" for a
+  // brand-new draft only — resuming an in-progress submission (it
+  // already has contact info) skips straight past this.
+  const [precheckAnswered, setPrecheckAnswered] = useState(false);
+  const [fastTrackInfo, setFastTrackInfo] = useState<{ verifiedOn: string; sourceDealName: string } | null>(
+    null
+  );
 
   // The wizard's order comes from the published config: core steps with
   // admin-defined pages wherever they were placed, Review always last.
@@ -87,11 +96,35 @@ export default function VerifyPage({ params }: { params: { dealId: string } }) {
   }
 
   if (draft.status === "SUBMITTED") {
-    return <SubmittedView firstName={draft.contactInfo?.firstName ?? "Investor"} />;
+    return (
+      <SubmittedView firstName={draft.contactInfo?.firstName ?? "Investor"} fastTrackedFrom={fastTrackInfo} />
+    );
   }
 
   async function handleSaved() {
     await refresh();
+  }
+
+  if (!precheckAnswered && !draft.contactInfo) {
+    return (
+      <div>
+        <VerificationHero />
+        <WizardStepper
+          currentStep={0}
+          steps={[{ step: 0, label: "Returning Investor?" }, ...stepDefs]}
+        />
+        <Container className="py-10">
+          <ReturningInvestorCheck
+            submissionId={submissionId}
+            onContinueAsNew={() => setPrecheckAnswered(true)}
+            onFastTracked={async (match) => {
+              setFastTrackInfo({ verifiedOn: match.verifiedOn, sourceDealName: match.sourceDealName });
+              await refresh();
+            }}
+          />
+        </Container>
+      </div>
+    );
   }
 
   return (

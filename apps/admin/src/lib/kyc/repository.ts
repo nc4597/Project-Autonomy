@@ -18,6 +18,7 @@ export interface KycSubmissionSummary {
   accreditationMethod: string | null;
   reviewStatus: string;
   firstSubmittedAt: string | null;
+  fastTracked: boolean;
 }
 
 function summarize(submission: SubmissionWithRelations): KycSubmissionSummary {
@@ -35,6 +36,7 @@ function summarize(submission: SubmissionWithRelations): KycSubmissionSummary {
     accreditationMethod: submission.accreditation?.method ?? null,
     reviewStatus: submission.reviewStatus,
     firstSubmittedAt: submission.firstSubmittedAt?.toISOString() ?? null,
+    fastTracked: submission.fastTracked,
   };
 }
 
@@ -73,6 +75,8 @@ export async function getKycSubmissionDetail(id: string) {
     reviewNotes: submission.reviewNotes,
     reviewedAt: submission.reviewedAt?.toISOString() ?? null,
     reviewedBy: submission.reviewedBy,
+    fastTracked: submission.fastTracked,
+    fastTrackedFromId: submission.fastTrackedFromId,
     hubspotContactId: submission.hubspotContactId,
     hubspotSyncedAt: submission.hubspotSyncedAt?.toISOString() ?? null,
     hubspotSyncError: submission.hubspotSyncError,

@@ -246,3 +246,25 @@ export function unlockVerificationDraft(id: string, email: string, ssnLast4: str
     body: JSON.stringify({ email, ssnLast4 }),
   });
 }
+
+export interface PrecheckResult {
+  matched: boolean;
+  reason?: "none" | "expired" | "error";
+  sourceDealName?: string;
+  verifiedOn?: string;
+  validThrough?: string;
+}
+
+/**
+ * Returning-investor precheck: confirms the email + SSN last-4 an
+ * investor previously applied with, and — if a still-valid accreditation
+ * is found — fast-tracks this fresh draft to Verified server-side in the
+ * same call. Rate-limited server-side, same as the resume-link identity
+ * challenge.
+ */
+export function precheckVerification(id: string, email: string, ssnLast4: string) {
+  return request<PrecheckResult>(`/verifications/${id}/precheck`, {
+    method: "POST",
+    body: JSON.stringify({ email, ssnLast4 }),
+  });
+}

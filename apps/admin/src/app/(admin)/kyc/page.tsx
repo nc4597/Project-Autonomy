@@ -89,7 +89,14 @@ export default async function KycSubmissionsPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  {submission.reviewStatus === "VERIFIED" ? (
+                  {submission.reviewStatus === "VERIFIED" && submission.fastTracked ? (
+                    <span
+                      className="bg-navy-950 px-2 py-1 text-[11px] font-semibold uppercase text-white"
+                      title="Auto-verified via the returning-investor fast-track, not a manual review"
+                    >
+                      Pre-Verified
+                    </span>
+                  ) : submission.reviewStatus === "VERIFIED" ? (
                     <span className="bg-success px-2 py-1 text-[11px] font-semibold uppercase text-white">
                       Verified
                     </span>
