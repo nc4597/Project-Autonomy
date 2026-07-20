@@ -48,6 +48,7 @@ export function ReturningInvestorCheck({
     setBusy(true);
     try {
       const result = await precheckVerification(submissionId, email.trim(), taxIdLast4.trim());
+
       if (result.matched) {
         setMatch({
           sourceDealName: result.sourceDealName ?? "a previous offering",
@@ -128,13 +129,48 @@ export function ReturningInvestorCheck({
               <span className="text-ink-secondary">{formatDate(match.validThrough)}</span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => onFastTracked(match)}
-            className="w-full bg-brand-red px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-red-dark"
-          >
-            Skip to Confirmation &rarr;
-          </button>
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={() => onFastTracked(match)}
+              className="w-full bg-brand-red px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-red-dark"
+            >
+              Skip to Confirmation &rarr;
+            </button>
+            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wider text-ink-muted">
+              <span className="h-px flex-1 bg-hairline" />
+              or
+              <span className="h-px flex-1 bg-hairline" />
+            </div>
+            <button
+              type="button"
+              onClick={onContinueAsNew}
+              className="w-full border border-hairline bg-card px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-ink transition-colors hover:border-navy-950"
+            >
+              My information has changed
+            </button>
+            <p className="flex gap-2 text-xs leading-relaxed text-ink-muted">
+              <svg
+                className="mt-0.5 h-3.5 w-3.5 flex-none"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              <span>
+                Editing your details starts a brand-new verification. You&rsquo;ll complete the full form
+                again, and we&rsquo;ll re-verify your accreditation before it&rsquo;s approved &mdash; this
+                skip won&rsquo;t apply.
+              </span>
+            </p>
+          </div>
         </WizardCard>
       </div>
     );
@@ -191,18 +227,13 @@ export function ReturningInvestorCheck({
             Continue to Application
           </button>
         ) : (
-          <>
-            <button
-              type="submit"
-              disabled={busy || !email.trim() || !/^\d{4}$/.test(taxIdLast4.trim())}
-              className="w-full bg-brand-red px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-red-dark disabled:opacity-50"
-            >
-              {busy ? "Checking…" : "Check My Verification"}
-            </button>
-            <p className="text-xs leading-relaxed text-ink-muted">
-              Limited to 5 attempts per 15 minutes to prevent misuse.
-            </p>
-          </>
+          <button
+            type="submit"
+            disabled={busy || !email.trim() || !/^\d{4}$/.test(taxIdLast4.trim())}
+            className="w-full bg-brand-red px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-red-dark disabled:opacity-50"
+          >
+            {busy ? "Checking…" : "Check My Verification"}
+          </button>
         )}
       </WizardCard>
     </form>
