@@ -252,7 +252,7 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
 
             <Button
               href={`/verify?dealId=${encodeURIComponent(deal.slug)}`}
-              variant="primary"
+              variant="green"
               className="w-full"
             >
               I&apos;m Interested
