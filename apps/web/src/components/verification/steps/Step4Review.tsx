@@ -148,6 +148,15 @@ export function Step4Review({
               />
               <SummaryRow label="Date of Birth" value={formatDate(draft.contactInfo.dateOfBirth)} />
               <SummaryRow label="Investor Type" value={INVESTOR_TYPE_LABELS[draft.contactInfo.investorType]} />
+              {draft.contactInfo.investorType === "ENTITY_TRUST" && draft.contactInfo.entityName && (
+                <SummaryRow label="Entity / Trust Name" value={draft.contactInfo.entityName} />
+              )}
+              {draft.contactInfo.investorType === "JOINT" && draft.contactInfo.coOwnerFirstName && (
+                <SummaryRow
+                  label="Co-Owner"
+                  value={`${draft.contactInfo.coOwnerFirstName} ${draft.contactInfo.coOwnerLastName ?? ""}`.trim()}
+                />
+              )}
             </>
           )}
           {customRowsForStep(1).map((row) => (

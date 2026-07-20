@@ -4,10 +4,16 @@ import pino from "pino";
 // fragments and dates of birth can never end up in logs, even if a
 // future route accidentally logs a full request body.
 const PII_REDACT_PATHS = [
-  "*.ssnLast4",
+  "*.taxIdLast4",
   "*.dateOfBirth",
-  "*.contactInfo.ssnLast4",
+  "*.entityTaxIdLast4",
+  "*.coOwnerDateOfBirth",
+  "*.coOwnerTaxIdLast4",
+  "*.contactInfo.taxIdLast4",
   "*.contactInfo.dateOfBirth",
+  "*.contactInfo.entityTaxIdLast4",
+  "*.contactInfo.coOwnerDateOfBirth",
+  "*.contactInfo.coOwnerTaxIdLast4",
 ];
 
 export const kycLogger = pino({

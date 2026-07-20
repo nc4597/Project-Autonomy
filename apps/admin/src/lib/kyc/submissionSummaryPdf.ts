@@ -47,18 +47,38 @@ export async function generateSubmissionSummaryPdf(submission: SubmissionWithRel
     doc.moveDown();
 
     if (contactInfo) {
-      section("Contact Information", [
+      const contactRows: [string, string][] = [
         ["Name", `${contactInfo.firstName} ${contactInfo.lastName}`],
         ["Email", contactInfo.email],
         ["Phone", contactInfo.phone],
         ["Date of Birth", contactInfo.dateOfBirth.toISOString().slice(0, 10)],
-        ["SSN (Last 4 Digits)", contactInfo.ssnLast4],
+        [`${contactInfo.taxIdType} (Last 4 Digits)`, contactInfo.taxIdLast4],
         ["Investor Type", humanize(contactInfo.investorType)],
         [
           "Address",
           `${contactInfo.streetAddress}, ${contactInfo.city}, ${contactInfo.state} ${contactInfo.zipCode}`,
         ],
-      ]);
+      ];
+      if (contactInfo.investorType === "ENTITY_TRUST") {
+        contactRows.push(["Entity / Trust Name", contactInfo.entityName ?? "—"]);
+        contactRows.push(["Entity EIN (Last 4 Digits)", contactInfo.entityTaxIdLast4 ?? "—"]);
+      }
+      if (contactInfo.investorType === "JOINT") {
+        contactRows.push([
+          "Co-Owner",
+          contactInfo.coOwnerFirstName ? `${contactInfo.coOwnerFirstName} ${contactInfo.coOwnerLastName ?? ""}`.trim() : "—",
+        ]);
+        contactRows.push(["Co-Owner Email", contactInfo.coOwnerEmail ?? "—"]);
+        contactRows.push([
+          "Co-Owner Date of Birth",
+          contactInfo.coOwnerDateOfBirth?.toISOString().slice(0, 10) ?? "—",
+        ]);
+        contactRows.push([
+          `Co-Owner ${contactInfo.coOwnerTaxIdType ?? "Tax ID"} (Last 4 Digits)`,
+          contactInfo.coOwnerTaxIdLast4 ?? "—",
+        ]);
+      }
+      section("Contact Information", contactRows);
     }
 
     if (kycAmlInfo) {

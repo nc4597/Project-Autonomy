@@ -14,7 +14,7 @@ import { ACCREDITATION_VALIDITY_YEARS, applyFastTrack, findFastTrackMatch } from
 // SSN last-4 is only a 10,000-value space.
 const bodySchema = z.object({
   email: z.string().trim().min(3).max(254),
-  ssnLast4: z.string().trim().regex(/^\d{4}$/),
+  taxIdLast4: z.string().trim().regex(/^\d{4}$/),
 });
 
 const ATTEMPT_LIMIT = 5;
@@ -47,7 +47,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     return jsonWithCors({ error: "Submission already submitted" }, { status: 409 });
   }
 
-  const match = await findFastTrackMatch(parsed.data.email, parsed.data.ssnLast4);
+  const match = await findFastTrackMatch(parsed.data.email, parsed.data.taxIdLast4);
   if (match.status !== "match") {
     kycLogger.info(
       { submissionId: submission.id, result: match.status },

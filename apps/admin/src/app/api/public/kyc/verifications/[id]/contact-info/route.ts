@@ -1,13 +1,15 @@
 import { kycPrisma } from "@/lib/kyc/prisma";
 import { draftSecretValid, draftUnauthorized } from "@/lib/kyc/draftAuth";
-import { contactInfoSchema, customAnswersSchema } from "@/lib/kyc/schemas";
+import { contactInfoBaseSchema, customAnswersSchema, refineContactInfo } from "@/lib/kyc/schemas";
 import { upsertCustomAnswers, getPublishedFormConfig } from "@/lib/kyc/formConfig";
 import { stepNumberAfterCore } from "@/lib/kyc/formConfigShared";
 import { parseJsonBody } from "@/lib/kyc/validate";
 import { jsonWithCors, corsPreflight } from "@/lib/kyc/cors";
 import { rateLimit, clientIp } from "@/lib/kyc/rateLimit";
 
-const bodySchema = contactInfoSchema.extend({ customAnswers: customAnswersSchema });
+const bodySchema = contactInfoBaseSchema
+  .extend({ customAnswers: customAnswersSchema })
+  .superRefine(refineContactInfo);
 
 // This is the one public endpoint that receives SSN last-4 and DOB, so
 // it gets a per-IP rate limit. Generous for a human revising their own
@@ -40,8 +42,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 
   // Extra runtime guard beyond the zod regex: never persist more than 4
-  // digits even if some future client bug sends a full SSN.
-  const ssnLast4 = body.ssnLast4.slice(-4);
+  // digits even if some future client bug sends a full SSN/TIN/EIN.
+  const last4 = (value: string | undefined) => value?.slice(-4);
 
   const data = {
     firstName: body.firstName,
@@ -49,12 +51,25 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     email: body.email,
     phone: body.phone,
     dateOfBirth: new Date(body.dateOfBirth),
-    ssnLast4,
+    taxIdType: body.taxIdType,
+    taxIdLast4: last4(body.taxIdLast4)!,
     streetAddress: body.streetAddress,
     city: body.city,
     state: body.state,
     zipCode: body.zipCode,
     investorType: body.investorType,
+    // Only the fields matching the chosen investor type are kept —
+    // switching investor type clears out whatever the other group had,
+    // rather than leaving stale entity/co-owner data behind.
+    entityName: body.investorType === "ENTITY_TRUST" ? body.entityName ?? null : null,
+    entityTaxIdLast4: body.investorType === "ENTITY_TRUST" ? last4(body.entityTaxIdLast4) ?? null : null,
+    coOwnerFirstName: body.investorType === "JOINT" ? body.coOwnerFirstName ?? null : null,
+    coOwnerLastName: body.investorType === "JOINT" ? body.coOwnerLastName ?? null : null,
+    coOwnerEmail: body.investorType === "JOINT" ? body.coOwnerEmail ?? null : null,
+    coOwnerDateOfBirth:
+      body.investorType === "JOINT" && body.coOwnerDateOfBirth ? new Date(body.coOwnerDateOfBirth) : null,
+    coOwnerTaxIdType: body.investorType === "JOINT" ? body.coOwnerTaxIdType ?? null : null,
+    coOwnerTaxIdLast4: body.investorType === "JOINT" ? last4(body.coOwnerTaxIdLast4) ?? null : null,
   };
 
   await kycPrisma.contactInfo.upsert({

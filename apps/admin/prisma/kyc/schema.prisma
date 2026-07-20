@@ -147,6 +147,11 @@ model VerificationFormConfig {
   updatedAt   DateTime  @updatedAt
 }
 
+enum TaxIdType {
+  SSN
+  TIN
+}
+
 model ContactInfo {
   id             String   @id @default(uuid())
   submissionId   String   @unique
@@ -156,12 +161,35 @@ model ContactInfo {
   email          String
   phone          String
   dateOfBirth    DateTime @db.Date
-  ssnLast4       String
+  // The primary applicant's own tax ID — SSN for most individuals, TIN
+  // for e.g. non-resident aliens who don't have one. Still only ever the
+  // last 4 digits, regardless of type. Defaults to SSN so existing rows
+  // (all collected before TIN existed as an option) stay accurate.
+  taxIdType      TaxIdType @default(SSN)
+  taxIdLast4     String
   streetAddress  String
   city           String
   state          String
   zipCode        String
   investorType   InvestorType
+
+  // Entity / Trust — populated only when investorType = ENTITY_TRUST.
+  // The heavier entity-specific paperwork (formation doc, financials,
+  // cap table) is collected separately in the Accreditation step.
+  entityName       String?
+  entityTaxIdLast4 String?
+
+  // Joint Account co-owner — populated only when investorType = JOINT.
+  // The co-owner is verified to the same standard as the primary
+  // applicant (their own name/email/DOB/tax ID), not just recorded by
+  // name.
+  coOwnerFirstName   String?
+  coOwnerLastName    String?
+  coOwnerEmail       String?
+  coOwnerDateOfBirth DateTime?  @db.Date
+  coOwnerTaxIdType   TaxIdType?
+  coOwnerTaxIdLast4  String?
+
   updatedAt      DateTime @updatedAt
 }
 

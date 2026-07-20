@@ -36,7 +36,7 @@ export function ReturningInvestorCheck({
 }) {
   const [stage, setStage] = useState<Stage>("question");
   const [email, setEmail] = useState("");
-  const [ssnLast4, setSsnLast4] = useState("");
+  const [taxIdLast4, setTaxIdLast4] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [noMatchReason, setNoMatchReason] = useState<"none" | "expired">("none");
@@ -47,7 +47,7 @@ export function ReturningInvestorCheck({
     setError(null);
     setBusy(true);
     try {
-      const result = await precheckVerification(submissionId, email.trim(), ssnLast4.trim());
+      const result = await precheckVerification(submissionId, email.trim(), taxIdLast4.trim());
       if (result.matched) {
         setMatch({
           sourceDealName: result.sourceDealName ?? "a previous offering",
@@ -85,7 +85,7 @@ export function ReturningInvestorCheck({
             >
               <div className="text-sm font-bold text-ink">Yes, I&rsquo;ve submitted before</div>
               <div className="mt-1 text-xs text-ink-secondary">
-                I&rsquo;ll confirm my email and last 4 of my SSN.
+                I&rsquo;ll confirm my email and last 4 of my SSN or TIN.
               </div>
             </button>
             <button
@@ -108,7 +108,7 @@ export function ReturningInvestorCheck({
       <div className="mx-auto max-w-lg">
         <WizardCard
           title="Confirm your identity"
-          description="Enter the email and SSN last-4 you used on your previous accreditation submission. We'll check it against our records."
+          description="Enter the email and tax ID last-4 (SSN or TIN) you used on your previous accreditation submission. We'll check it against our records."
         >
           <div className="border-l-2 border-success bg-success/5 px-4 py-3 text-sm text-ink">
             <strong className="text-success">Verification found.</strong> You were accredited on{" "}
@@ -155,13 +155,13 @@ export function ReturningInvestorCheck({
             autoComplete="email"
           />
         </Field>
-        <Field label="SSN — Last 4 Digits">
+        <Field label="Tax ID — Last 4 Digits">
           <TextInput
             type="password"
             inputMode="numeric"
             maxLength={4}
-            value={ssnLast4}
-            onChange={(e) => setSsnLast4(e.target.value)}
+            value={taxIdLast4}
+            onChange={(e) => setTaxIdLast4(e.target.value)}
             placeholder="••••"
           />
         </Field>
@@ -194,7 +194,7 @@ export function ReturningInvestorCheck({
           <>
             <button
               type="submit"
-              disabled={busy || !email.trim() || !/^\d{4}$/.test(ssnLast4.trim())}
+              disabled={busy || !email.trim() || !/^\d{4}$/.test(taxIdLast4.trim())}
               className="w-full bg-brand-red px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-red-dark disabled:opacity-50"
             >
               {busy ? "Checking…" : "Check My Verification"}

@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { step1Schema, type Step1FormValues } from "../../../lib/validation/verificationSchemas";
-import type { InvestorType } from "../../../lib/constants/verification";
+import type { InvestorType, TaxIdType } from "../../../lib/constants/verification";
+import { TAX_ID_TYPES } from "../../../lib/constants/verification";
 import { saveContactInfo, type VerificationDraft } from "../../../lib/api/verificationClient";
 import { useFormConfig } from "../../../lib/hooks/useFormConfig";
 import { useCustomAnswers } from "../../../lib/hooks/useCustomAnswers";
@@ -47,8 +48,20 @@ export function Step1ContactInfo({
   } = useForm<Step1FormValues>({
     resolver: zodResolver(step1Schema),
     defaultValues: draft.contactInfo
-      ? { ...draft.contactInfo, phoneCountryCode: storedPhone.iso, phone: storedPhone.national }
-      : { investorType: "INDIVIDUAL", phoneCountryCode: "US" },
+      ? {
+          ...draft.contactInfo,
+          phoneCountryCode: storedPhone.iso,
+          phone: storedPhone.national,
+          entityName: draft.contactInfo.entityName ?? undefined,
+          entityTaxIdLast4: draft.contactInfo.entityTaxIdLast4 ?? undefined,
+          coOwnerFirstName: draft.contactInfo.coOwnerFirstName ?? undefined,
+          coOwnerLastName: draft.contactInfo.coOwnerLastName ?? undefined,
+          coOwnerEmail: draft.contactInfo.coOwnerEmail ?? undefined,
+          coOwnerDateOfBirth: draft.contactInfo.coOwnerDateOfBirth ?? undefined,
+          coOwnerTaxIdType: draft.contactInfo.coOwnerTaxIdType ?? undefined,
+          coOwnerTaxIdLast4: draft.contactInfo.coOwnerTaxIdLast4 ?? undefined,
+        }
+      : { investorType: "INDIVIDUAL", phoneCountryCode: "US", taxIdType: "SSN" },
   });
 
   const investorType = watch("investorType");
@@ -122,14 +135,28 @@ export function Step1ContactInfo({
           <Field label={L("contact.dateOfBirth", "Date of Birth")} error={errors.dateOfBirth?.message}>
             <TextInput {...register("dateOfBirth")} type="date" />
           </Field>
-          <Field label={L("contact.ssnLast4", "SSN — Last 4 Digits")} error={errors.ssnLast4?.message}>
-            <TextInput
-              {...register("ssnLast4")}
-              type="password"
-              inputMode="numeric"
-              maxLength={4}
-              placeholder="••••"
-            />
+          <Field
+            label={L("contact.taxIdLast4", "Tax ID — Last 4 Digits")}
+            error={errors.taxIdLast4?.message ?? errors.taxIdType?.message}
+          >
+            <div className="flex gap-2">
+              <div className="w-24 flex-none">
+                <Select {...register("taxIdType")} aria-label="Tax ID type">
+                  {TAX_ID_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <TextInput
+                {...register("taxIdLast4")}
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="••••"
+              />
+            </div>
           </Field>
         </div>
 
@@ -169,6 +196,97 @@ export function Step1ContactInfo({
             <span className="mt-1 block text-xs text-brand-red">{errors.investorType.message}</span>
           )}
         </div>
+
+        {investorType === "ENTITY_TRUST" && (
+          <div className="border border-hairline bg-page p-5">
+            <h3 className="mb-1 text-sm font-bold text-ink">Entity / Trust Details</h3>
+            <p className="mb-4 text-xs text-ink-secondary">
+              The legal name and tax ID of the entity or trust this investment is being made through.
+            </p>
+            <Field
+              label={L("contact.entityName", "Entity or Trust Legal Name")}
+              error={errors.entityName?.message}
+            >
+              <TextInput
+                {...register("entityName")}
+                placeholder="e.g. Harmon Family Trust, Cedar Point Holdings LLC"
+              />
+            </Field>
+            <div className="mt-4 grid gap-6 sm:grid-cols-2">
+              <Field
+                label={L("contact.entityTaxIdLast4", "EIN — Last 4 Digits")}
+                error={errors.entityTaxIdLast4?.message}
+              >
+                <TextInput
+                  {...register("entityTaxIdLast4")}
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="••••"
+                />
+              </Field>
+            </div>
+          </div>
+        )}
+
+        {investorType === "JOINT" && (
+          <div className="border border-hairline bg-page p-5">
+            <h3 className="mb-1 text-sm font-bold text-ink">Co-Owner Information</h3>
+            <p className="mb-4 text-xs text-ink-secondary">
+              The second person on this account. They&rsquo;re verified to the same standard as the
+              primary applicant.
+            </p>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <Field
+                label={L("contact.coOwnerFirstName", "Co-Owner First Name")}
+                error={errors.coOwnerFirstName?.message}
+              >
+                <TextInput {...register("coOwnerFirstName")} placeholder="Alexandra" />
+              </Field>
+              <Field
+                label={L("contact.coOwnerLastName", "Co-Owner Last Name")}
+                error={errors.coOwnerLastName?.message}
+              >
+                <TextInput {...register("coOwnerLastName")} placeholder="Harmon" />
+              </Field>
+              <Field
+                label={L("contact.coOwnerEmail", "Co-Owner Email Address")}
+                error={errors.coOwnerEmail?.message}
+              >
+                <TextInput {...register("coOwnerEmail")} type="email" placeholder="alexandra@example.com" />
+              </Field>
+              <Field
+                label={L("contact.coOwnerDateOfBirth", "Co-Owner Date of Birth")}
+                error={errors.coOwnerDateOfBirth?.message}
+              >
+                <TextInput {...register("coOwnerDateOfBirth")} type="date" />
+              </Field>
+              <Field
+                label={L("contact.coOwnerTaxIdLast4", "Co-Owner Tax ID — Last 4 Digits")}
+                error={errors.coOwnerTaxIdLast4?.message ?? errors.coOwnerTaxIdType?.message}
+              >
+                <div className="flex gap-2">
+                  <div className="w-24 flex-none">
+                    <Select {...register("coOwnerTaxIdType")} aria-label="Co-owner tax ID type">
+                      {TAX_ID_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <TextInput
+                    {...register("coOwnerTaxIdLast4")}
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={4}
+                    placeholder="••••"
+                  />
+                </div>
+              </Field>
+            </div>
+          </div>
+        )}
 
         <CustomFields fields={custom.fields} values={custom.values} onChange={custom.setValue} />
 

@@ -16,17 +16,17 @@ export type FastTrackMatch =
   | { status: "match"; submission: SubmissionWithRelations };
 
 /**
- * Looks up the most recent VERIFIED submission for this email + SSN
+ * Looks up the most recent VERIFIED submission for this email + tax ID
  * last-4 (the pair the returning-investor precheck asks for) and checks
  * it against the validity window. "none" and "expired" are reported
  * separately — the investor-facing copy this feeds already distinguishes
  * them (see the approved mockup), so the caller doesn't need to guess.
  */
-export async function findFastTrackMatch(email: string, ssnLast4: string): Promise<FastTrackMatch> {
+export async function findFastTrackMatch(email: string, taxIdLast4: string): Promise<FastTrackMatch> {
   const submission = await kycPrisma.verificationSubmission.findFirst({
     where: {
       reviewStatus: "VERIFIED",
-      contactInfo: { email: { equals: email, mode: "insensitive" }, ssnLast4 },
+      contactInfo: { email: { equals: email, mode: "insensitive" }, taxIdLast4 },
     },
     include: SUBMISSION_INCLUDE,
     orderBy: { reviewedAt: "desc" },
@@ -94,12 +94,21 @@ export async function applyFastTrack(
           email: source.contactInfo.email,
           phone: source.contactInfo.phone,
           dateOfBirth: source.contactInfo.dateOfBirth,
-          ssnLast4: source.contactInfo.ssnLast4,
+          taxIdType: source.contactInfo.taxIdType,
+          taxIdLast4: source.contactInfo.taxIdLast4,
           streetAddress: source.contactInfo.streetAddress,
           city: source.contactInfo.city,
           state: source.contactInfo.state,
           zipCode: source.contactInfo.zipCode,
           investorType: source.contactInfo.investorType,
+          entityName: source.contactInfo.entityName,
+          entityTaxIdLast4: source.contactInfo.entityTaxIdLast4,
+          coOwnerFirstName: source.contactInfo.coOwnerFirstName,
+          coOwnerLastName: source.contactInfo.coOwnerLastName,
+          coOwnerEmail: source.contactInfo.coOwnerEmail,
+          coOwnerDateOfBirth: source.contactInfo.coOwnerDateOfBirth,
+          coOwnerTaxIdType: source.contactInfo.coOwnerTaxIdType,
+          coOwnerTaxIdLast4: source.contactInfo.coOwnerTaxIdLast4,
         },
       }),
       kycPrisma.kycAmlInfo.create({

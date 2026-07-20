@@ -2,6 +2,7 @@ import type {
   AccreditationMethod,
   DocumentCategory,
   InvestorType,
+  TaxIdType,
 } from "../constants/verification";
 import type { VerificationFormConfig } from "../verification/formConfig";
 
@@ -86,12 +87,21 @@ export interface ContactInfoRecord {
   email: string;
   phone: string;
   dateOfBirth: string;
-  ssnLast4: string;
+  taxIdType: TaxIdType;
+  taxIdLast4: string;
   streetAddress: string;
   city: string;
   state: string;
   zipCode: string;
   investorType: InvestorType;
+  entityName: string | null;
+  entityTaxIdLast4: string | null;
+  coOwnerFirstName: string | null;
+  coOwnerLastName: string | null;
+  coOwnerEmail: string | null;
+  coOwnerDateOfBirth: string | null;
+  coOwnerTaxIdType: TaxIdType | null;
+  coOwnerTaxIdLast4: string | null;
 }
 
 export interface KycAmlInfoRecord {
@@ -155,9 +165,36 @@ export function getVerificationDraft(id: string) {
   return request<VerificationDraft>(`/verifications/${id}`);
 }
 
+// Save shape, distinct from ContactInfoRecord (the fetched shape): the
+// entity/co-owner fields are only ever filled in for their matching
+// investor type, so they're optional here rather than `string | null` —
+// the server nulls out whichever group doesn't apply.
+export interface ContactInfoInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  taxIdType: TaxIdType;
+  taxIdLast4: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  investorType: InvestorType;
+  entityName?: string;
+  entityTaxIdLast4?: string;
+  coOwnerFirstName?: string;
+  coOwnerLastName?: string;
+  coOwnerEmail?: string;
+  coOwnerDateOfBirth?: string;
+  coOwnerTaxIdType?: TaxIdType;
+  coOwnerTaxIdLast4?: string;
+}
+
 export function saveContactInfo(
   id: string,
-  data: ContactInfoRecord,
+  data: ContactInfoInput,
   customAnswers?: Record<string, string>
 ) {
   return request<{ ok: true }>(`/verifications/${id}/contact-info`, {
@@ -236,14 +273,14 @@ export function submitVerification(id: string, captchaToken?: string) {
 }
 
 /**
- * Identity challenge behind resume links: verifies the email + SSN
+ * Identity challenge behind resume links: verifies the email + tax ID
  * last-4 the investor applied with and returns the draft's access key
  * for this device. Rate-limited server-side.
  */
-export function unlockVerificationDraft(id: string, email: string, ssnLast4: string) {
+export function unlockVerificationDraft(id: string, email: string, taxIdLast4: string) {
   return request<{ clientSecret: string }>(`/verifications/${id}/unlock`, {
     method: "POST",
-    body: JSON.stringify({ email, ssnLast4 }),
+    body: JSON.stringify({ email, taxIdLast4 }),
   });
 }
 
@@ -256,15 +293,15 @@ export interface PrecheckResult {
 }
 
 /**
- * Returning-investor precheck: confirms the email + SSN last-4 an
+ * Returning-investor precheck: confirms the email + tax ID last-4 an
  * investor previously applied with, and — if a still-valid accreditation
  * is found — fast-tracks this fresh draft to Verified server-side in the
  * same call. Rate-limited server-side, same as the resume-link identity
  * challenge.
  */
-export function precheckVerification(id: string, email: string, ssnLast4: string) {
+export function precheckVerification(id: string, email: string, taxIdLast4: string) {
   return request<PrecheckResult>(`/verifications/${id}/precheck`, {
     method: "POST",
-    body: JSON.stringify({ email, ssnLast4 }),
+    body: JSON.stringify({ email, taxIdLast4 }),
   });
 }

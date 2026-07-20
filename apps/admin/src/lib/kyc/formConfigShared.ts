@@ -90,7 +90,7 @@ export const DEFAULT_FORM_CONFIG: VerificationFormConfig = {
     { key: "contact.email", step: 1, label: "Email Address", type: "SHORT_TEXT", required: true, core: true },
     { key: "contact.phone", step: 1, label: "Phone Number", type: "SHORT_TEXT", required: true, core: true },
     { key: "contact.dateOfBirth", step: 1, label: "Date of Birth", type: "DATE", required: true, core: true },
-    { key: "contact.ssnLast4", step: 1, label: "SSN — Last 4 Digits", type: "SHORT_TEXT", required: true, core: true },
+    { key: "contact.taxIdLast4", step: 1, label: "Tax ID — Last 4 Digits", type: "SHORT_TEXT", required: true, core: true },
     { key: "contact.streetAddress", step: 1, label: "Street Address", type: "SHORT_TEXT", required: true, core: true },
     { key: "contact.city", step: 1, label: "City", type: "SHORT_TEXT", required: true, core: true },
     { key: "contact.state", step: 1, label: "State", type: "SHORT_TEXT", required: true, core: true },
@@ -109,6 +109,13 @@ export const DEFAULT_FORM_CONFIG: VerificationFormConfig = {
         { value: "ENTITY_TRUST", label: "Entity / Trust" },
       ],
     },
+    { key: "contact.entityName", step: 1, label: "Entity or Trust Legal Name", type: "SHORT_TEXT", required: false, core: true },
+    { key: "contact.entityTaxIdLast4", step: 1, label: "EIN — Last 4 Digits", type: "SHORT_TEXT", required: false, core: true },
+    { key: "contact.coOwnerFirstName", step: 1, label: "Co-Owner First Name", type: "SHORT_TEXT", required: false, core: true },
+    { key: "contact.coOwnerLastName", step: 1, label: "Co-Owner Last Name", type: "SHORT_TEXT", required: false, core: true },
+    { key: "contact.coOwnerEmail", step: 1, label: "Co-Owner Email Address", type: "SHORT_TEXT", required: false, core: true },
+    { key: "contact.coOwnerDateOfBirth", step: 1, label: "Co-Owner Date of Birth", type: "DATE", required: false, core: true },
+    { key: "contact.coOwnerTaxIdLast4", step: 1, label: "Co-Owner Tax ID — Last 4 Digits", type: "SHORT_TEXT", required: false, core: true },
     // --- Step 2: KYC / AML ---
     {
       key: "kyc.countryOfCitizenship",

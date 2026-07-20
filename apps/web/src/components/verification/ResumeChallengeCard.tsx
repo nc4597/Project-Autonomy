@@ -8,16 +8,16 @@ import { Field, TextInput } from "../ui/Field";
 /**
  * "Confirm it's you" — shown when a resume link is opened on a device
  * that doesn't hold the draft's access key. The investor confirms the
- * email and SSN last-4 they applied with; the server verifies and
+ * email and tax ID last-4 they applied with; the server verifies and
  * re-issues the key (rate-limited against guessing).
  */
 export function ResumeChallengeCard({
   onSubmit,
 }: {
-  onSubmit: (email: string, ssnLast4: string) => Promise<void>;
+  onSubmit: (email: string, taxIdLast4: string) => Promise<void>;
 }) {
   const [email, setEmail] = useState("");
-  const [ssnLast4, setSsnLast4] = useState("");
+  const [taxIdLast4, setTaxIdLast4] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +26,7 @@ export function ResumeChallengeCard({
     setError(null);
     setBusy(true);
     try {
-      await onSubmit(email.trim(), ssnLast4.trim());
+      await onSubmit(email.trim(), taxIdLast4.trim());
     } catch (err) {
       if (err instanceof ApiError && err.status === 429) {
         setError("Too many attempts — this link is temporarily locked. Please try again in a few minutes.");
@@ -55,13 +55,13 @@ export function ResumeChallengeCard({
             autoComplete="email"
           />
         </Field>
-        <Field label="SSN — Last 4 Digits">
+        <Field label="Tax ID — Last 4 Digits">
           <TextInput
             type="password"
             inputMode="numeric"
             maxLength={4}
-            value={ssnLast4}
-            onChange={(e) => setSsnLast4(e.target.value)}
+            value={taxIdLast4}
+            onChange={(e) => setTaxIdLast4(e.target.value)}
             placeholder="••••"
           />
         </Field>
@@ -70,7 +70,7 @@ export function ResumeChallengeCard({
 
         <button
           type="submit"
-          disabled={busy || !email.trim() || !/^\d{4}$/.test(ssnLast4.trim())}
+          disabled={busy || !email.trim() || !/^\d{4}$/.test(taxIdLast4.trim())}
           className="w-full bg-brand-red px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-red-dark disabled:opacity-50"
         >
           {busy ? "Unlocking…" : "Unlock My Verification"}

@@ -24,6 +24,7 @@ export function serializeSubmission(submission: SubmissionWithRelations) {
       ? {
           ...submission.contactInfo,
           dateOfBirth: submission.contactInfo.dateOfBirth.toISOString().slice(0, 10),
+          coOwnerDateOfBirth: submission.contactInfo.coOwnerDateOfBirth?.toISOString().slice(0, 10) ?? null,
         }
       : null,
     kycAmlInfo: submission.kycAmlInfo,

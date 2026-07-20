@@ -14,6 +14,9 @@ export const INVESTOR_TYPE_LABELS: Record<InvestorType, string> = {
   ENTITY_TRUST: "Entity / Trust",
 };
 
+export const TAX_ID_TYPES = ["SSN", "TIN"] as const;
+export type TaxIdType = (typeof TAX_ID_TYPES)[number];
+
 export const SOURCE_OF_FUNDS = [
   "EMPLOYMENT_SALARY",
   "BUSINESS_INCOME",

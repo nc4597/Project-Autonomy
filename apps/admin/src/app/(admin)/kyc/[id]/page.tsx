@@ -170,8 +170,39 @@ export default async function KycSubmissionDetailPage({ params }: { params: { id
                 value={`${contactInfo.streetAddress}, ${contactInfo.city}, ${contactInfo.state} ${contactInfo.zipCode}`}
               />
               <Field label="Date of Birth" value={contactInfo.dateOfBirth} />
-              <Field label="SSN (last 4)" value={contactInfo.ssnLast4} />
+              <Field
+                label="Tax ID"
+                value={`${contactInfo.taxIdType} · last 4: ${contactInfo.taxIdLast4}`}
+              />
               <Field label="Investor Type" value={KYC_INVESTOR_TYPE_LABELS[contactInfo.investorType]} />
+              {contactInfo.investorType === "ENTITY_TRUST" && (
+                <>
+                  <Field label="Entity / Trust Name" value={contactInfo.entityName ?? "—"} />
+                  <Field label="Entity EIN (last 4)" value={contactInfo.entityTaxIdLast4 ?? "—"} />
+                </>
+              )}
+              {contactInfo.investorType === "JOINT" && (
+                <>
+                  <Field
+                    label="Co-Owner"
+                    value={
+                      contactInfo.coOwnerFirstName
+                        ? `${contactInfo.coOwnerFirstName} ${contactInfo.coOwnerLastName ?? ""}`.trim()
+                        : "—"
+                    }
+                  />
+                  <Field label="Co-Owner Email" value={contactInfo.coOwnerEmail ?? "—"} />
+                  <Field label="Co-Owner Date of Birth" value={contactInfo.coOwnerDateOfBirth ?? "—"} />
+                  <Field
+                    label="Co-Owner Tax ID"
+                    value={
+                      contactInfo.coOwnerTaxIdLast4
+                        ? `${contactInfo.coOwnerTaxIdType} · last 4: ${contactInfo.coOwnerTaxIdLast4}`
+                        : "—"
+                    }
+                  />
+                </>
+              )}
               <Field label="Citizenship" value={kycAmlInfo?.countryOfCitizenship ?? "—"} />
               <Field label="Tax Residence" value={kycAmlInfo?.taxResidence ?? "—"} />
             </>

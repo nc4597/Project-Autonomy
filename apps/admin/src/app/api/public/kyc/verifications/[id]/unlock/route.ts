@@ -7,12 +7,12 @@ import { jsonWithCors, corsPreflight } from "@/lib/kyc/cors";
 import { rateLimit, clientIp } from "@/lib/kyc/rateLimit";
 
 // Identity challenge behind resume links: proves the visitor is the
-// original applicant (email + SSN last-4 they applied with) before
+// original applicant (email + tax ID last-4 they applied with) before
 // re-issuing the draft's clientSecret to a new device. Tight rate limit
-// — SSN last-4 is a 10k space, so wrong answers lock the challenge fast.
+// — last-4 is a 10k space, so wrong answers lock the challenge fast.
 const bodySchema = z.object({
   email: z.string().trim().min(3).max(254),
-  ssnLast4: z.string().trim().regex(/^\d{4}$/),
+  taxIdLast4: z.string().trim().regex(/^\d{4}$/),
 });
 
 const ATTEMPT_LIMIT = 5;
@@ -49,8 +49,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
   const emailMatches =
     submission.contactInfo.email.trim().toLowerCase() === parsed.data.email.toLowerCase();
-  const ssnMatches = submission.contactInfo.ssnLast4 === parsed.data.ssnLast4;
-  if (!emailMatches || !ssnMatches) {
+  const taxIdMatches = submission.contactInfo.taxIdLast4 === parsed.data.taxIdLast4;
+  if (!emailMatches || !taxIdMatches) {
     kycLogger.warn({ submissionId: submission.id, ip }, "resume unlock challenge failed");
     return mismatch;
   }

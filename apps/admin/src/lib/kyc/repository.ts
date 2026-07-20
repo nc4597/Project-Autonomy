@@ -81,7 +81,11 @@ export async function getKycSubmissionDetail(id: string) {
     hubspotSyncedAt: submission.hubspotSyncedAt?.toISOString() ?? null,
     hubspotSyncError: submission.hubspotSyncError,
     contactInfo: submission.contactInfo
-      ? { ...submission.contactInfo, dateOfBirth: submission.contactInfo.dateOfBirth.toISOString().slice(0, 10) }
+      ? {
+          ...submission.contactInfo,
+          dateOfBirth: submission.contactInfo.dateOfBirth.toISOString().slice(0, 10),
+          coOwnerDateOfBirth: submission.contactInfo.coOwnerDateOfBirth?.toISOString().slice(0, 10) ?? null,
+        }
       : null,
     kycAmlInfo: submission.kycAmlInfo,
     accreditation: submission.accreditation,

@@ -126,9 +126,9 @@ export function useVerificationDraft(dealId: string) {
    * challenge UI to render.
    */
   const submitChallenge = useCallback(
-    async (email: string, ssnLast4: string) => {
+    async (email: string, taxIdLast4: string) => {
       if (!challengeId) return;
-      const { clientSecret } = await unlockVerificationDraft(challengeId, email, ssnLast4);
+      const { clientSecret } = await unlockVerificationDraft(challengeId, email, taxIdLast4);
       storeDraftSecret(challengeId, clientSecret);
       const unlocked = await getVerificationDraft(challengeId);
       window.localStorage.setItem(storageKey(dealId), challengeId);
