@@ -6,7 +6,7 @@ const BASE_CLASSES =
   "inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-40";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "bg-brand-red text-white hover:bg-brand-red-dark",
+  primary: "bg-brand-green text-white hover:bg-brand-green-dark",
   secondary: "border border-navy-950 bg-transparent text-navy-950 hover:bg-navy-950/5",
   "secondary-light": "border border-white/40 bg-transparent text-white hover:bg-white hover:text-navy-950",
   dark: "bg-navy-950 text-white hover:bg-navy-900",

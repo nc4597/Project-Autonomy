@@ -133,7 +133,7 @@ export function ReturningInvestorCheck({
             <button
               type="button"
               onClick={() => onFastTracked(match)}
-              className="w-full bg-brand-red px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-red-dark"
+              className="w-full bg-brand-green px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-green-dark"
             >
               Skip to Confirmation &rarr;
             </button>
@@ -222,7 +222,7 @@ export function ReturningInvestorCheck({
           <button
             type="button"
             onClick={onContinueAsNew}
-            className="w-full bg-brand-red px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-red-dark"
+            className="w-full bg-brand-green px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-green-dark"
           >
             Continue to Application
           </button>
@@ -230,7 +230,7 @@ export function ReturningInvestorCheck({
           <button
             type="submit"
             disabled={busy || !email.trim() || !/^\d{4}$/.test(taxIdLast4.trim())}
-            className="w-full bg-brand-red px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-red-dark disabled:opacity-50"
+            className="w-full bg-brand-green px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-brand-green-dark disabled:opacity-50"
           >
             {busy ? "Checking…" : "Check My Verification"}
           </button>

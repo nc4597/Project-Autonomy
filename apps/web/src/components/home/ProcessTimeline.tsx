@@ -34,8 +34,8 @@ export function ProcessTimeline() {
     <section className="bg-navy-950 py-24">
       <Container>
         <div className="mb-3 flex items-center gap-3">
-          <span className="h-0.5 w-8 bg-brand-red" aria-hidden="true" />
-          <span className="text-xs font-bold uppercase tracking-[0.18em] text-brand-red">
+          <span className="h-0.5 w-8 bg-white" aria-hidden="true" />
+          <span className="text-xs font-bold uppercase tracking-[0.18em] text-white">
             How It Works
           </span>
         </div>
@@ -45,13 +45,13 @@ export function ProcessTimeline() {
 
         <div className="relative grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-5 md:gap-6">
           <div
-            className="absolute left-[10%] right-[10%] top-[26px] hidden h-px bg-brand-red/40 md:block"
+            className="absolute left-[10%] right-[10%] top-[26px] hidden h-px bg-white/40 md:block"
             aria-hidden="true"
           />
           {steps.map((step) => (
             <div key={step.number} className="text-center">
-              <div className="relative mx-auto mb-6 flex h-[52px] w-[52px] items-center justify-center border border-brand-red/60 bg-navy-950">
-                <span className="font-mono text-[13px] text-brand-red">
+              <div className="relative mx-auto mb-6 flex h-[52px] w-[52px] items-center justify-center border border-white/60 bg-navy-950">
+                <span className="font-mono text-[13px] text-white">
                   {step.number}
                 </span>
               </div>

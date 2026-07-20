@@ -18,6 +18,8 @@ const config: Config = {
         brand: {
           red: "#C8102E",
           "red-dark": "#A90D27",
+          green: "#0E7A45",
+          "green-dark": "#0A5E35",
         },
         page: "#F5F4F1",
         card: "#FFFFFF",

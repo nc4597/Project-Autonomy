@@ -259,45 +259,41 @@ export default async function DealOverviewPage({ params }: { params: { slug: str
             </Button>
           </div>
 
-          <div className="mb-6 border border-hairline bg-card p-6">
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.08em] text-ink">
+          <div className="mb-6 border border-hairline bg-card p-6 text-center">
+            <p className="mb-4 text-xs font-bold uppercase tracking-[0.08em] text-ink">
               {deal.repName ? "Meet the Representative" : "Have Questions?"}
             </p>
-            <div className="flex items-start gap-3">
-              {deal.repName && deal.repPhotoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={deal.repPhotoUrl}
-                  alt=""
-                  className="h-12 w-12 shrink-0 object-cover"
-                />
-              ) : (
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-navy-900 text-xs font-semibold text-white">
-                  {deal.repName
-                    ? deal.repName
-                        .split(/\s+/)
-                        .map((part) => part[0])
-                        .slice(0, 2)
-                        .join("")
-                        .toUpperCase()
-                    : "IR"}
-                </span>
-              )}
-              <div>
-                <p className="text-sm font-semibold text-ink">
-                  {deal.repName ?? "Investor Relations"}
-                </p>
-                <p className="text-xs font-semibold uppercase tracking-[0.06em] text-brand-red">
-                  Regiment Securities
-                </p>
-                {!deal.repName && (
-                  <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
-                    Available Mon-Fri, 9am-6pm EST. Our team is happy to answer
-                    any questions about this offering.
-                  </p>
-                )}
-              </div>
-            </div>
+            {deal.repName && deal.repPhotoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={deal.repPhotoUrl}
+                alt=""
+                className="mx-auto mb-4 h-28 w-28 object-cover"
+              />
+            ) : (
+              <span className="mx-auto mb-4 flex h-28 w-28 items-center justify-center bg-navy-900 text-2xl font-semibold text-white">
+                {deal.repName
+                  ? deal.repName
+                      .split(/\s+/)
+                      .map((part) => part[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()
+                  : "IR"}
+              </span>
+            )}
+            <p className="text-base font-semibold text-ink">
+              {deal.repName ?? "Investor Relations"}
+            </p>
+            <p className="text-xs font-semibold uppercase tracking-[0.06em] text-brand-red">
+              Regiment Securities
+            </p>
+            {!deal.repName && (
+              <p className="mt-2 text-sm leading-relaxed text-ink-secondary">
+                Available Mon-Fri, 9am-6pm EST. Our team is happy to answer any
+                questions about this offering.
+              </p>
+            )}
           </div>
 
           <div className="bg-navy-950 p-6">
